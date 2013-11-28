@@ -1,0 +1,139 @@
+#!/usr/bin/python
+
+from __future__ import division
+
+from optparse import OptionParser
+from pyx import *
+import csv
+from os import linesep
+import base64
+from sys import argv,exit
+
+# start
+parser = OptionParser()
+parser.add_option("--xtitle", action="store", type="string", dest="xtitle", default=None, help="title for x-axis")
+parser.add_option("--ytitle", action="store", type="string", dest="ytitle", default=None, help="title for y-axis")
+
+parser.add_option("--xmin", action="store", type="float", dest="xmin", default=None, help="minimum value of x-axis")
+parser.add_option("--xmax", action="store", type="float", dest="xmax", default=None, help="maximum value of x-axis")
+
+parser.add_option("--ymin", action="store", type="float", dest="ymin", default=None, help="minimum value of y-axis")
+parser.add_option("--ymax", action="store", type="float", dest="ymax", default=None, help="maximum value of y-axis")
+
+parser.add_option("--xdensity", action="store", type="int", dest="xdensity", default=1, help="amount of ticks for x-axis")
+parser.add_option("--ydensity", action="store", type="int", dest="ydensity", default=1, help="amount of ticks for y-axis")
+
+parser.add_option("--xlog", action="store_true", dest="xlog", default=False, help="use logarithmic x-axis")
+parser.add_option("--ylog", action="store_true", dest="ylog", default=False, help="use logarithmic y-axis")
+
+parser.add_option("--xscale", action="store", type="float", dest="xscale", default=1, help="scale x-axis")
+parser.add_option("--yscale", action="store", type="float", dest="yscale", default=1, help="scale y-axis")
+
+parser.add_option("--nokey", action="store_true", dest="nokey", default=False, help="don't add key to graph")
+parser.add_option("--keypos", action="store", type="string", dest="keypos", default="br", help="position of key")
+
+parser.add_option("--width", action="store", type="int", dest="width", default=8, help="width of graph")
+
+parser.add_option("--title", action="store", type="string", dest="title", default=None, help="title of data points")
+
+parser.add_option("-x", action="store", type="string", dest="x", default="T", help="x-values")
+parser.add_option("-y", action="store", type="string", dest="y", default="F", help="y-values")
+
+parser.add_option("-o", "--output", action="store", type="string", dest="output", default=None, help="output filename")
+
+(options, args) = parser.parse_args()
+
+if len(args) < 1:
+    print("filename missing")
+    exit(1)
+
+filename = args[0]
+fh = open(filename, 'rb')
+content = fh.read()
+fh.close()
+
+if not options.output:
+    options.output = filename+".pdf"
+
+text.set(mode="latex")
+
+# R,L,T,F,lmax,nmax
+values = []
+for line in content.split(linesep):
+    line = line.strip()
+    if len(line) == 0 or line[0] == "#":
+        continue
+    values.append(map(float, line.split(",")))
+    values[-1].append(None)
+    values[-1].append(None)
+
+# force, entropy
+for i in range(1, len(values)-1):
+    Lm,Lp = values[i-1][1], values[i+1][1]
+    Tm,Tp = values[i-1][2], values[i+1][2]
+    Fm,Fp = values[i-1][3], values[i+1][3]
+
+    if (Lm-Lp) != 0:
+        values[i][-1] = -(Fp-Fm)/(Lp-Lm)
+    if (Tm-Tp) != 0:
+        values[i][-1] = -(Fp-Fm)/(Tp-Tm)
+
+#F0 = values[0][3]
+#for i in range(len(values)):
+#    values[i][3] /= F0
+
+if options.xtitle == None:
+    options.xtitle = options.x
+elif options.xtitle == "":
+    options.xtitle = None
+if options.ytitle == None:
+    options.ytitle = options.y
+elif options.ytitle == "":
+    options.ytitle = None
+
+if options.xlog:
+    axisx = graph.axis.log(title=options.xtitle, min=options.xmin, max=options.xmax, density=options.xdensity)
+else:
+    axisx = graph.axis.lin(title=options.xtitle, min=options.xmin, max=options.xmax, density=options.xdensity)
+
+if options.ylog:
+    axisy = graph.axis.log(title=options.ytitle, min=options.ymin, max=options.ymax, density=options.ydensity)
+else:
+    axisy = graph.axis.lin(title=options.ytitle, min=options.ymin, max=options.ymax, density=options.ydensity)
+
+if options.nokey:
+    key = None
+else:
+    key = graph.key.key(pos=options.keypos)
+
+g = graph.graphxy(
+    width = options.width,
+    x     =  axisx,
+    y     = axisy,
+    key   = key
+)
+
+mapping = {
+    "R":    1,
+    "L":    2,
+    "T":    3,
+    "F":    4,
+    "nmax": 5,
+    "lmax": 6,
+    "f":    7,
+    "S":    8
+}
+
+indexx = mapping[options.x]-1
+indexy = mapping[options.y]-1
+index = mapping[options.y]-1
+for i in range(len(values)):
+  values[i][indexx] *= options.xscale
+  values[i][indexy] *= options.yscale
+
+g.plot([graph.data.points(values, x=mapping[options.x], y=mapping[options.y], title=options.title)], [graph.style.symbol(graph.style.symbol.changecircle, size=0.05)])
+g.writePDFfile(options.output)
+
+fh = open(options.output, "a")
+fh.write(base64.b64encode(content))
+fh.close()

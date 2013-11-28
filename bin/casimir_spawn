@@ -1,0 +1,33 @@
+#!/usr/bin/python
+
+from __future__ import division
+import subprocess
+from time import sleep
+from numpy import linspace
+
+USER = "hartmmic"
+IDLE = 5
+MAX_PROCESSES = 60
+
+R = 1e-6
+start = 0.001
+stop  = 15
+N = 600
+
+def get_running_jobs(user):
+    proc = subprocess.Popen(['squeue', '-u', user], stdout=subprocess.PIPE)
+    i = 0
+    for line in iter(proc.stdout.readline,''):
+       i += 1
+    return i-1
+
+
+for i,RbyL in enumerate(linspace(start, stop, N)):
+    L = R/RbyL
+    
+    #while get_running_jobs(USER) <= MAX_PROCESSES:
+    #    sleep(IDLE)
+
+    cmd = "sbatch ~/run casimir -l 5 -R 1e-6 -L %g -T 1,501,501" % (L)
+    system(cmd)
+    print "%d/%d, %s" % (i+1, N, cmd)

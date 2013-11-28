@@ -1,0 +1,25 @@
+#!/usr/bin/python3
+
+import base64
+from sys import argv, exit
+
+def usage():
+    print("{} filename".format(argv[0]))
+    print("  Extract data file of PDF.")
+    print("  datafile: filename of PDF")
+
+if len(argv) < 2:
+    usage()
+    exit(1)
+
+filename = argv[1]
+
+fh = open(filename, "rb")
+for line in fh:
+    line = line.strip()
+    if str(line) == "b'%%EOF'":
+        encoded = fh.readline()
+        decoded = base64.b64decode(encoded)
+        print(decoded.decode("utf8"))
+        break
+fh.close()
