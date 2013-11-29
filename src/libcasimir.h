@@ -17,9 +17,6 @@
 #define MAX(a,b) (((a)>(b))?(a):(b))
 #endif
 
-
-double gsl_matrix_trace(gsl_matrix *A);
-
 #define SLA(l,n,arg) (gsl_sf_bessel_Inu((l)+0.5, (n)*(arg)) * ((l)*gsl_sf_bessel_Inu((l)+0.5, (arg))     -     (arg)*gsl_sf_bessel_Inu((l)-0.5, (arg))))
 #define SLB(l,b,arg) (gsl_sf_bessel_Inu((l)+0.5, (arg))     * ((l)*gsl_sf_bessel_Inu((l)+0.5, (n)*(arg)) - (n)*(arg)*gsl_sf_bessel_Inu((l)-0.5, (arg))))
 #define SLC(l,b,arg) (gsl_sf_bessel_Inu((l)+0.5, (n)*(arg)) * ((l)*gsl_sf_bessel_Knu((l)+0.5, (arg))     +     (arg)*gsl_sf_bessel_Knu((l)-0.5, (arg))))
@@ -92,23 +89,10 @@ double epsilon(casimir_t *self, double xi);
 double r_TE(casimir_t *self, double x, double xi);
 double r_TM(casimir_t *self, double x, double xi);
 
-int casimir_integrals(casimir_t *self, casimir_integrals_t *cint, int l1, int l2, int m, double xi);
-double casimir_integrate(casimir_t *self, double(callback(double,void*)), int l1, int l2, int m, int p, double xi_t);
-double integrandA(double x, void *params);
-double integrandB(double x, void *params);
-double integrandC(double x, void *params);
-
-double casimir_intA(casimir_t *self, int l1, int l2, int m, int p, double xi);
-double casimir_intB(casimir_t *self, int l1, int l2, int m, int p, double xi);
-double casimir_intC(casimir_t *self, int l1, int l2, int m, int p, double xi);
-double casimir_intD(casimir_t *self, int l1, int l2, int m, int p, double xi);
+int casimir_integrate(casimir_t *self, casimir_integrals_t *cint, int l1, int l2, int m, double xi);
+void casimir_integrands_vec(double x, void *params, double *vec, int len);
 
 double xi_n(casimir_t *self, int n);
-
-double casimir_M_EE(casimir_t *self, int l1, int l2, int m, double xi);
-double casimir_M_MM(casimir_t *self, int l1, int l2, int m, double xi);
-double casimir_M_EM(casimir_t *self, int l1, int l2, int m, double xi);
-double casimir_M_ME(casimir_t *self, int l1, int l2, int m, double xi);
 
 double casimir_F(casimir_t *self, int *nmax);
 

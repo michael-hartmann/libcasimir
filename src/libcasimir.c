@@ -13,11 +13,6 @@
 #include "libcasimir.h"
 #include "gausslaguerre.h"
 
-/*
-#define LOGDET1M_TAYLOR_EPS 1e-12
-#define INT_EPSREL 1e-7
-#define INT_LIMITS 100
-*/
 #define FACTOR_LMAX 3
 
 #define HBAR 1.05457173e-34 /* Js  */
@@ -63,7 +58,7 @@ int casimir_logdet1m(gsl_matrix *M, double *logdet)
     int ret;
     double norm = la_norm_froebenius(M);
 
-    // if |M| < 1 use Mercator series, else use eigenvalues
+    // if |M| < 1 use Mercator series, otherwise use eigenvalues
     if(norm <= 0.97)
         ret = logdet1m_taylor(M, logdet);
     else
@@ -319,36 +314,71 @@ double r_TM(casimir_t *self, double x, double xi)
     return (eps-root)/(eps+root);
 }
 
-double integrandA(double x, void *params)
+/*
+ * Returns the integrands A,B,C,D for l1,l2,m at the point x. len should be
+ * always 4. The values of A(x), B(x), C(x) and D(x) are stored in vec:
+ *     vec[] = { A(x), B(x), C(x), D(x) }
+ * This function is called by gausslaguerre_integrate_vec.
+ */
+void casimir_integrands_vec(double x, void *params, double vec[4], int len)
 {
     casimir_int_t *p = (casimir_int_t *)params;
+    int l1 = p->l1;
+    int l2 = p->l2;
+    int m  = p->m;
     double xi = p->xi_t*p->self->c/(2*p->self->L);
+    // fac = -2 / sqrt( l1*(l1+1) * l2*(l2+1) ) * r_p
+    double fac = -2/sqrt(l1*l2*(l1+1)*(l2+1)) * p->rp(p->self,x,xi);
+    double Yl1m, Yl2m, dYl1m, dYl2m;
 
-    return p->rp(p->self,x,xi)*Yl1mYl2m(p->l1,p->l2,p->m,1+x/p->xi_t)/(gsl_pow_2(x)+2*p->xi_t*x)*exp(-x);
+    /* Note, that we split up Lambda here:
+     *     Lambda = -2/sqrt( l1*(l1+1) * l2*(l2+1) ) * Nl1m * Nl2m
+     * Nl1m and Nl2m is in [d]Yl[1,2]m, the factor 
+     *     -2/sqrt( l1*(l1+1) * l2*(l2+1) ) * Nl1m * Nl2m
+     * is in fac.
+     * 
+     * To integrate f(x)*exp(x), we just need f(x). Therefore we don't need the
+     * factor exp(x) here.
+     */
+
+    plm_Yl12md(l1, l2, m, 1+x/p->xi_t, &Yl1m, &Yl2m, &dYl1m, &dYl2m);
+
+    vec[0] = fac * pow(-1, l2+m+(m%2))*Yl1m*Yl2m * 1/(gsl_pow_2(x)+2*p->xi_t*x);
+    vec[1] = fac * pow(-1, l2+m+1-(m%2))*dYl1m*dYl2m * (gsl_pow_2(x)+2*x*p->xi_t);
+    vec[2] = fac * pow(-1, l2+m-(m%2))*Yl1m*dYl2m;
+    vec[3] = fac * pow(-1, l1+m-(m%2))*Yl2m*dYl1m;
 }
 
-double integrandB(double x, void *params)
+/*
+ * Returns the integrals A,B,C,D for l1,l2,m,xi and p=TE,TM
+ */
+int casimir_integrate(casimir_t *self, casimir_integrals_t *cint, int l1, int l2, int m, double xi)
 {
-    casimir_int_t *p = (casimir_int_t *)params;
-    double xi = p->xi_t*p->self->c/(2*p->self->L);
+    double vec[4];
+    double prefactor[4];
+    double xi_t = 2*self->L*xi/self->c;
+    double expxi_t = exp(-xi_t);
+    int n = ceil((l1+l2-m+3)/2.);
+    casimir_int_t params;
 
-    return p->rp(p->self,x,xi)*(gsl_pow_2(x)+2*x*p->xi_t)*dYl1mdYl2m(p->l1, p->l2, p->m, 1+x/p->xi_t)*exp(-x);
-}
+    prefactor[0] = expxi_t*gsl_pow_2(m)*xi_t;
+    prefactor[1] = expxi_t/gsl_pow_3(xi_t);
+    prefactor[2] = expxi_t*m/xi_t;
+    prefactor[3] = pow(-1, l1+l2+1)*prefactor[2];
 
-double integrandC(double x, void *params)
-{
-    casimir_int_t *p = (casimir_int_t *)params;
-    double xi = p->xi_t*p->self->c/(2*p->self->L);
+    params.self = self;
+    params.l1   = l1;
+    params.l2   = l2;
+    params.m    = m;
+    params.xi_t = xi_t;
+    params.rp   = r_TM;
 
-    return p->rp(p->self,x,xi)*Yl1mdYl2m(p->l1, p->l2, p->m, 1+x/p->xi_t)*exp(-x);
-}
-
-int casimir_integrals(casimir_t *self, casimir_integrals_t *cint, int l1, int l2, int m, double xi)
-{
-    cint->A_TM = casimir_intA(self,l1,l2,m,TM,xi);
-    cint->B_TM = casimir_intB(self,l1,l2,m,TM,xi);
-    cint->C_TM = casimir_intC(self,l1,l2,m,TM,xi);
-    cint->D_TM = casimir_intD(self,l1,l2,m,TM,xi);
+    /* integrate */
+    gausslaguerre_integrate_vec(casimir_integrands_vec, &params, n, vec, 4);
+    cint->A_TM = prefactor[0]*vec[0];
+    cint->B_TM = prefactor[1]*vec[1];
+    cint->C_TM = prefactor[2]*vec[2];
+    cint->D_TM = prefactor[3]*vec[3];
 
     /* if we have perfect mirrors, we don't need to calculate the
      * TE integrals as they just differ in sign */
@@ -361,99 +391,17 @@ int casimir_integrals(casimir_t *self, casimir_integrals_t *cint, int l1, int l2
     }
     else
     {
-        cint->A_TE = casimir_intA(self,l1,l2,m,TE,xi);
-        cint->B_TE = casimir_intB(self,l1,l2,m,TE,xi);
-        cint->C_TE = casimir_intC(self,l1,l2,m,TE,xi);
-        cint->D_TE = casimir_intD(self,l1,l2,m,TE,xi);
+        params.rp = r_TE;
+        gausslaguerre_integrate_vec(casimir_integrands_vec, &params, n, vec, 4);
+        cint->A_TE = prefactor[0]*vec[0];
+        cint->B_TE = prefactor[1]*vec[1];
+        cint->C_TE = prefactor[2]*vec[2];
+        cint->D_TE = prefactor[3]*vec[3];
     }
 
     return 0;
 }
 
-double casimir_integrate(casimir_t *self, double(callback(double,void*)), int l1, int l2, int m, int p, double xi_t)
-{
-    double result;
-    casimir_int_t params;
-
-    params.self = self;
-    params.l1   = l1;
-    params.l2   = l2;
-    params.m    = m;
-    params.xi_t = xi_t;
-
-    if(p == TE)
-        params.rp = r_TE;
-    else
-        params.rp = r_TM;
-
-    /* use gauss laguerre integration */
-    #if 0
-    double abserr;
-    {
-        gsl_function F;
-        F.function = callback;
-        F.params   = &params;
-        gsl_integration_qagiu(&F, 0, 0, self->epsrel, self->int_limits, self->int_workspace, &result, &abserr);
-    }
-    #else
-    {
-        int n = ceil((l1+l2-m+3)/2.);
-        result = integrate_gausslaguerre(callback, &params, n);
-    }
-    #endif
-
-    return result;
-}
-
-/*
- * Calculate integral A using generalized Gauss–Laguerre quadrature.
- */
-double casimir_intA(casimir_t *self, int l1, int l2, int m, int p, double xi)
-{
-    double prefactor,xi_t,result;
-
-    if(m == 0)
-        return 0;
-
-    xi_t = 2*self->L*xi/self->c;
-    prefactor = gsl_pow_2(m)*xi_t*exp(-xi_t);
-
-    result = casimir_integrate(self, integrandA, l1, l2, m, p, xi_t);
-
-    return prefactor*result;
-}
-
-double casimir_intB(casimir_t *self, int l1, int l2, int m, int p, double xi)
-{
-    double prefactor,xi_t,result;
-
-    xi_t = 2*self->L*xi/self->c;
-    prefactor = exp(-xi_t)/gsl_pow_3(xi_t);
-
-    result = casimir_integrate(self, integrandB, l1, l2, m, p, xi_t);
-
-    return prefactor*result;
-}
-
-double casimir_intC(casimir_t *self, int l1, int l2, int m, int p, double xi)
-{
-    double prefactor,xi_t,result;
-
-    if(m == 0)
-        return 0;
-
-    xi_t = 2*self->L*xi/self->c;
-    prefactor = exp(-xi_t)*m/xi_t;
-
-    result = casimir_integrate(self, integrandC, l1, l2, m, p, xi_t);
-
-    return prefactor*result;
-}
-
-double casimir_intD(casimir_t *self, int l1, int l2, int m, int p, double xi)
-{
-    return pow(-1, l1+l2+1)*casimir_intC(self,l2,l1,m,p,xi);
-}
 
 /*
 * Return n-th matsubara frequency ξ
@@ -465,64 +413,12 @@ double xi_n(casimir_t *self, int n)
     return 2*M_PI*n*self->kBT/self->hbar;
 }
 
-#if 0
 /*
- * Calculate matrix element l1,l2 of M_EE
- *
- * Restrictions: l1,l2,m integer, l1,l2 >= 1, m >= 0, ξ>=0
+ * Allocate memory for the Mie-coefficients a_l and b_l
  */
-double casimir_M_EE(casimir_t *self, int l1, int l2, int m, double xi)
-{
-    if(xi == 0)
-        return Xi(l1,l2,m)*a0(l1)*pow(self->R/self->L, l1+l2+1);
-    else
-        return Lambda(l1,l2,m)*casimir_a(self,l1,xi)*(casimir_intB(self,l1,l2,m,TM,xi)+casimir_intA(self,l1,l2,m,TE,xi));
-}
-
-/*
- * Calculate matrix element l1,l2 of M_MM
- *
- * Restrictions: l1,l2,m integer, l1,l2 >= 1, m >= 0, ξ>=0
- */
-double casimir_M_MM(casimir_t *self, int l1, int l2, int m, double xi)
-{
-    if(xi == 0)
-        return -Xi(l1,l2,m)*b0(l1)*pow(self->R/self->L, l1+l2+1);
-    else
-        return Lambda(l1,l2,m)*casimir_b(self,l1,xi)*(casimir_intA(self,l1,l2,m,TM,xi)+casimir_intB(self,l1,l2,m,TE,xi));
-}
-
-/*
- * Calculate matrix element l1,l2 of M_EM
- *
- * Restrictions: l1,l2,m integer, l1,l2 >= 1, m >= 0, ξ>=0
- */
-double casimir_M_EM(casimir_t *self, int l1, int l2, int m, double xi)
-{
-    if(xi == 0)
-        return 0;
-    else
-        return Lambda(l1,l2,m)*casimir_a(self,l1,xi)*(casimir_intD(self,l1,l2,m,TM,xi)+casimir_intC(self,l1,l2,m,TE,xi));
-}
-
-/*
- * Calculate matrix element l1,l2 of M_ME
- *
- * Restrictions: l1,l2,m integer, l1,l2 >= 1, m >= 0, ξ>=0
- */
-double casimir_M_ME(casimir_t *self, int l1, int l2, int m, double xi)
-{
-    if(xi == 0)
-        return 0;
-    else
-        return Lambda(l1,l2,m)*casimir_b(self,l1,xi)*(casimir_intD(self,l1,l2,m,TM,xi)+casimir_intC(self,l1,l2,m,TE,xi));
-}
-#endif
-
 int casimir_mie_cache_alloc(casimir_t *self, casimir_mie_cache_t *cache, double xi)
 {
-    int l1;
-    int lmax = self->lmax;
+    int l1, lmax = self->lmax;
 
     if(xi == 0)
     {
@@ -549,6 +445,9 @@ int casimir_mie_cache_alloc(casimir_t *self, casimir_mie_cache_t *cache, double 
     return 1;
 }
 
+/*
+ * Free memory of cache.
+ */
 void casimir_mie_cache_free(casimir_mie_cache_t *cache)
 {
     if(cache->al != NULL)
@@ -670,7 +569,7 @@ double casimir_logdetD(casimir_t *self, int m, double xi, casimir_mie_cache_t *c
                 double B_TM, B_TE;
                 casimir_integrals_t cint;
 
-                casimir_integrals(self, &cint, l1, l2, m, xi);
+                casimir_integrate(self, &cint, l1, l2, m, xi);
                 B_TM = cint.B_TM;
                 B_TE = cint.B_TE;
 
@@ -706,7 +605,7 @@ double casimir_logdetD(casimir_t *self, int m, double xi, casimir_mie_cache_t *c
                 double bl2 = cache->bl[l2];
                 casimir_integrals_t cint;
 
-                casimir_integrals(self, &cint, l1, l2, m, xi);
+                casimir_integrate(self, &cint, l1, l2, m, xi);
 
                 gsl_matrix_set(M,     l1-min,     l2-min, al1*(cint.A_TE+cint.B_TM)); /* M_EE */
                 gsl_matrix_set(M,     l2-min,     l1-min, pow(-1, l1+l2)*al2*(cint.A_TE+cint.B_TM)); /* M_EE */
