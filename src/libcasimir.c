@@ -67,16 +67,17 @@ int casimir_logdet1m(gsl_matrix *M, double *logdet)
     if(ret != 0)
     {
         int i,j;
-        int nans = 0, infs = 0;
+        int nans = 0, infs = 0, zeros = 0;
         for(i = 0; i < M->size1; i++)
             for(j = 0; j < M->size1; j++)
             {
                 double elem = gsl_matrix_get(M, i,j);
                 if(isinf(elem)) infs++;
                 if(isnan(elem)) nans++;
+                if(elem == 0)   zeros++;
             }
 
-        fprintf(stderr, "# Can't calculate log(det(1-M)): %d (norm %g, %d nans, %d infs, dim %dx%d)\n", ret, norm, nans, infs, (int)M->size1, (int)M->size2);
+        fprintf(stderr, "# Can't calculate log(det(1-M)): %d (norm %g, %d zeros, %d nans, %d infs, dim %dx%d)\n", ret, norm, zeros, nans, infs, (int)M->size1, (int)M->size2);
     }
 
     return ret;
@@ -326,9 +327,9 @@ void casimir_integrands_vec(double x, void *params, double vec[4], int len)
     int l1 = p->l1;
     int l2 = p->l2;
     int m  = p->m;
-    double xi = p->xi_t*p->self->c/(2*p->self->L);
+    double xi = p->xi;
     // fac = -2 / sqrt( l1*(l1+1) * l2*(l2+1) ) * r_p
-    double fac = -2/sqrt(l1*l2*(l1+1)*(l2+1)) * p->rp(p->self,x,xi);
+    double fac = -2/sqrt(l1*l2*(l1+1)*(l2+1)) * p->rp(p->self,x,xi) * p->scale;
     double Yl1m, Yl2m, dYl1m, dYl2m;
 
     /* Note, that we split up Lambda here:
@@ -336,6 +337,8 @@ void casimir_integrands_vec(double x, void *params, double vec[4], int len)
      * Nl1m and Nl2m is in [d]Yl[1,2]m, the factor 
      *     -2/sqrt( l1*(l1+1) * l2*(l2+1) ) * Nl1m * Nl2m
      * is in fac.
+     *
+     * scale is just a factor, that may be used to get finite results.
      * 
      * To integrate f(x)*exp(x), we just need f(x). Therefore we don't need the
      * factor exp(x) here.
@@ -352,26 +355,27 @@ void casimir_integrands_vec(double x, void *params, double vec[4], int len)
 /*
  * Returns the integrals A,B,C,D for l1,l2,m,xi and p=TE,TM
  */
-int casimir_integrate(casimir_t *self, casimir_integrals_t *cint, int l1, int l2, int m, double xi)
+int casimir_integrate(casimir_t *self, casimir_integrals_t *cint, int l1, int l2, int m, double xi, double scale)
 {
     double vec[4];
     double prefactor[4];
     double xi_t = 2*self->L*xi/self->c;
-    double expxi_t = exp(-xi_t);
     int n = ceil((l1+l2-m+3)/2.);
     casimir_int_t params;
 
-    prefactor[0] = expxi_t*gsl_pow_2(m)*xi_t;
-    prefactor[1] = expxi_t/gsl_pow_3(xi_t);
-    prefactor[2] = expxi_t*m/xi_t;
+    prefactor[0] = exp(-xi_t)*gsl_pow_2(m)*xi_t;
+    prefactor[1] = exp(-xi_t)/gsl_pow_3(xi_t);
+    prefactor[2] = exp(-xi_t)*m/xi_t;
     prefactor[3] = pow(-1, l1+l2+1)*prefactor[2];
 
-    params.self = self;
-    params.l1   = l1;
-    params.l2   = l2;
-    params.m    = m;
-    params.xi_t = xi_t;
-    params.rp   = r_TM;
+    params.self  = self;
+    params.l1    = l1;
+    params.l2    = l2;
+    params.m     = m;
+    params.xi    = xi;
+    params.xi_t  = xi_t;
+    params.rp    = r_TM;
+    params.scale = scale;
 
     /* integrate */
     gausslaguerre_integrate_vec(casimir_integrands_vec, &params, n, vec, 4);
@@ -523,6 +527,7 @@ double casimir_logdetD(casimir_t *self, int m, double xi, casimir_mie_cache_t *c
     double logdet_EE = 0;
     double logdet_MM = 0;
     double logdet = 0;
+    double xiRbyc = xi*self->R/self->c;
 
     min = MAX(m,1);
     max = self->lmax;
@@ -562,22 +567,26 @@ double casimir_logdetD(casimir_t *self, int m, double xi, casimir_mie_cache_t *c
         {
             double al1 = cache->al[l1];
             double bl1 = cache->bl[l1];
-            
+
             for(l2 = min; l2 <= l1; l2++)
             {
                 double al2 = cache->al[l2];
                 double bl2 = cache->bl[l2];
                 double B_TM, B_TE;
+                double scale = 1;
                 casimir_integrals_t cint;
 
-                casimir_integrate(self, &cint, l1, l2, m, xi);
+                if(xiRbyc < 1)
+                    scale = pow(xiRbyc, +l1+l2);
+
+                casimir_integrate(self, &cint, l1, l2, m, xi, scale);
                 B_TM = cint.B_TM;
                 B_TE = cint.B_TE;
 
-                gsl_matrix_set(EE, l1-min, l2-min, al1*B_TM); /* M_EE */
-                gsl_matrix_set(EE, l2-min, l1-min, pow(-1, l1+l2)*al2*B_TM); /* M_EE */
-                gsl_matrix_set(MM, l1-min, l2-min, bl1*B_TE); /* M_MM */
-                gsl_matrix_set(MM, l2-min, l1-min, pow(-1, l1+l2)*bl2*B_TE); /* M_EE */
+                gsl_matrix_set(EE, l1-min, l2-min, (al1/scale)*B_TM);                /* M_EE */
+                gsl_matrix_set(EE, l2-min, l1-min, pow(-1, l1+l2)*(al2/scale)*B_TM); /* M_EE */
+                gsl_matrix_set(MM, l1-min, l2-min, bl1/scale*B_TE);                  /* M_MM */
+                gsl_matrix_set(MM, l2-min, l1-min, pow(-1, l1+l2)*(bl2/scale)*B_TE); /* M_EE */
             }
         }
 
@@ -606,7 +615,7 @@ double casimir_logdetD(casimir_t *self, int m, double xi, casimir_mie_cache_t *c
                 double bl2 = cache->bl[l2];
                 casimir_integrals_t cint;
 
-                casimir_integrate(self, &cint, l1, l2, m, xi);
+                casimir_integrate(self, &cint, l1, l2, m, xi, 1);
 
                 gsl_matrix_set(M,     l1-min,     l2-min, al1*(cint.A_TE+cint.B_TM)); /* M_EE */
                 gsl_matrix_set(M,     l2-min,     l1-min, pow(-1, l1+l2)*al2*(cint.A_TE+cint.B_TM)); /* M_EE */
