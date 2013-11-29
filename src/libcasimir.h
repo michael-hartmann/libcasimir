@@ -53,6 +53,8 @@ typedef struct
 {
     int l1, l2, m;
     casimir_t *self;
+    double xi;
+    double scale;
     double xi_t;
     double(*rp)(casimir_t *self, double x, double xi);
 } casimir_int_t;
@@ -89,7 +91,7 @@ double epsilon(casimir_t *self, double xi);
 double r_TE(casimir_t *self, double x, double xi);
 double r_TM(casimir_t *self, double x, double xi);
 
-int casimir_integrate(casimir_t *self, casimir_integrals_t *cint, int l1, int l2, int m, double xi);
+int casimir_integrate(casimir_t *self, casimir_integrals_t *cint, int l1, int l2, int m, double xi, double scale);
 void casimir_integrands_vec(double x, void *params, double *vec, int len);
 
 double xi_n(casimir_t *self, int n);
