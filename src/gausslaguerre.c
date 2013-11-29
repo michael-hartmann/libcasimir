@@ -169,7 +169,11 @@ double wk[][80] = {
     { 0.0452726414640275, 0.0976226911293701, 0.13365852798017, 0.149376458271011, 0.145847069786604, 0.12798046766667, 0.102403648735476, 0.0753440573366526, 0.0512408358210657, 0.0323231384790139, 0.0189566601109874, 0.0103531389321553, 0.00527160474970871, 0.00250450073981914, 0.00111081404792852, 0.00046009904063077, 0.000178004273196551, 6.43283051817797e-05, 2.17141523866614e-05, 6.8452422068302e-06, 2.01483877686529e-06, 5.53560961083099e-07, 1.41906623502277e-07, 3.3928319886067e-08, 7.56185219424135e-09, 1.57021037972104e-09, 3.0358719151261e-10, 5.46149602656518e-11, 9.13531174030768e-12, 1.41962504129358e-12, 2.04781520509182e-13, 2.73952672349699e-14, 3.39547341643771e-15, 3.89500302264394e-16, 4.13056523356267e-17, 4.04468050247412e-18, 3.65238267072089e-19, 3.03733902142984e-20, 2.32275748066594e-21, 1.6309293123768e-22, 1.04971073645074e-23, 6.18218696667432e-25, 3.32533903049322e-26, 1.63034213273565e-27, 7.27006243715706e-29, 2.94182105954855e-30, 1.07756632950333e-31, 3.56348144548942e-33, 1.06090248041798e-34, 2.83478933310158e-36, 6.77611531375398e-38, 1.44381336389653e-39, 2.7317419619724e-41, 4.57038085062472e-43, 6.73093590321411e-45, 8.68271484538823e-47, 9.757446766499e-49, 9.49576613650423e-51, 7.9503372413637e-53, 5.68522522122204e-55, 3.44436891915231e-57, 1.75208383006149e-59, 7.4077279619842e-62, 2.57353982566146e-64, 7.25170568122445e-67, 1.63280520163356e-69, 2.88751228946993e-72, 3.93064971866881e-75, 4.021896369544e-78, 3.00656566815356e-81, 1.58626293027761e-84, 5.65939844204099e-88, 1.29345550587282e-91, 1.76499777125309e-95, 1.30786218055483e-99, 4.60386419523715e-104, 6.29803564690143e-109, 2.40569265303208e-114, 1.36484447533594e-120, 2.29050625371838e-128 }
 };
 
-double integrate_gausslaguerre(double(callback(double,void*)), void *params, int n)
+/*
+ * Returns
+ *     Int_0^\infty dx f(x)*exp(-x)
+ */
+double gauss_laguerre_integrate(double(f(double,void*)), void *params, int n)
 {
     int i;
     double xi,wi,result = 0;
@@ -179,28 +183,33 @@ double integrate_gausslaguerre(double(callback(double,void*)), void *params, int
         xi = xk[n-1][i];
         wi = wk[n-1][i];
 
-        result += wi*callback(xi, params)*exp(xi);
+        result += wi*f(xi, params);
     }
 
     return result;
 }
 
-void integrateABCD_gausslaguerre(void(callback(double,void*,double *,double *, double *, double *)), void *params, int n, double *A, double *B, double *C, double *D)
+/*
+ * Returns
+ *     Int_0^\infty dx f(x)*exp(-x),
+ * where f returns a vector of length len. The values of the integrals are
+ * stored in vec.
+ */
+void gausslaguerre_integrate_vec(void(f(double,void*,double *,int)), void *params, int n, double *vec, int len)
 {
-    int i;
-    double xi,exi,wi, integrand_A, integrand_B, integrand_C, integrand_D;
-    *A = *B = *C = *D = 0;
+    int i,j;
+
+    for(i = 0; i < len; i++)
+        vec[i] = 0;
 
     for(i = 0; i < n; i++)
     {
-        xi  = xk[n-1][i];
-        exi = exp(xi);
-        wi  = wk[n-1][i];
+        double integrand[len];
+        double xi     = xk[n-1][i];
+        double weight = wk[n-1][i];
 
-        callback(xi, params, &integrand_A, &integrand_B, &integrand_C, &integrand_D);
-        *A += wi*integrand_A*exi;
-        *B += wi*integrand_B*exi;
-        *C += wi*integrand_C*exi;
-        *D += wi*integrand_D*exi;
+        f(xi, params, integrand, len);
+        for(j = 0; j < len; j++)
+            vec[j] += weight*integrand[j];
     }
 }
