@@ -76,7 +76,7 @@ int casimir_logdet1m(gsl_matrix *M, double *logdet)
                 if(isnan(elem)) nans++;
             }
 
-        fprintf(stderr, "# Can't calculate log(det(1-M)): %d (norm %g, %d nans, %d infs)\n", ret, norm, nans, infs);
+        fprintf(stderr, "# Can't calculate log(det(1-M)): %d (norm %g, %d nans, %d infs, dim %dx%d)\n", ret, norm, nans, infs, (int)M->size1, (int)M->size2);
     }
 
     return ret;
@@ -484,6 +484,7 @@ double casimir_F(casimir_t *self, int *nmax)
         for(m = 0; m <= self->lmax; m++)
         {
             double value = casimir_logdetD(self,m,xi,&cache);
+
             if(m == 0)
                 value /= 2;
 
@@ -544,8 +545,8 @@ double casimir_logdetD(casimir_t *self, int m, double xi, casimir_mie_cache_t *c
                 gsl_matrix_set(MM, l1-min, l2-min, -b0(l1)*XiRL);
             }
     
-        logdet1m_eigenvalues(EE, &logdet_EE);
-        logdet1m_eigenvalues(MM, &logdet_MM);
+        casimir_logdet1m(EE, &logdet_EE);
+        casimir_logdet1m(MM, &logdet_MM);
 
         gsl_matrix_free(EE);
         gsl_matrix_free(MM);
@@ -580,8 +581,8 @@ double casimir_logdetD(casimir_t *self, int m, double xi, casimir_mie_cache_t *c
             }
         }
 
-        logdet1m_eigenvalues(EE, &logdet_EE);
-        logdet1m_eigenvalues(MM, &logdet_MM);
+        casimir_logdet1m(EE, &logdet_EE);
+        casimir_logdet1m(MM, &logdet_MM);
 
         gsl_matrix_free(EE);
         gsl_matrix_free(MM);
@@ -622,7 +623,7 @@ double casimir_logdetD(casimir_t *self, int m, double xi, casimir_mie_cache_t *c
             }
         }
 
-        logdet1m_eigenvalues(M, &logdet);
+        casimir_logdet1m(M, &logdet);
         gsl_matrix_free(M);
         return logdet;
     }
