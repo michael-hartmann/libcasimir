@@ -3,6 +3,8 @@
 
 #include "gausslaguerre.h"
 
+#define N_MAX 80
+
 double xk[][80] = {
     { 1 },
     { 0.585786437626905, 3.41421356237309 },
@@ -178,6 +180,12 @@ double gauss_laguerre_integrate(double(f(double,void*)), void *params, int n)
     int i;
     double xi,wi,result = 0;
 
+    if(n > N_MAX)
+    {
+        fprintf(stderr, "# integration out of range\n");
+        return NAN;
+    }
+
     for(i = 0; i < n; i++)
     {
         xi = xk[n-1][i];
@@ -198,6 +206,13 @@ double gauss_laguerre_integrate(double(f(double,void*)), void *params, int n)
 void gausslaguerre_integrate_vec(void(f(double,void*,double *,int)), void *params, int n, double *vec, int len)
 {
     int i,j;
+
+    if(n > N_MAX)
+    {
+        fprintf(stderr, "# integration out of range\n");
+        for(i = 0; i < len; i++)
+            vec[i] = NAN;
+    }
 
     for(i = 0; i < len; i++)
         vec[i] = 0;
