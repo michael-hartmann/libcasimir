@@ -343,6 +343,33 @@ double integrandC(double x, void *params)
     return p->rp(p->self,x,xi)*Yl1mdYl2m(p->l1, p->l2, p->m, 1+x/p->xi_t)*exp(-x);
 }
 
+int casimir_integrals(casimir_t *self, casimir_integrals_t *cint, int l1, int l2, int m, double xi)
+{
+    cint->A_TM = casimir_intA(self,l1,l2,m,TM,xi);
+    cint->B_TM = casimir_intB(self,l1,l2,m,TM,xi);
+    cint->C_TM = casimir_intC(self,l1,l2,m,TM,xi);
+    cint->D_TM = casimir_intD(self,l1,l2,m,TM,xi);
+
+    /* if we have perfect mirrors, we don't need to calculate the
+     * TE integrals as they just differ in sign */
+    if(isinf(self->omegap))
+    {
+        cint->A_TE = -cint->A_TM;
+        cint->B_TE = -cint->B_TM;
+        cint->C_TE = -cint->C_TM;
+        cint->D_TE = -cint->D_TM;
+    }
+    else
+    {
+        cint->A_TE = casimir_intA(self,l1,l2,m,TE,xi);
+        cint->B_TE = casimir_intB(self,l1,l2,m,TE,xi);
+        cint->C_TE = casimir_intC(self,l1,l2,m,TE,xi);
+        cint->D_TE = casimir_intD(self,l1,l2,m,TE,xi);
+    }
+
+    return 0;
+}
+
 double casimir_integrate(casimir_t *self, double(callback(double,void*)), int l1, int l2, int m, int p, double xi_t)
 {
     double result;
@@ -633,7 +660,6 @@ double casimir_logdetD(casimir_t *self, int m, double xi, casimir_mie_cache_t *c
 
         for(l1 = min; l1 <= max; l1++)
         {
-            double B_TM, B_TE;
             double al1 = cache->al[l1];
             double bl1 = cache->bl[l1];
             
@@ -641,15 +667,12 @@ double casimir_logdetD(casimir_t *self, int m, double xi, casimir_mie_cache_t *c
             {
                 double al2 = cache->al[l2];
                 double bl2 = cache->bl[l2];
+                double B_TM, B_TE;
+                casimir_integrals_t cint;
 
-                B_TM = casimir_intB(self,l1,l2,m,TM,xi);
-
-                /* if we have perfect mirrors, we don't need to calculate the
-                 * TE integrals as they just differ in sign */
-                if(isinf(self->omegap))
-                    B_TE = -B_TM;
-                else
-                    B_TE = casimir_intB(self,l1,l2,m,TE,xi);
+                casimir_integrals(self, &cint, l1, l2, m, xi);
+                B_TM = cint.B_TM;
+                B_TE = cint.B_TE;
 
                 gsl_matrix_set(EE, l1-min, l2-min, al1*B_TM); /* M_EE */
                 gsl_matrix_set(EE, l2-min, l1-min, pow(-1, l1+l2)*al2*B_TM); /* M_EE */
@@ -674,49 +697,29 @@ double casimir_logdetD(casimir_t *self, int m, double xi, casimir_mie_cache_t *c
            M_ME,  M_MM */
         for(l1 = min; l1 <= max; l1++)
         {
-            double A_TM, B_TM, C_TM, D_TM, A_TE, B_TE, C_TE, D_TE;
             double al1 = cache->al[l1];
             double bl1 = cache->bl[l1];
-            
+
             for(l2 = min; l2 <= l1; l2++)
             {
                 double al2 = cache->al[l2];
                 double bl2 = cache->bl[l2];
+                casimir_integrals_t cint;
 
-                A_TM = casimir_intA(self,l1,l2,m,TM,xi);
-                B_TM = casimir_intB(self,l1,l2,m,TM,xi);
-                C_TM = casimir_intC(self,l1,l2,m,TM,xi);
-                D_TM = casimir_intD(self,l1,l2,m,TM,xi);
+                casimir_integrals(self, &cint, l1, l2, m, xi);
 
-                /* if we have perfect mirrors, we don't need to calculate the
-                 * TE integrals as they just differ in sign */
-                if(isinf(self->omegap))
-                {
-                    A_TE = -A_TM;
-                    B_TE = -B_TM;
-                    C_TE = -C_TM;
-                    D_TE = -D_TM;
-                }
-                else
-                {
-                    A_TE = casimir_intA(self,l1,l2,m,TE,xi);
-                    B_TE = casimir_intB(self,l1,l2,m,TE,xi);
-                    C_TE = casimir_intC(self,l1,l2,m,TE,xi);
-                    D_TE = casimir_intD(self,l1,l2,m,TE,xi);
-                }
-                
-                gsl_matrix_set(M,     l1-min,     l2-min, al1*(A_TE+B_TM)); /* M_EE */
-                gsl_matrix_set(M,     l2-min,     l1-min, pow(-1, l1+l2)*al2*(A_TE+B_TM)); /* M_EE */
+                gsl_matrix_set(M,     l1-min,     l2-min, al1*(cint.A_TE+cint.B_TM)); /* M_EE */
+                gsl_matrix_set(M,     l2-min,     l1-min, pow(-1, l1+l2)*al2*(cint.A_TE+cint.B_TM)); /* M_EE */
 
-                gsl_matrix_set(M, dim+l1-min, dim+l2-min, bl1*(A_TM+B_TE)); /* M_MM */
-                gsl_matrix_set(M, dim+l2-min, dim+l1-min, pow(-1, l1+l2)*bl2*(A_TM+B_TE)); /* M_MM */
+                gsl_matrix_set(M, dim+l1-min, dim+l2-min, bl1*(cint.A_TM+cint.B_TE)); /* M_MM */
+                gsl_matrix_set(M, dim+l2-min, dim+l1-min, pow(-1, l1+l2)*bl2*(cint.A_TM+cint.B_TE)); /* M_MM */
 
 
-                gsl_matrix_set(M, dim+l1-min,     l2-min, al1*(C_TE+D_TM)); /* M_EM */
-                gsl_matrix_set(M, dim+l2-min,     l1-min, pow(-1, l1+l2+1)*al2*(D_TE+C_TM)); /* M_EM */
+                gsl_matrix_set(M, dim+l1-min,     l2-min, al1*(cint.C_TE+cint.D_TM)); /* M_EM */
+                gsl_matrix_set(M, dim+l2-min,     l1-min, pow(-1, l1+l2+1)*al2*(cint.D_TE+cint.C_TM)); /* M_EM */
 
-                gsl_matrix_set(M,     l1-min, dim+l2-min, bl1*(C_TM+D_TE)); /* - M_ME */
-                gsl_matrix_set(M,     l2-min, dim+l1-min, pow(-1, l1+l2+1)*bl2*(D_TM+C_TE)); /* - M_ME */
+                gsl_matrix_set(M,     l1-min, dim+l2-min, bl1*(cint.C_TM+cint.D_TE)); /* - M_ME */
+                gsl_matrix_set(M,     l2-min, dim+l1-min, pow(-1, l1+l2+1)*bl2*(cint.D_TM+cint.C_TE)); /* - M_ME */
             }
         }
 

@@ -60,6 +60,14 @@ typedef struct
     double(*rp)(casimir_t *self, double x, double xi);
 } casimir_int_t;
 
+typedef struct
+{
+    double A_TE, A_TM;
+    double B_TE, B_TM;
+    double C_TE, C_TM;
+    double D_TE, D_TM;
+} casimir_integrals_t;
+
 double Lambda(int l1, int l2, int m);
 double Xi(int l1,int l2, int m);
 
@@ -84,6 +92,7 @@ double epsilon(casimir_t *self, double xi);
 double r_TE(casimir_t *self, double x, double xi);
 double r_TM(casimir_t *self, double x, double xi);
 
+int casimir_integrals(casimir_t *self, casimir_integrals_t *cint, int l1, int l2, int m, double xi);
 double casimir_integrate(casimir_t *self, double(callback(double,void*)), int l1, int l2, int m, int p, double xi_t);
 double integrandA(double x, void *params);
 double integrandB(double x, void *params);
