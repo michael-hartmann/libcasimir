@@ -102,6 +102,6 @@ int casimir_mie_cache_alloc(casimir_t *self, casimir_mie_cache_t *cache, double 
 void casimir_mie_cache_free(casimir_mie_cache_t *cache);
 
 double casimir_logdetD(casimir_t *self, int m, double xi, casimir_mie_cache_t *cache);
-int casimir_logdet1m(gsl_matrix *M, double *logdet);
+int casimir_logdet1m(gsl_matrix *M, double *logdet, int m, double xi, const char *desc);
 
 #endif

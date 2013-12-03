@@ -19,6 +19,31 @@
 #define KB   1.3806488e-23  /* J/K */
 #define C    299792458      /* m/s */
 
+void matrix_info(FILE *stream, gsl_matrix *M)
+{
+    int i,j;
+    int zeros = 0, nans = 0, infs = 0;
+    double min, max;
+    min = max = fabs(gsl_matrix_get(M, 0, 0));
+
+    for(i = 0; i < M->size1; i++)
+        for(j = 0; j < M->size2; j++)
+         {
+             double elem = fabs(gsl_matrix_get(M, i,j));
+             if(isnan(elem))
+                 nans++;
+             if(isinf(elem))
+                 infs++;
+             if(elem == 0)
+                 zeros++;
+             min = MIN(min, elem);
+             max = MAX(max, elem);
+         }
+
+    if(nans || zeros || infs)
+        fprintf(stream, "zeros=%d, nans=%d, infs=%d, min=%g, max=%g\n", zeros, nans, infs, min, max);
+}
+
 /*
  * This is the error handler for the Gnu scientifiy library.
  * In case there are any errors, print a debug message and exit
@@ -53,17 +78,20 @@ double Lambda(int l1, int l2, int m)
  * The value is calculated either using Mercator series, if |M| < 1 or
  * by calculating the eigenvalues of M
  */
-int casimir_logdet1m(gsl_matrix *M, double *logdet)
+int casimir_logdet1m(gsl_matrix *M, double *logdet, int m, double xi, const char *desc)
 {
     int ret;
     double norm = la_norm_froebenius(M);
 
     // if |M| < 1 use Mercator series, otherwise use eigenvalues
+    /*
     if(norm <= 0.97)
         ret = logdet1m_taylor(M, logdet);
     else
         ret = logdet1m_eigenvalues(M, logdet);
+    */
 
+    ret = logdet1m_eigenvalues(M, logdet);
     if(ret != 0)
     {
         int i,j;
@@ -77,7 +105,8 @@ int casimir_logdet1m(gsl_matrix *M, double *logdet)
                 if(elem == 0)   zeros++;
             }
 
-        fprintf(stderr, "# Can't calculate log(det(1-M)): %d (norm %g, %d zeros, %d nans, %d infs, dim %dx%d)\n", ret, norm, zeros, nans, infs, (int)M->size1, (int)M->size2);
+        fprintf(stderr, "# Can't calculate log(det(1-%s)): %d (m: %d, xi=%g, norm %g, %d zeros, %d nans, %d infs, dim %dx%d)\n", \
+                        desc, ret, m, xi, norm, zeros, nans, infs, (int)M->size1, (int)M->size2);
     }
 
     return ret;
@@ -189,7 +218,7 @@ int casimir_init_scaled(casimir_t *self, double S, double R, double L, double T,
     self->L       = L/S;
     self->omegap  = omegap;
     self->gamma   = gamma;
-    self->eps_n   = 1e-6;
+    self->eps_n   = 1e-7;
     self->verbose = 0;
 
     return 0;
@@ -475,7 +504,7 @@ double casimir_F(casimir_t *self, int *nmax)
 {
     int n = 0;
     double kBT = self->kBT_unscaled, sum0, sum = 0;
-    
+
     while(1)
     {
         casimir_mie_cache_t cache;
@@ -505,6 +534,7 @@ double casimir_F(casimir_t *self, int *nmax)
 
         casimir_mie_cache_free(&cache);
 
+        //fprintf(stderr, "%d, %g, %g\n", n, sum_n, 2*kBT*sum);
         if(sum_n/sum0 < self->eps_n)
         {
             if(nmax != NULL)
@@ -550,48 +580,8 @@ double casimir_logdetD(casimir_t *self, int m, double xi, casimir_mie_cache_t *c
                 gsl_matrix_set(MM, l1-min, l2-min, -b0(l1)*XiRL);
             }
     
-        casimir_logdet1m(EE, &logdet_EE);
-        casimir_logdet1m(MM, &logdet_MM);
-
-        gsl_matrix_free(EE);
-        gsl_matrix_free(MM);
-
-        return logdet_EE+logdet_MM;
-    }
-    else if(m == 0)
-    {
-        gsl_matrix *EE = gsl_matrix_alloc(dim, dim);
-        gsl_matrix *MM = gsl_matrix_alloc(dim, dim);
-
-        for(l1 = min; l1 <= max; l1++)
-        {
-            double al1 = cache->al[l1];
-            double bl1 = cache->bl[l1];
-
-            for(l2 = min; l2 <= l1; l2++)
-            {
-                double al2 = cache->al[l2];
-                double bl2 = cache->bl[l2];
-                double B_TM, B_TE;
-                double scale = 1;
-                casimir_integrals_t cint;
-
-                if(xiRbyc < 1)
-                    scale = pow(xiRbyc, +l1+l2);
-
-                casimir_integrate(self, &cint, l1, l2, m, xi, scale);
-                B_TM = cint.B_TM;
-                B_TE = cint.B_TE;
-
-                gsl_matrix_set(EE, l1-min, l2-min, (al1/scale)*B_TM);                /* M_EE */
-                gsl_matrix_set(EE, l2-min, l1-min, pow(-1, l1+l2)*(al2/scale)*B_TM); /* M_EE */
-                gsl_matrix_set(MM, l1-min, l2-min, bl1/scale*B_TE);                  /* M_MM */
-                gsl_matrix_set(MM, l2-min, l1-min, pow(-1, l1+l2)*(bl2/scale)*B_TE); /* M_EE */
-            }
-        }
-
-        casimir_logdet1m(EE, &logdet_EE);
-        casimir_logdet1m(MM, &logdet_MM);
+        casimir_logdet1m(EE, &logdet_EE, m, xi, "M_EE");
+        casimir_logdet1m(MM, &logdet_MM, m, xi, "M_MM");
 
         gsl_matrix_free(EE);
         gsl_matrix_free(MM);
@@ -606,23 +596,57 @@ double casimir_logdetD(casimir_t *self, int m, double xi, casimir_mie_cache_t *c
            M_ME,  M_MM */
         for(l1 = min; l1 <= max; l1++)
         {
-            double al1 = cache->al[l1];
-            double bl1 = cache->bl[l1];
 
             for(l2 = min; l2 <= l1; l2++)
             {
+                casimir_integrals_t cint;
+                double scale = 1;
+                double al1 = cache->al[l1];
+                double bl1 = cache->bl[l1];
                 double al2 = cache->al[l2];
                 double bl2 = cache->bl[l2];
-                casimir_integrals_t cint;
 
-                casimir_integrate(self, &cint, l1, l2, m, xi, 1);
+                if(xiRbyc < 1)
+                {
+                    double scale_l1, scale_l2;
+                    scale    = pow(xiRbyc, +l2+l1);
+                    scale_l2 = pow(xiRbyc, 2*l1);
+                    scale_l1 = pow(xiRbyc, 2*l2);
+
+                    al1 /= scale_l1;
+                    al2 /= scale_l2;
+                    bl1 /= scale_l1;
+                    bl2 /= scale_l2;
+
+                    if(al1 == 0)
+                    {
+                        al1 = a0(l1)/pow(2, l1+1)*pow(xiRbyc, 1-l1);
+                        //fprintf(stderr, "al1=%g\n", al1);
+                    }
+                    if(al2 == 0)
+                    {
+                        al2 = a0(l2)/pow(2, l2+1)*pow(xiRbyc, 1-l2);
+                        //fprintf(stderr, "al2=%g\n", al2);
+                    }
+                    if(bl1 == 0)
+                    {
+                        bl1 = b0(l1)/pow(2, l1+1)*pow(xiRbyc, 1-l1);
+                        //fprintf(stderr, "bl1=%g\n", bl1);
+                    }
+                    if(bl2 == 0)
+                    {
+                        bl2 = b0(l2)/pow(2, l2+1)*pow(xiRbyc, 1-l2);
+                        //fprintf(stderr, "bl2=%g\n", bl2);
+                    }
+                }
+
+                casimir_integrate(self, &cint, l1, l2, m, xi, scale);
 
                 gsl_matrix_set(M,     l1-min,     l2-min, al1*(cint.A_TE+cint.B_TM)); /* M_EE */
                 gsl_matrix_set(M,     l2-min,     l1-min, pow(-1, l1+l2)*al2*(cint.A_TE+cint.B_TM)); /* M_EE */
 
                 gsl_matrix_set(M, dim+l1-min, dim+l2-min, bl1*(cint.A_TM+cint.B_TE)); /* M_MM */
                 gsl_matrix_set(M, dim+l2-min, dim+l1-min, pow(-1, l1+l2)*bl2*(cint.A_TM+cint.B_TE)); /* M_MM */
-
 
                 gsl_matrix_set(M, dim+l1-min,     l2-min, al1*(cint.C_TE+cint.D_TM)); /* M_EM */
                 gsl_matrix_set(M, dim+l2-min,     l1-min, pow(-1, l1+l2+1)*al2*(cint.D_TE+cint.C_TM)); /* M_EM */
@@ -632,7 +656,37 @@ double casimir_logdetD(casimir_t *self, int m, double xi, casimir_mie_cache_t *c
             }
         }
 
-        casimir_logdet1m(M, &logdet);
+        if(m == 0)
+        {
+            int i,j;
+            double logdet_EE = 0, logdet_MM = 0;
+            gsl_matrix *EE = gsl_matrix_alloc(dim, dim);
+            gsl_matrix *MM = gsl_matrix_alloc(dim, dim);
+
+            for(i = 0; i < dim; i++)
+                for(j = 0; j < dim; j++)
+                {
+                    gsl_matrix_set(EE, i,j, gsl_matrix_get(M, i,j));
+                    gsl_matrix_set(MM, i,j, gsl_matrix_get(M, dim+i,dim+j));
+                }
+
+            matrix_info(stderr, EE);
+            matrix_info(stderr, MM);
+
+            casimir_logdet1m(EE, &logdet_EE, m, xi, "EE");
+            casimir_logdet1m(MM, &logdet_MM, m, xi, "MM");
+
+            logdet = logdet_EE+logdet_MM;
+
+            gsl_matrix_free(EE);
+            gsl_matrix_free(MM);
+        }
+        else
+        {
+            matrix_info(stderr, M);
+            casimir_logdet1m(M, &logdet, m, xi, "M");
+        }
+
         gsl_matrix_free(M);
         return logdet;
     }
