@@ -13,6 +13,10 @@
 #define SCALE_LIN 0
 #define SCALE_LOG 1
 
+#define kB      1.38064880e-23
+#define HBAR    1.05457173e-34
+#define C       299792458
+
 int count(const char *str, char c)
 {
     int i = 0;
@@ -127,7 +131,7 @@ int main(int argc, char *argv[])
     double lL[4] = { 0,0,0,SCALE_LIN };
     double lfac = 3;
     int i, iR, iL, iT;
-    double R,L,T,F;
+    double R,L,T;
     int lmax;
     int buffering_flag = 0, quiet_flag = 0;
 
@@ -251,17 +255,21 @@ int main(int argc, char *argv[])
             {
                 casimir_t casimir;
                 double start_time = now();
+                double F, F_scaled, T_scaled;
                 int nmax;
 
                 R = iv(lR, iR);
                 L = iv(lL, iL);
                 T = iv(lT, iT);
 
+                T_scaled = T*(L+R) * (2*M_PI*kB)/(HBAR*C);
+
                 lmax = MAX((int)ceil(R/L*lfac), 3);
 
-                casimir_init_perfect(&casimir, R, L+R, T);
+                casimir_init_perfect(&casimir, R/(R+L), T_scaled);
                 casimir_set_lmax(&casimir, lmax);
-                F = casimir_F(&casimir, &nmax);
+                F_scaled = casimir_F(&casimir, &nmax);
+                F = F_scaled*HBAR*C/(L+R);
                 casimir_free(&casimir);
 
                 printf("%.15g, %.15g, %.15g, %.15g, %.15g, %d, %d, %g\n", R, L, T, F, L/R, lmax, nmax, now()-start_time);
