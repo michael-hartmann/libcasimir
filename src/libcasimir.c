@@ -478,7 +478,7 @@ double casimir_F(casimir_t *self, int *nmax)
 
         casimir_mie_cache_free(&cache);
 
-        fprintf(stderr, "# %d, %.15g\n", n, sum_n);
+        //fprintf(stderr, "# %d, %.15g\n", n, sum_n);
         if(sum_n/sum0 < self->eps_n)
         {
             if(nmax != NULL)
@@ -544,13 +544,12 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
             {
                 casimir_integrals_t cint;
                 double scale = 1;
-                //double nTRbyL = n*self->T*self->RbyL;
+                double nTRbyL = n*self->T*self->RbyL;
                 double al1 = cache->al[l1];
                 double bl1 = cache->bl[l1];
                 double al2 = cache->al[l2];
                 double bl2 = cache->bl[l2];
 
-                /*
                 if(nTRbyL < 1)
                 {
                     double scale_l1, scale_l2;
@@ -572,7 +571,6 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
                     if(bl2 == 0)
                         bl2 = b0(l2)/pow(2, l2+1)*pow(nTRbyL, 1-l2);
                 }
-                */
 
                 casimir_integrate(self, &cint, l1, l2, n, m, scale);
 
