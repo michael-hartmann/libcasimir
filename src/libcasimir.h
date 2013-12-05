@@ -24,23 +24,25 @@
 
 typedef struct
 {
-    double RbyL;
+    double RbyScriptL;
     double T;
     double gamma;
     double omegap;
     int lmax;
     int verbose;
 
-    double epsrel;
     double eps_n;
-    int int_limits;
-    gsl_integration_workspace *int_workspace;
+    //double epsrel;
+    //int int_limits;
+    //gsl_integration_workspace *int_workspace;
 } casimir_t;
 
 typedef struct
 {
     double *al;
     double *bl;
+    int lmax;
+    double arg;
 } casimir_mie_cache_t;
 
 typedef struct
@@ -60,14 +62,14 @@ typedef struct
     double D_TE, D_TM;
 } casimir_integrals_t;
 
-double Lambda(int l1, int l2, int m);
-double Xi(int l1,int l2, int m);
+double casimir_Lambda(int l1, int l2, int m);
+double casimir_Xi(int l1,int l2, int m);
 
-double a0(int l);
-double b0(int l);
+double casimir_a0(int l);
+double casimir_b0(int l);
 
-int casimir_init_perfect(casimir_t *self, double RbyL, double T);
-int casimir_init(casimir_t *self, double RbyL, double T, double omegap, double gamma);
+int casimir_init_perfect(casimir_t *self, double RbyScriptL, double T);
+int casimir_init(casimir_t *self, double RbyScriptL, double T, double omegap, double gamma);
 
 void casimir_set_lmax(casimir_t *self, int lmax);
 void casimir_set_limits(casimir_t *self, int limits);
@@ -78,18 +80,17 @@ void casimir_free(casimir_t *self);
 double casimir_a(casimir_t *self, int l, double arg);
 double casimir_b(casimir_t *self, int l, double arg);
 
-double epsilon(casimir_t *self, double xi);
-double r_TE(casimir_t *self, double x, double xi);
-double r_TM(casimir_t *self, double x, double xi);
+double casimir_epsilon(casimir_t *self, double xi);
+double casimir_rTE(casimir_t *self, double x, double xi);
+double casimir_rTM(casimir_t *self, double x, double xi);
 
 int casimir_integrate(casimir_t *self, casimir_integrals_t *cint, int l1, int l2, int n, int m, double scale);
 void casimir_integrands_vec(double x, void *params, double *vec, int len);
 
-double xi_n(casimir_t *self, int n);
-
 double casimir_F(casimir_t *self, int *nmax);
 
-int casimir_mie_cache_alloc(casimir_t *self, casimir_mie_cache_t *cache, double xi);
+void casimir_mie_cache_init(casimir_mie_cache_t *cache, double arg);
+int casimir_mie_cache_alloc(casimir_t *self, casimir_mie_cache_t *cache, int lmax);
 void casimir_mie_cache_free(casimir_mie_cache_t *cache);
 
 double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache);
