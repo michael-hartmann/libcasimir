@@ -53,9 +53,8 @@ This program will calculate the free Casimir energy for the plane-sphere \n\
 geometry. \n\
 \n\
 Mandatory options:\n\
-    -R  Radius of sphere\n\
-    -L  Distance between sphere and plate\n\
-    -T  Temperature\n\
+    -Q Radius of sphere divided by distance between center of sphere and plate; 0 < R/(R+L) < 1\n\
+    -T Temperature\n\
 \n\
 Further options:\n\
     -l, --lscale\n\
@@ -67,7 +66,7 @@ Further options:\n\
         disabled.\n\
 \n\
     --quiet\n\
-        The progress and the ETA is printed to stderr unless this flag is set.\n\
+        The progress is printed to stderr unless this flag is set.\n\
 \n\
     -h,--help\n\
         Show this help\n");
@@ -127,11 +126,9 @@ void parse_range(char param, const char *optarg, double list[])
 int main(int argc, char *argv[])
 {
     double lT[4] = { 0,0,0,SCALE_LIN };
-    double lR[4] = { 0,0,0,SCALE_LIN };
-    double lL[4] = { 0,0,0,SCALE_LIN };
+    double lQ[4] = { 0,0,0,SCALE_LIN };
     double lfac = 3;
-    int i, iR, iL, iT;
-    double R,L,T;
+    int i, iT, iQ;
     int lmax;
     int buffering_flag = 0, quiet_flag = 0;
 
@@ -155,7 +152,7 @@ int main(int argc, char *argv[])
         /* getopt_long stores the option index here. */
         int option_index = 0;
       
-        c = getopt_long (argc, argv, "R:L:T:a:l:h", long_options, &option_index);
+        c = getopt_long (argc, argv, "Q:T:a:l:h", long_options, &option_index);
       
         /* Detect the end of the options. */
         if (c == -1)
@@ -167,17 +164,8 @@ int main(int argc, char *argv[])
             /* If this option set a flag, do nothing else now. */
             if (long_options[option_index].flag != 0)
               break;
-            printf ("option %s", long_options[option_index].name);
-            if (optarg)
-              printf (" with arg %s", optarg);
-            printf ("\n");
-            break;
-
-          case 'R':
-              parse_range('R', optarg, lR);
-              break;
-          case 'L':
-              parse_range('L', optarg, lL);
+          case 'Q':
+              parse_range('Q', optarg, lQ);
               break;
           case 'T':
               parse_range('T', optarg, lT);
@@ -213,15 +201,9 @@ int main(int argc, char *argv[])
         usage(stderr);
         exit(1);
     }
-    if(lR[0] <= 0)
+    if(lQ[0] <= 0 || lQ[0] >= 1 || lQ[1] <= 0 || lQ[1] >= 1)
     {
-        fprintf(stderr, "positive value for -R required\n\n");
-        usage(stderr);
-        exit(1);
-    }
-    if(lL[0] <= 0)
-    {
-        fprintf(stderr, "positive value for -L required\n\n");
+        fprintf(stderr, "-Q must be in 0 < Q < 1\n\n");
         usage(stderr);
         exit(1);
     }
@@ -233,50 +215,42 @@ int main(int argc, char *argv[])
     }
 
     printf("# lfac=%g, ", lfac);
-    if(lR[2] == 1)
-        printf("R=%g, ", lR[0]);
+    if(lQ[2] == 1)
+        printf("L=%g, ", lQ[0]);
     else
-        printf("R=%g...%g (%d), ", lR[0],lR[1],(int)lR[2]);
-    if(lL[2] == 1)
-        printf("L=%g, ", lL[0]);
-    else
-        printf("L=%g...%g (%d), ", lL[0],lL[1],(int)lL[2]);
+        printf("L=%g...%g (%d), ", lQ[0],lQ[1],(int)lQ[2]);
     if(lT[2] == 1)
         printf("T=%g\n", lT[0]);
     else
         printf("T=%g...%g (%d)\n", lT[0],lT[1],(int)lT[2]);
 
-    printf("# R, L, T, F, L/R, lmax, nmax, time\n");
+    printf("# R/(L+R), T, F, lmax, nmax, time\n");
 
     i = 0;
-    for(iL = 0; iL < lL[2]; iL++)
-        for(iR = 0; iR < lR[2]; iR++)
-            for(iT = 0; iT < lT[2]; iT++)
-            {
-                casimir_t casimir;
-                double start_time = now();
-                double F, F_scaled, T_scaled;
-                int nmax;
+    for(iQ = 0; iQ < lQ[2]; iQ++)
+        for(iT = 0; iT < lT[2]; iT++)
+        {
+            casimir_t casimir;
+            double start_time = now();
+            int nmax;
+            double F,Q,T;
 
-                R = iv(lR, iR);
-                L = iv(lL, iL);
-                T = iv(lT, iT);
+            Q = iv(lQ, iQ);
+            T = iv(lT, iT);
 
-                T_scaled = T*(L+R) * (2*M_PI*kB)/(HBAR*C);
+            // XXX
+            lmax = 25; //MAX((int)ceil(R/L*lfac), 3);
 
-                lmax = MAX((int)ceil(R/L*lfac), 3);
+            casimir_init_perfect(&casimir, Q, T);
+            casimir_set_lmax(&casimir, lmax);
+            F = casimir_F(&casimir, &nmax);
+            casimir_free(&casimir);
 
-                casimir_init_perfect(&casimir, R/(R+L), T_scaled);
-                casimir_set_lmax(&casimir, lmax);
-                F_scaled = casimir_F(&casimir, &nmax);
-                F = F_scaled*HBAR*C/(L+R);
-                casimir_free(&casimir);
+            printf("%.15g, %.15g, %.15g, %d, %d, %g\n", Q, T, F, lmax, nmax, now()-start_time);
 
-                printf("%.15g, %.15g, %.15g, %.15g, %.15g, %d, %d, %g\n", R, L, T, F, L/R, lmax, nmax, now()-start_time);
-
-                if(!quiet_flag)
-                    fprintf(stderr, "# %6.2f%%, R=%g, L=%g, T=%g\n", ++i*100/(lL[2]*lR[2]*lT[2]), R, L, T);
-            }
+            if(!quiet_flag)
+                fprintf(stderr, "# %6.2f%%, R/(R+L)=%g, T=%g\n", ++i*100/(lQ[2]*lT[2]), Q, T);
+        }
 
     return 0;
 }
