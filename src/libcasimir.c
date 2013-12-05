@@ -91,10 +91,12 @@ int casimir_logdet1m(gsl_matrix *M, double *logdet, int n, int m, const char *de
  *
  * Restrictions: l1,l2,m integers, l1,l2>=1, l1,l2 >= m
  */
-double casimir_Xi(int l1,int l2, int m)
+double casimir_Xi(int l1, int l2, int m)
 {
-    return pow(-1, l2)/pow(4, 2*l1+l2+1) \
-         * exp(log(-casimir_Lambda(l1,l2,m))+gsl_sf_lngamma(2*l1+1)+gsl_sf_lngamma(2*l2+1)+gsl_sf_lngamma(l1+l2+1)-gsl_sf_lngamma(l1)-gsl_sf_lngamma(l2)-gsl_sf_lngamma(l1-m+1)-gsl_sf_lngamma(l2-m+1) );
+    return pow(-1, l2) * exp( \
+        (log(2*l1+1)+log(2*l2+1)-lnfac(l1-m)-lnfac(l2-m)-lnfac(l1+m)-lnfac(l2+m)-log(l1)-log(l1+1)-log(l2)-log(l2+1))/2 \
+        +lnfac(2*l1)+lnfac(2*l2)+lnfac(l1+l2)-log(4)*(2*l1+l2+1)-lnfac(l1-1)-lnfac(l2-1)
+    );
 }
 
 /*
