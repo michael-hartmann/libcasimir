@@ -14,6 +14,9 @@
 #include "gausslaguerre.h"
 
 #define FACTOR_LMAX 3
+#define HBAR 1.05457173e-34
+#define KB   1.3806488e-23
+#define C    299792458
 
 /*
  * This is the error handler for the Gnu scientifiy library.
@@ -42,6 +45,36 @@ double casimir_Lambda(int l1, int l2, int m)
          * sqrt( exp(gsl_sf_lngamma(l1-m+1)+gsl_sf_lngamma(l2-m+1)-gsl_sf_lngamma(l1+m+1)-gsl_sf_lngamma(l2+m+1)) );
 }
 
+/*
+ * Convert the Free Energy F in SI units to Free Energy F in units of Script/(hbar*c)
+ */
+double casimir_F_SI_to_scaled(double F_SI, double ScriptL_SI)
+{
+    return ScriptL_SI/(HBAR*C)*F_SI;
+}
+
+/*
+ * Convert the Free Energie F in units of ScriptL/(hbar*c) to Free energy F in SI units
+ */
+double casimir_F_scaled_to_SI(double F, double ScriptL_SI)
+{
+    return HBAR*C/ScriptL_SI*F;
+}
+
+/*
+ * Convert the temperature T in Kelvin to temperature in units of 2pi*kb*ScriptL/(hbar*c)
+ */
+double casimir_T_SI_to_scaled(double T_SI, double ScriptL_SI)
+{
+    return 2*M_PI*KB*ScriptL_SI/(HBAR*C)*T_SI;
+}
+
+/*
+ * Convert the temperature T in units of 2pi*kb*ScriptL/(hbar*c) to Kelvin */
+double casimir_T_scaled_to_SI(double T, double ScriptL_SI)
+{
+    return HBAR*C/(2*M_PI*KB*ScriptL_SI)*T;
+}
 
 /* casimir_logdet1m
  * This function returns returns log(det(1-M))

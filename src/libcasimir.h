@@ -26,7 +26,7 @@
 
 typedef struct
 {
-    double RbyScriptL;
+    double RbyScriptL; // R/(R+L)
     double T;
     double gamma;
     double omegap;
@@ -66,6 +66,11 @@ typedef struct
 
 double casimir_Lambda(int l1, int l2, int m);
 double casimir_Xi(int l1,int l2, int m);
+
+double casimir_F_SI_to_scaled(double F_SI, double ScriptL_SI);
+double casimir_F_scaled_to_SI(double F, double ScriptL_SI);
+double casimir_T_SI_to_scaled(double T_SI, double ScriptL_SI);
+double casimir_T_scaled_to_SI(double T, double ScriptL_SI);
 
 double casimir_a0(int l);
 double casimir_b0(int l);
