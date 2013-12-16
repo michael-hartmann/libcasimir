@@ -1,0 +1,7 @@
+#!/bin/sh
+
+cd /ltmp/Casimir
+echo -n "Updating repository... "
+git pull
+echo -n "Copying src/ to alcc83... "
+scp -r src/ hartmmic@alcc83:/alcc/gpfs1/home/theo1/hartmmic
