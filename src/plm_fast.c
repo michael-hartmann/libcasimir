@@ -35,7 +35,7 @@
  */
 
 /* calculate Plm for l=m...l=lmax */
-static void _plm_array(int lmax, int m, double x, double *plm)
+static inline void _plm_array(int lmax, int m, double x, double *plm)
 {
     int l;
 
