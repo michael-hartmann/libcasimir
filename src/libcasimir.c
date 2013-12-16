@@ -18,6 +18,8 @@
 #define KB   1.3806488e-23
 #define C    299792458
 
+void handler(const char *reason, const char *file, int line, int gsl_errno);
+
 /*
  * This is the error handler for the Gnu scientifiy library.
  * In case there are any errors, print a debug message and exit
@@ -548,7 +550,7 @@ double casimir_F(casimir_t *self, int *nmax)
  */
 double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache)
 {
-    int min,max,dim,l1,l2;
+    size_t min,max,dim,l1,l2;
     double logdet_EE = 0;
     double logdet_MM = 0;
     double logdet = 0;
@@ -605,22 +607,24 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
                 {
                     double scale_l1, scale_l2;
                     scale    = pow(nTRbyScriptL, +l2+l1);
-                    scale_l2 = pow(nTRbyScriptL, 2*l1);
-                    scale_l1 = pow(nTRbyScriptL, 2*l2);
+                    scale_l1 = pow(nTRbyScriptL, 2*l1);
+                    scale_l2 = pow(nTRbyScriptL, 2*l2);
 
                     al1 /= scale_l1;
-                    al2 /= scale_l2;
                     bl1 /= scale_l1;
+                    al2 /= scale_l2;
                     bl2 /= scale_l2;
 
-                    if(al1 == 0)
-                        al1 = casimir_a0(l1)/pow(2, l1+1)*pow(nTRbyScriptL, 1-l1);
-                    if(al2 == 0)
-                        al2 = casimir_a0(l2)/pow(2, l2+1)*pow(nTRbyScriptL, 1-l2);
-                    if(bl1 == 0)
-                        bl1 = casimir_b0(l1)/pow(2, l1+1)*pow(nTRbyScriptL, 1-l1);
-                    if(bl2 == 0)
-                        bl2 = casimir_b0(l2)/pow(2, l2+1)*pow(nTRbyScriptL, 1-l2);
+                    //printf("diff l1=%d, l2=%d, diff=%g\n", l1,l2,fabs(al1/(casimir_a0(l1)*nTRbyScriptL/pow(2, l1+1))));
+
+                    if(fabs(al1) < 1e-250)
+                        al1 = casimir_a0(l1)*nTRbyScriptL/pow(2, 2*l1+1);
+                    if(fabs(bl1) < 1e-250)
+                        bl1 = casimir_b0(l1)*nTRbyScriptL/pow(2, 2*l1+1);
+                    if(fabs(al2) < 1e-250)
+                        al2 = casimir_a0(l2)*nTRbyScriptL/pow(2, 2*l2+1);
+                    if(fabs(bl2) < 1e-250)
+                        bl2 = casimir_b0(l2)*nTRbyScriptL/pow(2, 2*l2+1);
                 }
 
                 casimir_integrate(self, &cint, l1, l2, n, m, scale);
@@ -639,10 +643,14 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
             }
         }
 
+        /*
+        fprintf(stderr, "%d\n", (int)M->size1);
+        gsl_matrix_fprintf(stderr, M, "%g");
+        */
+
         if(m == 0)
         {
-            int i,j;
-            double logdet_EE = 0, logdet_MM = 0;
+            size_t i,j;
             gsl_matrix *EE = gsl_matrix_alloc(dim, dim);
             gsl_matrix *MM = gsl_matrix_alloc(dim, dim);
 
