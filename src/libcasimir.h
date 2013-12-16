@@ -82,6 +82,7 @@ void casimir_set_lmax(casimir_t *self, int lmax);
 void casimir_set_limits(casimir_t *self, int limits);
 void casimir_set_eps_n(casimir_t *self, double eps_n);
 void casimir_set_epsrel(casimir_t *self, double epsrel);
+void casimir_set_verbose(casimir_t *self, int verbose);
 void casimir_free(casimir_t *self);
 
 double casimir_a(casimir_t *self, int l, double arg);
