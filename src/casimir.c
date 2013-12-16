@@ -17,6 +17,14 @@
 #define HBAR    1.05457173e-34
 #define C       299792458
 
+/* prototypes */
+int count(const char *str, char c);
+const char *indexn(const char *str, char c, int n);
+double now(void);
+void usage(FILE *stream);
+double iv(double list[4], int i);
+void parse_range(char param, const char *optarg, double list[]);
+
 int count(const char *str, char c)
 {
     int i = 0;
@@ -127,7 +135,7 @@ int main(int argc, char *argv[])
 {
     double lT[4] = { 0,0,0,SCALE_LIN };
     double lQ[4] = { 0,0,0,SCALE_LIN };
-    double lfac = 3;
+    double lfac = 5;
     int i, iT, iQ;
     int lmax;
     int buffering_flag = 0, quiet_flag = 0;
@@ -238,8 +246,7 @@ int main(int argc, char *argv[])
             Q = iv(lQ, iQ);
             T = iv(lT, iT);
 
-            // XXX
-            lmax = 25; //MAX((int)ceil(R/L*lfac), 3);
+            lmax = MAX((int)ceil(Q/(1-Q)*lfac), 5);
 
             casimir_init_perfect(&casimir, Q, T);
             casimir_set_lmax(&casimir, lmax);
