@@ -23,7 +23,7 @@ const char *indexn(const char *str, char c, int n);
 double now(void);
 void usage(FILE *stream);
 double iv(double list[4], int i);
-void parse_range(char param, const char *optarg, double list[]);
+void parse_range(char param, const char *_optarg, double list[]);
 
 int count(const char *str, char c)
 {
@@ -91,24 +91,24 @@ double iv(double list[4], int i)
         return list[0]*pow(pow(list[1]/list[0], 1/(list[2]-1)), i);
 }
 
-void parse_range(char param, const char *optarg, double list[])
+void parse_range(char param, const char *_optarg, double list[])
 {
-    int elems = count(optarg, ',');
+    int elems = count(_optarg, ',');
     list[3] = SCALE_LIN;
 
     switch(elems)
     {
         case 0:
-            list[0] = list[1] = atof(optarg);
+            list[0] = list[1] = atof(_optarg);
             list[2] = 1;
             break;
         case 3:
-            if(strncasecmp(indexn(optarg, ',', 3)+1, "log", 3) == 0)
+            if(strncasecmp(indexn(_optarg, ',', 3)+1, "log", 3) == 0)
                 list[3] = SCALE_LOG;
         case 2:
-            list[0] = atof(optarg);
-            list[1] = atof(indexn(optarg, ',', 1)+1);
-            list[2] = atoi(indexn(optarg, ',', 2)+1);
+            list[0] = atof(_optarg);
+            list[1] = atof(indexn(_optarg, ',', 1)+1);
+            list[2] = atoi(indexn(_optarg, ',', 2)+1);
 
             if(list[0] < 0 || list[1] < 0 || list[2] < 0)
             {
@@ -125,7 +125,7 @@ void parse_range(char param, const char *optarg, double list[])
             }
             break;
         default:
-            fprintf(stderr, "Can't parse range %s.\n\n", optarg);
+            fprintf(stderr, "Can't parse range %s.\n\n", _optarg);
             usage(stderr);
             exit(1);
     }
