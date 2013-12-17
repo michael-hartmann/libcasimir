@@ -13,10 +13,12 @@
 #include "libcasimir.h"
 #include "gausslaguerre.h"
 
-#define FACTOR_LMAX 3
+#define FACTOR_LMAX 5
 #define HBAR 1.05457173e-34
 #define KB   1.3806488e-23
 #define C    299792458
+
+#define EPS_PRECISION 1e-10
 
 void handler(const char *reason, const char *file, int line, int gsl_errno);
 
@@ -499,13 +501,14 @@ void casimir_mie_cache_free(casimir_mie_cache_t *cache)
 double casimir_F(casimir_t *self, int *nmax)
 {
     int n = 0;
-    double sum0, sum = 0;
+    double sum_n0 = 0, sum = 0;
     double RbyScriptL = self->RbyScriptL;
 
     while(1)
     {
         casimir_mie_cache_t cache;
         double sum_n = 0;
+        double sum_m0 = 0;
         int m;
 
         casimir_mie_cache_init(&cache, n*self->T*RbyScriptL);
@@ -516,14 +519,20 @@ double casimir_F(casimir_t *self, int *nmax)
             double value = casimir_logdetD(self,n,m,&cache);
 
             if(m == 0)
+            {
+                sum_m0 = value;
                 value /= 2;
+            }
+            else if(fabs(value/sum_m0) < EPS_PRECISION)
+                break;
 
             sum_n += value;
+            //fprintf(stderr, "# n=%d, m=%d, %.15g\n", n, m, value/sum_m0);
         }
 
         if(n == 0)
         {
-            sum0 = sum_n;
+            sum_n0 = sum_n;
             sum += sum_n/2;
         }
         else
@@ -531,8 +540,7 @@ double casimir_F(casimir_t *self, int *nmax)
 
         casimir_mie_cache_free(&cache);
 
-        //fprintf(stderr, "# %d, %.15g\n", n, sum_n);
-        if(sum_n/sum0 < self->eps_n)
+        if(sum_n/sum_n0 < self->eps_n)
         {
             if(nmax != NULL)
                 *nmax = n;
@@ -571,7 +579,7 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
         for(l1 = min; l1 <= max; l1++)
             for(l2 = min; l2 <= max; l2++)
             {
-                double XiRL = casimir_Xi(l1,l2,m)*pow(RbyScriptL, l1+l2+1);
+                double XiRL = casimir_Xi(l1,l2,m)*pow(RbyScriptL, 2*l1+1);
 
                 gsl_matrix_set(EE, l1-min, l2-min, +casimir_a0(l1)*XiRL);
                 gsl_matrix_set(MM, l1-min, l2-min, -casimir_b0(l1)*XiRL);
