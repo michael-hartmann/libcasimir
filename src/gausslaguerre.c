@@ -175,18 +175,12 @@ double wk[][80] = {
  * Returns
  *     Int_0^\infty dx f(x)*exp(-x)
  */
-double gauss_laguerre_integrate(double(f(double,void*)), void *params, int n)
+double gauss_laguerre_integrate(double(f(double,void*)), void *params)
 {
     int i;
     double xi,wi,result = 0;
 
-    if(n > N_MAX)
-    {
-        fprintf(stderr, "# integration out of range\n");
-        return NAN;
-    }
-
-    for(i = 0; i < n; i++)
+    for(i = 0; i < N_MAX; i++)
     {
         xi = xk[n-1][i];
         wi = wk[n-1][i];
@@ -203,21 +197,14 @@ double gauss_laguerre_integrate(double(f(double,void*)), void *params, int n)
  * where f returns a vector of length len. The values of the integrals are
  * stored in vec.
  */
-void gausslaguerre_integrate_vec(void(f(double,void*,double *,int)), void *params, int n, double *vec, int len)
+void gausslaguerre_integrate_vec(void(f(double,void*,double *,int)), void *params, double *vec, int len)
 {
     int i,j;
-
-    if(n > N_MAX)
-    {
-        fprintf(stderr, "# integration out of range\n");
-        for(i = 0; i < len; i++)
-            vec[i] = NAN;
-    }
 
     for(i = 0; i < len; i++)
         vec[i] = 0;
 
-    for(i = 0; i < n; i++)
+    for(i = 0; i < N_MAX; i++)
     {
         double integrand[len];
         double xi     = xk[n-1][i];
