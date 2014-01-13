@@ -28,15 +28,10 @@ typedef struct
 {
     double RbyScriptL; // R/(R+L)
     double T;
-    double gamma;
-    double omegap;
     int lmax;
     int verbose;
 
     double eps_n;
-    //double epsrel;
-    //int int_limits;
-    //gsl_integration_workspace *int_workspace;
 } casimir_t;
 
 typedef struct
@@ -58,12 +53,10 @@ typedef struct
 
 typedef struct
 {
-    double A_TE, A_TM;
-    double B_TE, B_TM;
-    double C_TE, C_TM;
-    double D_TE, D_TM;
+    double A,B,C,D;
 } casimir_integrals_t;
 
+double casimir_lnLambda(int l1, int l2, int m);
 double casimir_Lambda(int l1, int l2, int m);
 double casimir_Xi(int l1,int l2, int m);
 
@@ -75,8 +68,7 @@ double casimir_T_scaled_to_SI(double T, double ScriptL_SI);
 double casimir_a0(int l);
 double casimir_b0(int l);
 
-int casimir_init_perfect(casimir_t *self, double RbyScriptL, double T);
-int casimir_init(casimir_t *self, double RbyScriptL, double T, double omegap, double gamma);
+int casimir_init(casimir_t *self, double RbyScriptL, double T);
 
 void casimir_set_lmax(casimir_t *self, int lmax);
 void casimir_set_limits(casimir_t *self, int limits);
@@ -92,7 +84,6 @@ double casimir_epsilon(casimir_t *self, double xi);
 double casimir_rTE(casimir_t *self, double x, double xi);
 double casimir_rTM(casimir_t *self, double x, double xi);
 
-int casimir_integrate(casimir_t *self, casimir_integrals_t *cint, int l1, int l2, int n, int m, double scale);
 void casimir_integrands_vec(double x, void *params, double *vec, int len);
 
 double casimir_F(casimir_t *self, int *nmax);
@@ -104,4 +95,5 @@ void casimir_mie_cache_free(casimir_mie_cache_t *cache);
 double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache);
 int casimir_logdet1m(gsl_matrix *M, double *logdet, int n, int m, const char *desc);
 
+double casimir_logdetD_approx(casimir_t *self, int n, int m, casimir_mie_cache_t *cache);
 #endif

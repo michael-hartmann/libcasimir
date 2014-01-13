@@ -69,6 +69,9 @@ Further options:\n\
         Specify parameter lscale. The vector space has to be truncated at some\n\
         value lmax. This program will use lmax=(R/L*lscale) (default: 3)\n\
 \n\
+    -L\n\
+        Set lmax to given value. When -L is used, -l will be ignored\n\
+\n\
     --buffering\n\
         Enable buffering. By default buffering for stderr and stdout is\n\
         disabled.\n\
@@ -137,7 +140,7 @@ int main(int argc, char *argv[])
     double lQ[4] = { 0,0,0,SCALE_LIN };
     double lfac = 5;
     int i, iT, iQ;
-    int lmax;
+    int lmax = 0;
     int buffering_flag = 0, quiet_flag = 0;
 
     printf("# %s", argv[0]);
@@ -160,7 +163,7 @@ int main(int argc, char *argv[])
         /* getopt_long stores the option index here. */
         int option_index = 0;
       
-        c = getopt_long (argc, argv, "Q:T:a:l:h", long_options, &option_index);
+        c = getopt_long (argc, argv, "Q:T:a:l:L:h", long_options, &option_index);
       
         /* Detect the end of the options. */
         if (c == -1)
@@ -178,6 +181,8 @@ int main(int argc, char *argv[])
           case 'T':
               parse_range('T', optarg, lT);
               break;
+          case 'L':
+              lmax = atoi(optarg);
           case 'l':
               lfac = atof(optarg);
               break;
@@ -246,14 +251,17 @@ int main(int argc, char *argv[])
             Q = iv(lQ, iQ);
             T = iv(lT, iT);
 
-            lmax = MAX((int)ceil(Q/(1-Q)*lfac), 5);
+            casimir_init(&casimir, Q, T);
 
-            casimir_init_perfect(&casimir, Q, T);
-            casimir_set_lmax(&casimir, lmax);
+            if(lmax > 0)
+                casimir_set_lmax(&casimir, lmax);
+            else
+                casimir_set_lmax(&casimir, MAX((int)ceil(Q/(1-Q)*lfac), 5));
+
             F = casimir_F(&casimir, &nmax);
             casimir_free(&casimir);
 
-            printf("%.15g, %.15g, %.15g, %d, %d, %g\n", Q, T, F, lmax, nmax, now()-start_time);
+            printf("%.15g, %.15g, %.15g, %d, %d, %g\n", Q, T, F, casimir.lmax, nmax, now()-start_time);
 
             if(!quiet_flag)
                 fprintf(stderr, "# %6.2f%%, R/(R+L)=%g, T=%g\n", ++i*100/(lQ[2]*lT[2]), Q, T);
