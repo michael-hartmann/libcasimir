@@ -22,9 +22,15 @@
 #define SLC(l,b,arg) (gsl_sf_bessel_Inu((l)+0.5, (n)*(arg)) * ((l)*gsl_sf_bessel_Knu((l)+0.5, (arg))     +     (arg)*gsl_sf_bessel_Knu((l)-0.5, (arg))))
 #define SLD(l,b,arg) (gsl_sf_bessel_Knu((l)+0.5, (arg))     * ((l)*gsl_sf_bessel_Knu((l)+0.5, (n)*(arg)) - (n)*(arg)*gsl_sf_bessel_Knu((l)-0.5, (arg))))
 
+#define IS_FINITE(x) ((!isnan(x) && !isinf(x)))
+
+// abbrevations for functions
 #define lngamma(x) (gsl_sf_lngamma(x))
 #define lnfac(x) (gsl_sf_lngamma(1+x))
-#define IS_FINITE(x) ((!isnan(x) && !isinf(x)))
+#define bessel_Iv(n,x)   (gsl_sf_bessel_Inu(n,x))
+#define bessel_lnIv(n,x) log(gsl_sf_bessel_Inu(n,x))
+#define bessel_Kv(n,x)   (gsl_sf_bessel_Knu(n,x))
+#define bessel_lnKv(n,x) (gsl_sf_bessel_lnKnu(n,x))
 
 typedef struct
 {
@@ -81,6 +87,9 @@ void casimir_free(casimir_t *self);
 
 double casimir_a(casimir_t *self, int l, double arg);
 double casimir_b(casimir_t *self, int l, double arg);
+
+double casimir_lna(int l, double arg, int *sign);
+double casimir_lnb(int l, double arg, int *sign);
 
 double casimir_epsilon(casimir_t *self, double xi);
 double casimir_rTE(casimir_t *self, double x, double xi);

@@ -243,14 +243,62 @@ double inline casimir_a(casimir_t *self, int l, double arg)
     return M_PI/2*pow(-1,l+1)*(l*gsl_sf_bessel_Inu(l+0.5,arg)-arg*gsl_sf_bessel_Inu(l-0.5,arg))/(l*gsl_sf_bessel_Knu(l+0.5,arg)+arg*gsl_sf_bessel_Knu(l-0.5,arg));
 }
 
+double casimir_lna(int l, double arg, int *sign)
+{
+    double nominator, denominator,frac;
+    double lnIlp = bessel_lnIv(l+0.5, arg);
+    double lnIlm = bessel_lnIv(l-0.5, arg);
+    double lnKlp = bessel_lnKv(l+0.5, arg);
+    double lnKlm = bessel_lnKv(l-0.5, arg);
+    double prefactor = log(M_PI)-log(2)+lnIlp-lnKlp;
+    double lnfrac = log(arg)-log(l);
+
+    *sign = pow(-1, l+1);
+
+    // nominator
+    {
+        frac = exp(lnfrac+lnIlm-lnIlp);
+        if(frac < 0.1)
+            nominator = log1p(fabs(-frac));
+        else
+        {
+            if(frac > 1)
+                *sign *= -1;
+
+            nominator = log(fabs(1-frac));
+        }
+    }
+    // denominator
+    {
+        frac = exp(lnfrac+lnKlm-lnKlp);
+        if(frac < 0.1)
+            denominator = log1p(frac);
+        else
+            denominator = log(1+frac);
+    }
+
+    return prefactor+nominator-denominator;
+}
+
+/*
+ * Returns the coefficient b_l for reflection on the sphere
+ *
+ * Restrictions: l integer, l>=1, xi>0
+ */        
+double casimir_b(casimir_t *self, int l, double arg)
+{
+    return M_PI/2*pow(-1, l+1)*gsl_sf_bessel_Inu(l+0.5,arg)/gsl_sf_bessel_Knu(l+0.5,arg);
+}
+
 /*        
  * Returns the coefficient b_l for reflection on the sphere
  *
  * Restrictions: l integer, l>=1, xi>0
  */        
-double casimir_b(casimir_t *self, int  l, double arg)
+double casimir_lnb(int l, double arg, int *sign)
 {
-    return M_PI/2*pow(-1, l+1)*gsl_sf_bessel_Inu(l+0.5,arg)/gsl_sf_bessel_Knu(l+0.5,arg);
+    *sign = pow(-1, l+1);
+    return log(M_PI)-log(2)+bessel_lnIv(l+0.5,arg)-bessel_lnKv(l+0.5,arg);
 }
 
 /*
