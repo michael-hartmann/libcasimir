@@ -20,6 +20,21 @@ int test_results(unittest_t *test, FILE *stream)
     return test->failed;
 }
 
+int _AssertEqual(int line, unittest_t *test, int x, int y)
+{
+    if(x == y)
+    {
+        test->passed++;
+        return 0;
+    }
+    else
+    {
+        test->failed++;
+        fprintf(stderr, "FAILED: %d != %d on line %d\n", x, y, line);
+        return 1;
+    }
+}
+
 int _AssertAlmostEqual(int line, unittest_t *test, double x, double y)
 {
     if(fabs(1-x/y) < EPS)
