@@ -1,7 +1,7 @@
 #ifndef UNITTESTS__
 #define UNITTESTS__
 
-#define EPS 1e-9
+#define EPS 1e-10
 #define AssertEqual(t,x,y) _AssertEqual(__LINE__, t, x, y)
 #define AssertAlmostEqual(t,x,y) _AssertAlmostEqual(__LINE__, t, x, y)
 
