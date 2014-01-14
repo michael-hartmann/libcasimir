@@ -48,7 +48,7 @@ double polyintegrate(double p[], size_t len, int l1, int l2, int m, double scale
     double sign     = copysign(1, scale);
 
     for(i = 0; i < len; i++)
-        value += sign*exp(logscale+gsl_sf_lngamma(1+i)+lnLambda)*p[i];
+        value += sign*exp(logscale+lnLambda+gsl_sf_lngamma(1+i))*p[i];
 
     return value;
 }
@@ -57,8 +57,7 @@ void polym(double p[], int m, double xi)
 {
     size_t k;
 
-    // optimierungspotential
-    for(k = 0; k < 2*m-1; k++)
+    for(k = 0; k < m-1; k++)
         p[k] = 0;
 
     for(k = 0; k < m; k++)
@@ -68,25 +67,27 @@ void polym(double p[], int m, double xi)
 void polyplm(double pl1[], double pl2[], int l1, int l2, int m, double xi)
 {
     int k;
+    double log2xi = log(2*xi);
 
     for(k = 0; k <= l1-m; k++)
-        pl1[k] = exp(gsl_sf_lngamma(1+k+m+l1)-gsl_sf_lngamma(1+l1-k-m)-gsl_sf_lngamma(1+k)-gsl_sf_lngamma(1+k+m)-k*log(2*xi));
+        pl1[k] = exp(gsl_sf_lngamma(1+k+m+l1)-gsl_sf_lngamma(1+l1-k-m)-gsl_sf_lngamma(1+k)-gsl_sf_lngamma(1+k+m)-k*log2xi);
 
     for(k = 0; k <= l2-m; k++)
-        pl2[k] = exp(gsl_sf_lngamma(1+k+m+l2)-gsl_sf_lngamma(1+l2-k-m)-gsl_sf_lngamma(1+k)-gsl_sf_lngamma(1+k+m)-k*log(2*xi));
+        pl2[k] = exp(gsl_sf_lngamma(1+k+m+l2)-gsl_sf_lngamma(1+l2-k-m)-gsl_sf_lngamma(1+k)-gsl_sf_lngamma(1+k+m)-k*log2xi);
 }
 
 void polydplm(double pl1[], double pl2[], int l1, int l2, int m, double xi)
 {
     int k;
+    double log2xi = log(2*xi);
 
     if(m == 0)
     {
         for(k = 1; k <= l1; k++)
-            pl1[k-1] = exp(gsl_sf_lngamma(1+k+l1)-gsl_sf_lngamma(1+k)-gsl_sf_lngamma(1+l1-k)-gsl_sf_lngamma(k)-(k-1)*log(2*xi))/2;
+            pl1[k-1] = exp(gsl_sf_lngamma(1+k+l1)-gsl_sf_lngamma(1+k)-gsl_sf_lngamma(1+l1-k)-gsl_sf_lngamma(k)-(k-1)*log2xi)/2;
 
         for(k = 1; k <= l2; k++)
-            pl2[k-1] = exp(gsl_sf_lngamma(1+k+l2)-gsl_sf_lngamma(1+k)-gsl_sf_lngamma(1+l2-k)-gsl_sf_lngamma(k)-(k-1)*log(2*xi))/2;
+            pl2[k-1] = exp(gsl_sf_lngamma(1+k+l2)-gsl_sf_lngamma(1+k)-gsl_sf_lngamma(1+l2-k)-gsl_sf_lngamma(k)-(k-1)*log2xi)/2;
     }
     else
     {
@@ -95,18 +96,18 @@ void polydplm(double pl1[], double pl2[], int l1, int l2, int m, double xi)
         for(k = 0; k <= l2-m+1; k++)
             pl2[k] = 0;
 
-        pl1[l1+1-m] += (l1-m+1)*exp(gsl_sf_lngamma(2*l1+3)-gsl_sf_lngamma(l1+2)-gsl_sf_lngamma(l1-m+2)-(l1+1-m)*log(2*xi));
+        pl1[l1+1-m] += (l1-m+1)*exp(gsl_sf_lngamma(2*l1+3)-gsl_sf_lngamma(l1+2)-gsl_sf_lngamma(l1-m+2)-(l1+1-m)*log2xi);
         for(k = 0; k <= l1-m; k++)
         {
-            double common = exp(gsl_sf_lngamma(1+k+l1+m)-gsl_sf_lngamma(1+k+m)-gsl_sf_lngamma(1+k)-gsl_sf_lngamma(1+l1-k-m)-k*log(2*xi));
+            double common = exp(gsl_sf_lngamma(1+k+l1+m)-gsl_sf_lngamma(1+k+m)-gsl_sf_lngamma(1+k)-gsl_sf_lngamma(1+l1-k-m)-k*log2xi);
             pl1[k]   += common*(gsl_pow_2(m)+m*(k-l1-1)-2*k*l1-2*k)/(m-l1+k-1);
             pl1[k+1] -= common*(l1+1)/xi;
         }
 
-        pl2[l2+1-m] += (l2-m+1)*exp(gsl_sf_lngamma(2*l2+3)-gsl_sf_lngamma(l2+2)-gsl_sf_lngamma(l2-m+2)-(l2+1-m)*log(2*xi));
+        pl2[l2+1-m] += (l2-m+1)*exp(gsl_sf_lngamma(2*l2+3)-gsl_sf_lngamma(l2+2)-gsl_sf_lngamma(l2-m+2)-(l2+1-m)*log2xi);
         for(k = 0; k <= l2-m; k++)
         {
-            double common = exp(gsl_sf_lngamma(1+k+l2+m)-gsl_sf_lngamma(1+k+m)-gsl_sf_lngamma(1+k)-gsl_sf_lngamma(1+l2-k-m)-k*log(2*xi));
+            double common = exp(gsl_sf_lngamma(1+k+l2+m)-gsl_sf_lngamma(1+k+m)-gsl_sf_lngamma(1+k)-gsl_sf_lngamma(1+l2-k-m)-k*log2xi);
             pl2[k]   += common*(gsl_pow_2(m)+m*(k-l2-1)-2.0*k*l2-2*k)/(m-l2+k-1);
             pl2[k+1] -= common*(l2+1.)/xi;
         }
@@ -172,19 +173,3 @@ int casimir_integrate(casimir_integrals_t *cint, int l1, int l2, int m, double x
 
     return 0;
 }
-
-/*
-int main(int argc, char *argv[])
-{
-    double scale = 1;
-    int l1 = 5;
-    int l2 = 7;
-    int m  = 2;
-    double xi = 2;
-    casimir_integrals_t cint;
-    casimir_integrate(&cint, l1, l2, m, xi, scale);
-
-    printf("A=%g, B=%g, C=%g, D=%g\n", cint.A, cint.B, cint.C, cint.D);
-    return 0;
-}
-*/
