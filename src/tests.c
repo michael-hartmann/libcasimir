@@ -6,6 +6,7 @@
 #include "unittest.h"
 
 int test_Lambda(void);
+int test_Xi(void);
 int test_integration(void);
 
 
@@ -14,13 +15,36 @@ int test_Lambda(void)
     unittest_t test;
     unittest_init(&test, "Lambda", "Test Lambda function for various parameters");
 
-    AssertAlmostEqual(&test, casimir_lnLambda(50,50,0),  -3.921875301871158);
-    AssertAlmostEqual(&test, casimir_lnLambda(50,50,1),  -11.76572394002363);
-    AssertAlmostEqual(&test, casimir_lnLambda(50,50,50), -367.6612508574347);
-    AssertAlmostEqual(&test, casimir_lnLambda(50,20,10), -72.40153130583653);
-    AssertAlmostEqual(&test, casimir_lnLambda(5,7,3),    -12.77235621226475);
-    AssertAlmostEqual(&test, casimir_lnLambda(16,6,4),   -20.7139882421892);
-    AssertAlmostEqual(&test, casimir_lnLambda(100,6,4),  -28.88322376001037);
+    AssertAlmostEqual(&test, casimir_lnLambda(50,50,0),   -3.921875301871158);
+    AssertAlmostEqual(&test, casimir_lnLambda(50,50,1),   -11.76572394002363);
+    AssertAlmostEqual(&test, casimir_lnLambda(50,50,50),  -367.6612508574347);
+    AssertAlmostEqual(&test, casimir_lnLambda(50,20,10),  -72.40153130583653);
+    AssertAlmostEqual(&test, casimir_lnLambda(5,7,3),     -12.77235621226475);
+    AssertAlmostEqual(&test, casimir_lnLambda(16,6,4),    -20.7139882421892);
+    AssertAlmostEqual(&test, casimir_lnLambda(100,6,4),   -28.88322376001037);
+    AssertAlmostEqual(&test, casimir_lnLambda(100,100,0), -4.61013297533022);
+    AssertAlmostEqual(&test, casimir_lnLambda(100,100,50), -461.1524718729809);
+    AssertAlmostEqual(&test, casimir_lnLambda(200,200,0), -5.300808027860489);
+    AssertAlmostEqual(&test, casimir_lnLambda(200,100,70), -690.4926643211061);
+    AssertAlmostEqual(&test, casimir_lnLambda(500,500,0), -6.215606600751781);
+    AssertAlmostEqual(&test, casimir_lnLambda(1000,1000,0), -6.908254904273569);
+
+    return test_results(&test, stderr);
+}
+
+int test_Xi(void)
+{
+    int sign;
+    unittest_t test;
+    unittest_init(&test, "Xi", "Test Xi function for various parameters");
+
+    AssertAlmostEqual(&test, casimir_lnXi(4,3,2,&sign), -0.1101206735572);
+    AssertEqual(&test, sign, -1);
+    AssertAlmostEqual(&test, casimir_lnXi(4,2,2,&sign), -2.394730234408415);
+    AssertEqual(&test, sign, +1);
+    AssertAlmostEqual(&test, casimir_lnXi(100,100,100,&sign), 587.0039751538028);
+    AssertAlmostEqual(&test, casimir_lnXi(100,100,50,&sign),  696.7380895450116);
+    AssertAlmostEqual(&test, casimir_lnXi(17,14,10,&sign),    45.8135805997528);
 
     return test_results(&test, stderr);
 }
@@ -73,6 +97,7 @@ int test_integration(void)
 int main(int argc, char *argv[])
 {
     test_Lambda();
+    test_Xi();
     test_integration();
     
     return 0;
