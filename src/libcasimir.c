@@ -1,5 +1,6 @@
 #define _ISOC99_SOURCE
 #include <math.h>
+#include <assert.h>
 
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_matrix.h>
@@ -9,7 +10,6 @@
 
 #include "la.h"
 #include "logdet1m.h"
-//#include "plm_fast.h"
 #include "integration.h"
 #include "libcasimir.h"
 #include "gausslaguerre.h"
@@ -18,7 +18,7 @@
 #define HBARC 3.161526510740123e-26
 #define KB   1.3806488e-23
 
-#define EPS_PRECISION 1e-10
+#define EPS_PRECISION 1e-16
 
 void handler(const char *reason, const char *file, int line, int gsl_errno);
 
@@ -47,7 +47,7 @@ void handler(const char *reason, const char *file, int line, int gsl_errno)
  */
 double inline casimir_lnLambda(int l1, int l2, int m)
 {
-    return (log((2.*l1+1)*(2*l2+1)/(4*l1*(l1+1)*l2*(l2+1)))+gsl_sf_lngamma(1+l1-m)+gsl_sf_lngamma(1+l2-m)-gsl_sf_lngamma(1+l1+m)-gsl_sf_lngamma(1+l2+m))/2.0;
+    return (log(2.*l1+1)+log(2*l2+1)-log(4)-log(l1)-log(l1+1)-log(l2)-log(l2+1)+lnfac(l1-m)+lnfac(l2-m)-lnfac(l1+m)-lnfac(l2+m))/2.0;
 }
 
 /* casimir_Lambda
@@ -138,13 +138,20 @@ int casimir_logdet1m(gsl_matrix *M, double *logdet, int n, int m, const char *de
  *
  * Restrictions: l1,l2,m integers, l1,l2>=1, l1,l2 >= m
  */
+double casimir_lnXi(int l1, int l2, int m, int *sign)
+{
+    *sign = pow(-1, l2);
+    return (log(2*l1+1)+log(2*l2+1)-lnfac(l1-m)-lnfac(l2-m)-lnfac(l1+m)-lnfac(l2+m)-log(l1)-log(l1+1)-log(l2)-log(l2+1))/2.0 \
+           +lnfac(2*l1)+lnfac(2*l2)+lnfac(l1+l2)-log(4)*(2*l1+l2+1)-lnfac(l1-1)-lnfac(l2-1);
+}
+
 double casimir_Xi(int l1, int l2, int m)
 {
-    return pow(-1, l2) * exp( \
-        (log(2*l1+1)+log(2*l2+1)-lnfac(l1-m)-lnfac(l2-m)-lnfac(l1+m)-lnfac(l2+m)-log(l1)-log(l1+1)-log(l2)-log(l2+1))/2 \
-        +lnfac(2*l1)+lnfac(2*l2)+lnfac(l1+l2)-log(4)*(2*l1+l2+1)-lnfac(l1-1)-lnfac(l2-1)
-    );
+    int sign;
+    double Xi = casimir_lnXi(l1,l2,m,&sign);
+    return copysign(exp(Xi), sign);
 }
+
 
 /*
  * The Casimir class provides methods to calculate the free energy of the
@@ -170,7 +177,7 @@ int casimir_init(casimir_t *self, double RbyScriptL, double T)
 
     self->T          = T;
     self->RbyScriptL = RbyScriptL;
-    self->eps_n      = 1e-20;
+    self->eps        = EPS_PRECISION;
     self->verbose    = 0;
 
     return 0;
@@ -184,14 +191,19 @@ void casimir_set_lmax(casimir_t *self, int lmax)
     self->lmax = lmax;
 }
 
+double casimir_get_lmax(casimir_t *self)
+{
+    return self->lmax;
+}
+
 void casimir_set_verbose(casimir_t *self, int verbose)
 {
     self->verbose = verbose;
 }
 
-void casimir_set_eps_n(casimir_t *self, double eps_n)
+void casimir_set_eps(casimir_t *self, double eps)
 {
-    self->eps_n = eps_n;
+    self->eps = eps;
 }
 
 /*
@@ -205,26 +217,20 @@ void casimir_free(casimir_t *self)
 
 /*
  * For small x<<1 a_l will scale as
- * 
- * a_l(x) ~ a0*(x/2)^(2l+1)
+ *      a_l(x) ~ a0*(x/2)^(2l+1)
  *
- * This method returns the prefactor a0
- */
-double casimir_a0(int l)
-{
-    return M_PI*pow(-1, l)*( 2*gsl_sf_gamma(l+1.5)-l*gsl_sf_gamma(l+0.5) )/( l*pow(gsl_sf_gamma(l+0.5),2)*gsl_sf_gamma(l+1.5) );
-}
-
-/*
  * For small x<<1 b_l will scale as
- * 
- * b_l(x) ~ b0*(x/2)^(2l+1)
+ *      b_l(x) ~ b0*(x/2)^(2l+1)
  *
- * This method returns the prefactor b0
+ * This method returns the prefactor a0, b0. The signs of a0 and b0 are stored
+ * in sign_a0 and sign_b0.
  */
-double casimir_b0(int l)
+void casimir_lna0_lnb0(int l, double *a0, int *sign_a0, double *b0, int *sign_b0)
 {
-    return M_PI*pow(-1, l+1)/( gsl_sf_gamma(l+0.5)*gsl_sf_gamma(l+1.5) );
+    *sign_a0 = pow(-1, l);
+    *sign_b0 = pow(-1, l+1);
+    *b0 = log(M_PI)-gsl_sf_lngamma(l+0.5)-gsl_sf_lngamma(l+1.5);
+    *a0 = *b0+log(1+1.0/l);
 }
 
 /*
@@ -322,51 +328,63 @@ void casimir_mie_cache_free(casimir_mie_cache_t *cache)
 }
 
 /*
- * Calculate free energy. Sum from nmin to nmax.
+ * Calculate free energy.
 
  * Restrictions: nmax integer, nmax >= 0
  */
 double casimir_F(casimir_t *self, int *nmax)
 {
     int n = 0;
-    double sum_n0 = 0, sum = 0;
-    double RbyScriptL = self->RbyScriptL;
+    double F = 0;
+    double eps = self->eps;
+    double TRbyScriptL = self->T*self->RbyScriptL;
 
+    /* So, here we sum up all m and n that contribute to F.
+     * So, what do we do here?
+     *
+     * We want to evaluate
+     *      \sum_{n=0}^\infty \sum{m=0}^{l_max} log(det(1-M)),
+     * where the terms for n=0 and m=0 are weighted with a factor 1/2.
+     */
     while(1)
     {
         casimir_mie_cache_t cache;
-        double sum_n = 0;
         int m;
 
-        casimir_mie_cache_init(&cache, n*self->T*RbyScriptL);
+        casimir_mie_cache_init(&cache, n*TRbyScriptL);
         casimir_mie_cache_alloc(self, &cache, self->lmax);
 
         for(m = 0; m <= self->lmax; m++)
         {
             double value = casimir_logdetD(self,n,m,&cache);
+            fprintf(stderr, "# n=%d, m=%d, %.15g\n", n, m, value);
 
+            /* If F is !=0 and value/F < 1e-16, then F+value = F. The addition
+             * has no effect.
+             * As for larger m value will be even smaller, we can skip the
+             * summation here. 
+             */
+            if(F != 0 && fabs(value/F) < eps)
+                break;
             if(m == 0)
                 value /= 2;
+            if(n == 0)
+                value /= 2;
 
-            sum_n += value;
+            F += value;
         }
 
-        if(n == 0)
-        {
-            sum_n0 = sum_n;
-            sum += sum_n/2;
-        }
-        else
-            sum += sum_n;
-
-        //fprintf(stderr, "# n=%d, %.15g\n", n, sum_n);
         casimir_mie_cache_free(&cache);
 
-        if(sum_n/sum_n0 < self->eps_n)
+        /* If m == 0, all other terms will be even smaller and we can skip the
+         * summation.
+         */
+        if(m == 0)
         {
+            /* get out of here */
             if(nmax != NULL)
                 *nmax = n;
-            return self->T/M_PI*sum;
+            return self->T/M_PI*F;
         }
 
         n++;
@@ -401,10 +419,13 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
         for(l1 = min; l1 <= max; l1++)
             for(l2 = min; l2 <= max; l2++)
             {
-                double XiRL = casimir_Xi(l1,l2,m)*pow(RbyScriptL, 2*l1+1);
+                int sign_a0, sign_b0, sign_xi;
+                double ln_a0, ln_b0;
+                double lnXiRL = casimir_lnXi(l1,l2,m,&sign_xi)+(2*l1+1)*log(RbyScriptL);
+                casimir_lna0_lnb0(l1, &ln_a0, &sign_a0, &ln_b0, &sign_b0);
 
-                gsl_matrix_set(EE, l1-min, l2-min, +casimir_a0(l1)*XiRL);
-                gsl_matrix_set(MM, l1-min, l2-min, -casimir_b0(l1)*XiRL);
+                gsl_matrix_set(EE, l1-min, l2-min, +(sign_xi*sign_a0)*exp(ln_a0+lnXiRL));
+                gsl_matrix_set(MM, l1-min, l2-min, -(sign_xi*sign_b0)*exp(ln_b0+lnXiRL));
             }
     
         casimir_logdet1m(EE, &logdet_EE, n, m, "M_EE");
@@ -417,7 +438,7 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
     }
     else
     {
-        //double nTRbyScriptL = n*self->T*self->RbyScriptL;
+        double nTRbyScriptL = n*self->T*self->RbyScriptL;
         gsl_matrix *M = gsl_matrix_alloc(2*dim, 2*dim);
     
         /* M_EE, -M_EM
@@ -433,9 +454,9 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
                 double al2 = cache->al[l2];
                 double bl2 = cache->bl[l2];
 
-                /*
                 if(nTRbyScriptL < 1)
                 {
+                    /*
                     double scale_l1, scale_l2;
                     scale    = pow(nTRbyScriptL, +l2+l1);
                     scale_l1 = pow(nTRbyScriptL, 2*l1);
@@ -446,6 +467,8 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
                     al2 /= scale_l2;
                     bl2 /= scale_l2;
 
+                    void casimir_lna0_lnb0(int l, double *a0, int *sign_a0, double *b0, int *sign_b0)
+
                     if(fabs(al1) < 1e-250)
                         al1 = casimir_a0(l1)*nTRbyScriptL/pow(2, 2*l1+1);
                     if(fabs(bl1) < 1e-250)
@@ -454,8 +477,8 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
                         al2 = casimir_a0(l2)*nTRbyScriptL/pow(2, 2*l2+1);
                     if(fabs(bl2) < 1e-250)
                         bl2 = casimir_b0(l2)*nTRbyScriptL/pow(2, 2*l2+1);
+                    */
                 }
-                */
 
                 casimir_integrate(&cint, l1, l2, m, 2*n*self->T, scale);
 

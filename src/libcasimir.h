@@ -22,7 +22,9 @@
 #define SLC(l,b,arg) (gsl_sf_bessel_Inu((l)+0.5, (n)*(arg)) * ((l)*gsl_sf_bessel_Knu((l)+0.5, (arg))     +     (arg)*gsl_sf_bessel_Knu((l)-0.5, (arg))))
 #define SLD(l,b,arg) (gsl_sf_bessel_Knu((l)+0.5, (arg))     * ((l)*gsl_sf_bessel_Knu((l)+0.5, (n)*(arg)) - (n)*(arg)*gsl_sf_bessel_Knu((l)-0.5, (arg))))
 
+#define lngamma(x) (gsl_sf_lngamma(x))
 #define lnfac(x) (gsl_sf_lngamma(1+x))
+#define IS_FINITE(x) ((!isnan(x) && !isinf(x)))
 
 typedef struct
 {
@@ -31,7 +33,7 @@ typedef struct
     int lmax;
     int verbose;
 
-    double eps_n;
+    double eps;
 } casimir_t;
 
 typedef struct
@@ -58,6 +60,7 @@ typedef struct
 
 double casimir_lnLambda(int l1, int l2, int m);
 double casimir_Lambda(int l1, int l2, int m);
+double casimir_lnXi(int l1, int l2, int m, int *sign);
 double casimir_Xi(int l1,int l2, int m);
 
 double casimir_F_SI_to_scaled(double F_SI, double ScriptL_SI);
@@ -65,15 +68,14 @@ double casimir_F_scaled_to_SI(double F, double ScriptL_SI);
 double casimir_T_SI_to_scaled(double T_SI, double ScriptL_SI);
 double casimir_T_scaled_to_SI(double T, double ScriptL_SI);
 
-double casimir_a0(int l);
-double casimir_b0(int l);
+void casimir_lna0_lnb0(int l, double *a0, int *sign_a0, double *b0, int *sign_b0);
 
 int casimir_init(casimir_t *self, double RbyScriptL, double T);
 
+double casimir_get_lmax(casimir_t *self);
 void casimir_set_lmax(casimir_t *self, int lmax);
 void casimir_set_limits(casimir_t *self, int limits);
-void casimir_set_eps_n(casimir_t *self, double eps_n);
-void casimir_set_epsrel(casimir_t *self, double epsrel);
+void casimir_set_eps(casimir_t *self, double eps);
 void casimir_set_verbose(casimir_t *self, int verbose);
 void casimir_free(casimir_t *self);
 
