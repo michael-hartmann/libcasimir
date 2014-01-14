@@ -1,3 +1,4 @@
+.PHONY: tests
 all: gcc
 
 gcc:
