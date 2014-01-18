@@ -136,6 +136,7 @@ void parse_range(char param, const char *_optarg, double list[])
 
 int main(int argc, char *argv[])
 {
+    double precision = 1e-10;
     double lT[4] = { 0,0,0,SCALE_LIN };
     double lQ[4] = { 0,0,0,SCALE_LIN };
     double lfac = 5;
@@ -252,6 +253,7 @@ int main(int argc, char *argv[])
             T = iv(lT, iT);
 
             casimir_init(&casimir, Q, T);
+            casimir_set_eps(&casimir, precision);
 
             if(lmax > 0)
                 casimir_set_lmax(&casimir, lmax);
