@@ -3,6 +3,37 @@
 
 #include "sfunc.h"
 
+#if 1
+double bessel_lnInu(const int n, const double x)
+{
+    int k = 3;
+    const double nu = n+0.5;
+
+    #define an(n,nu,x) (2*(nu+n)/x)
+
+    double nom   = an(2,nu,x)+1/an(1,nu,x);
+    double denom = an(2,nu,x);
+    double ratio = (an(1,nu,x)*nom)/denom;
+    double ratio_last = 0;
+    const double lnKnu  = bessel_lnKnu(n,x);
+    const double lnKnup = bessel_lnKnu(n+1,x);
+
+    while(1)
+    {
+        nom   = an(k,nu,x)+1/nom;
+        denom = an(k,nu,x)+1/denom;
+        ratio *= nom/denom;
+
+        if(ratio_last != 0 && fabs(1-ratio/ratio_last) < 1e-10)
+            break;
+
+        ratio_last = ratio;
+        k++;
+    }
+
+    return -log(x*(exp(lnKnup)+1/ratio*exp(lnKnu)));
+}
+#else
 double bessel_lnInu(const int n, const double x)
 {
     double nu = n+0.5;
@@ -24,7 +55,7 @@ double bessel_lnInu(const int n, const double x)
             __float128 term = expq(k*xsqr4-denom);
             value += term;
 
-            if(fabsq(term/value) < 1e-20)
+            if(fabsq(term/value) < 1e-25)
                 break;
 
             k++;
@@ -33,6 +64,7 @@ double bessel_lnInu(const int n, const double x)
         return prefactor+logq(fabsq(value));
     }
 }
+#endif
 
 double bessel_lnKnu(const int nu, const double x)
 {
