@@ -1,11 +1,17 @@
-.PHONY: tests
-all: gcc
+.PHONY: casimir tests
+all: casimir tests
 
-gcc:
-	gcc -O3 -Werror -Wall -Wmissing-prototypes -Wstrict-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wcast-align -Wwrite-strings -Wnested-externs -fshort-enums -fno-common -g la.c logdet1m.c casimir.c integration.c libcasimir.c `pkg-config --cflags --libs gsl` -lm -o casimir
+CC=gcc
+CFLAGS=-Werror -Wall -Wmissing-prototypes -Wstrict-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wcast-align -Wwrite-strings -Wnested-externs -fshort-enums -fno-common -g
+LDFLAGS=-lm -lquadmath
+OPTIMIZATION=3
+SOURCES=sfunc.c integration.c libcasimir.c givens.c
+
+casimir:
+	$(CC) -O$(OPTIMIZATION) $(CFLAGS) $(SOURCES) casimir.c $(LDFLAGS) -o casimir
 
 tests:
-	gcc -O3 -Wall -Wmissing-prototypes -Wstrict-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wcast-align -Wwrite-strings -Wnested-externs -fshort-enums -fno-common -g la.c logdet1m.c integration.c libcasimir.c unittest.c tests.c `pkg-config --cflags --libs gsl` -lm -o tests
+	$(CC) -O$(OPTIMIZATION) $(CFLAGS) $(SOURCES) unittest.c tests.c $(LDFLAGS) -o casimir
 
 clean:
-	rm -f casimir
+	rm -f casimir tests
