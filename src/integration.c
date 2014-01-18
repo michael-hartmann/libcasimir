@@ -1,8 +1,10 @@
+#include <complex.h>
 #include <math.h>
-#include <gsl/gsl_math.h>
-#include <gsl/gsl_sf.h>
+#include <stdio.h>
 #include <string.h>
+#include <assert.h>
 
+#include "sfunc.h"
 #include "libcasimir.h"
 #include "integration.h"
 
@@ -21,7 +23,7 @@ void polyprint(double p[], size_t len)
 
 static double inline binom(int n, int k)
 {
-    return exp(gsl_sf_lngamma(1+n)-gsl_sf_lngamma(1+k)-gsl_sf_lngamma(1+n-k));
+    return exp(lngamma(1+n)-lngamma(1+k)-lngamma(1+n-k));
 }
 
 /*
@@ -48,9 +50,23 @@ double polyintegrate(double p[], size_t len, int l1, int l2, int m, double scale
     double sign     = copysign(1, scale);
 
     for(i = 0; i < len; i++)
-        value += sign*exp(logscale+lnLambda+gsl_sf_lngamma(1+i))*p[i];
+        value += sign*exp(logscale+lnLambda+lngamma(1+i))*p[i];
 
     return value;
+}
+
+double log_polyintegrate(double p[], size_t len, int l1, int l2, int m, int *sign)
+{
+    size_t i;
+    double value = 0;
+    double lnLambda = casimir_lnLambda(l1, l2, m);
+    double lnfac_max = lnfac(len-1);
+
+    for(i = 0; i < len; i++)
+        value += exp(lnfac(i)-lnfac_max)*p[i];
+
+    *sign = copysign(1, value);
+    return lnLambda+lnfac_max+log(fabs(value));
 }
 
 void polym(double p[], int m, double xi)
@@ -70,10 +86,10 @@ void polyplm(double pl1[], double pl2[], int l1, int l2, int m, double xi)
     double log2xi = log(2*xi);
 
     for(k = 0; k <= l1-m; k++)
-        pl1[k] = exp(gsl_sf_lngamma(1+k+m+l1)-gsl_sf_lngamma(1+l1-k-m)-gsl_sf_lngamma(1+k)-gsl_sf_lngamma(1+k+m)-k*log2xi);
+        pl1[k] = exp(lngamma(1+k+m+l1)-lngamma(1+l1-k-m)-lngamma(1+k)-lngamma(1+k+m)-k*log2xi);
 
     for(k = 0; k <= l2-m; k++)
-        pl2[k] = exp(gsl_sf_lngamma(1+k+m+l2)-gsl_sf_lngamma(1+l2-k-m)-gsl_sf_lngamma(1+k)-gsl_sf_lngamma(1+k+m)-k*log2xi);
+        pl2[k] = exp(lngamma(1+k+m+l2)-lngamma(1+l2-k-m)-lngamma(1+k)-lngamma(1+k+m)-k*log2xi);
 }
 
 void polydplm(double pl1[], double pl2[], int l1, int l2, int m, double xi)
@@ -84,10 +100,10 @@ void polydplm(double pl1[], double pl2[], int l1, int l2, int m, double xi)
     if(m == 0)
     {
         for(k = 1; k <= l1; k++)
-            pl1[k-1] = exp(gsl_sf_lngamma(1+k+l1)-gsl_sf_lngamma(1+k)-gsl_sf_lngamma(1+l1-k)-gsl_sf_lngamma(k)-(k-1)*log2xi)/2;
+            pl1[k-1] = exp(lngamma(1+k+l1)-lngamma(1+k)-lngamma(1+l1-k)-lngamma(k)-(k-1)*log2xi)/2;
 
         for(k = 1; k <= l2; k++)
-            pl2[k-1] = exp(gsl_sf_lngamma(1+k+l2)-gsl_sf_lngamma(1+k)-gsl_sf_lngamma(1+l2-k)-gsl_sf_lngamma(k)-(k-1)*log2xi)/2;
+            pl2[k-1] = exp(lngamma(1+k+l2)-lngamma(1+k)-lngamma(1+l2-k)-lngamma(k)-(k-1)*log2xi)/2;
     }
     else
     {
@@ -96,19 +112,19 @@ void polydplm(double pl1[], double pl2[], int l1, int l2, int m, double xi)
         for(k = 0; k <= l2-m+1; k++)
             pl2[k] = 0;
 
-        pl1[l1+1-m] += (l1-m+1)*exp(gsl_sf_lngamma(2*l1+3)-gsl_sf_lngamma(l1+2)-gsl_sf_lngamma(l1-m+2)-(l1+1-m)*log2xi);
+        pl1[l1+1-m] += (l1-m+1)*exp(lngamma(2*l1+3)-lngamma(l1+2)-lngamma(l1-m+2)-(l1+1-m)*log2xi);
         for(k = 0; k <= l1-m; k++)
         {
-            double common = exp(gsl_sf_lngamma(1+k+l1+m)-gsl_sf_lngamma(1+k+m)-gsl_sf_lngamma(1+k)-gsl_sf_lngamma(1+l1-k-m)-k*log2xi);
-            pl1[k]   += common*(gsl_pow_2(m)+m*(k-l1-1)-2*k*l1-2*k)/(m-l1+k-1);
+            double common = exp(lngamma(1+k+l1+m)-lngamma(1+k+m)-lngamma(1+k)-lngamma(1+l1-k-m)-k*log2xi);
+            pl1[k]   += common*(pow_2(m)+m*(k-l1-1)-2*k*l1-2*k)/(m-l1+k-1);
             pl1[k+1] -= common*(l1+1)/xi;
         }
 
-        pl2[l2+1-m] += (l2-m+1)*exp(gsl_sf_lngamma(2*l2+3)-gsl_sf_lngamma(l2+2)-gsl_sf_lngamma(l2-m+2)-(l2+1-m)*log2xi);
+        pl2[l2+1-m] += (l2-m+1)*exp(lngamma(2*l2+3)-lngamma(l2+2)-lngamma(l2-m+2)-(l2+1-m)*log2xi);
         for(k = 0; k <= l2-m; k++)
         {
-            double common = exp(gsl_sf_lngamma(1+k+l2+m)-gsl_sf_lngamma(1+k+m)-gsl_sf_lngamma(1+k)-gsl_sf_lngamma(1+l2-k-m)-k*log2xi);
-            pl2[k]   += common*(gsl_pow_2(m)+m*(k-l2-1)-2.0*k*l2-2*k)/(m-l2+k-1);
+            double common = exp(lngamma(1+k+l2+m)-lngamma(1+k+m)-lngamma(1+k)-lngamma(1+l2-k-m)-k*log2xi);
+            pl2[k]   += common*(pow_2(m)+m*(k-l2-1)-2.0*k*l2-2*k)/(m-l2+k-1);
             pl2[k+1] -= common*(l2+1.)/xi;
         }
     }
@@ -117,7 +133,7 @@ void polydplm(double pl1[], double pl2[], int l1, int l2, int m, double xi)
 /*
  * Returns the integrals A,B,C,D for l1,l2,m,xi and p=TE,TM
  */
-int casimir_integrate(casimir_integrals_t *cint, int l1, int l2, int m, double xi, double scale)
+int casimir_integrate(casimir_integrals_t *cint, int l1, int l2, int m, double xi)
 {
     double pdpl1m[l1-m+2];
     double pdpl2m[l2-m+2];
@@ -130,18 +146,20 @@ int casimir_integrate(casimir_integrals_t *cint, int l1, int l2, int m, double x
         double interim[l1+2];
         double result[l1+l2+1];
 
-        cint->A = cint->B = cint->C = 0;
+        cint->logA  = cint->logC  = cint->logD  = -INFINITY;
+        cint->signA = cint->signC = cint->signD = 0;
 
         polym(pm, 2, xi);
 
         polymult(pm, 3, pdpl1m, l1, interim);
         polymult(interim, l1+2, pdpl2m, l2, result);
 
-        cint->B = -pow(-1, l2)*exp(-xi)/gsl_pow_3(xi)*polyintegrate(result, l1+l2+1, l1,l2,m,scale);
+        cint->logB = -xi-3*log(xi)+log_polyintegrate(result, l1+l2+1, l1,l2,m,&cint->signB);
+        cint->signB *= pow(-1, l2+1);
     }
     else
     {
-        double prefactor = pow(-1,l2)*exp(-xi)*xi/pow(2*xi, 2*m);
+        double logprefactor = -xi+log(xi)-2*m*log(xi)-m*log(4);
         double pm[2*m-1];
         double ppl1m[l1-m+1];
         double ppl2m[l2-m+1];
@@ -165,10 +183,17 @@ int casimir_integrate(casimir_integrals_t *cint, int l1, int l2, int m, double x
         polymult(pmpdpl1m, sizeof(pmpdpl1m)/sizeof(double), ppl2m,  sizeof(ppl2m)/sizeof(double),  pmpdpl1mppl2m);
         polymult(pmpdpl1m, sizeof(pmpdpl1m)/sizeof(double), pdpl2m, sizeof(pdpl2m)/sizeof(double), pmpdpl1mpdpl2m);
 
-        cint->A = +gsl_pow_2(m)*prefactor*polyintegrate(pmppl1mppl2m,   sizeof(pmppl1mppl2m)/sizeof(double),   l1,l2,m,scale);
-        cint->B =              -prefactor*polyintegrate(pmpdpl1mpdpl2m, sizeof(pmpdpl1mpdpl2m)/sizeof(double), l1,l2,m,scale);
-        cint->C =            -m*prefactor*polyintegrate(pmppl1mpdpl2m,  sizeof(pmppl1mpdpl2m)/sizeof(double),  l1,l2,m,scale);
-        cint->D =            +m*prefactor*polyintegrate(pmpdpl1mppl2m,  sizeof(pmpdpl1mppl2m)/sizeof(double),  l1,l2,m,scale);
+        cint->logA = 2*log(m)+logprefactor+log_polyintegrate(pmppl1mppl2m,   sizeof(pmppl1mppl2m)/sizeof(double),   l1,l2,m,&cint->signA);
+        cint->signA *= pow(-1,l2);
+
+        cint->logB = logprefactor+log_polyintegrate(pmpdpl1mpdpl2m, sizeof(pmpdpl1mpdpl2m)/sizeof(double), l1,l2,m,&cint->signB);
+        cint->signB *= pow(-1,l2+1);
+        
+        cint->logC = log(m)+logprefactor+log_polyintegrate(pmppl1mpdpl2m,  sizeof(pmppl1mpdpl2m)/sizeof(double),  l1,l2,m,&cint->signC);
+        cint->signC *= pow(-1,l2+1);
+        
+        cint->logD = log(m)+logprefactor+log_polyintegrate(pmpdpl1mppl2m,  sizeof(pmpdpl1mppl2m)/sizeof(double),  l1,l2,m,&cint->signD);
+        cint->signD *= pow(-1,l2);
     }
 
     return 0;
