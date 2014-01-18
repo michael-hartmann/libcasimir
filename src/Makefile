@@ -11,7 +11,7 @@ casimir:
 	$(CC) -O$(OPTIMIZATION) $(CFLAGS) $(SOURCES) casimir.c $(LDFLAGS) -o casimir
 
 tests:
-	$(CC) -O$(OPTIMIZATION) $(CFLAGS) $(SOURCES) unittest.c tests.c $(LDFLAGS) -o casimir
+	$(CC) -O$(OPTIMIZATION) $(CFLAGS) $(SOURCES) unittest.c tests.c $(LDFLAGS) -o tests
 
 clean:
 	rm -f casimir tests
