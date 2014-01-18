@@ -31,8 +31,17 @@ void la_matrix_info(FILE *stream, gsl_matrix *M)
 {
     int i,j;
     int zeros = 0, nans = 0, infs = 0;
-    double min, max;
+    double min, max, diag_min, diag_max;
     min = max = fabs(gsl_matrix_get(M, 0, 0));
+    diag_min = min;
+    diag_max = max;
+
+    for(i = 0; i < M->size1; i++)
+    {
+        double elem = fabs(gsl_matrix_get(M, i,i));
+        diag_min = MIN(diag_min, elem);
+        diag_max = MAX(diag_max, elem);
+    }
 
     for(i = 0; i < M->size1; i++)
         for(j = 0; j < M->size2; j++)
@@ -48,7 +57,8 @@ void la_matrix_info(FILE *stream, gsl_matrix *M)
              max = MAX(max, elem);
          }
 
+    //printf("diag_diff=%g\n", log(fabs(diag_max))-log(fabs(diag_min)));
     if(zeros || nans || infs)
-    fprintf(stream, "zeros=%d, nans=%d, infs=%d, min=%g, max=%g\n", zeros, nans, infs, min, max);
+        fprintf(stream, "zeros=%d, nans=%d, infs=%d, min=%g, max=%g, diag_min=%g, diag_max=%g, diff=%g\n", zeros, nans, infs, min, max, diag_min, diag_max, log10(fabs(diag_max))-log10(fabs(diag_min)));
 }
 
