@@ -1,12 +1,6 @@
 #ifndef __CASIMIR_H
 #define __CASIMIR_H
 
-#include <gsl/gsl_blas.h>
-#include <gsl/gsl_linalg.h>
-#include <gsl/gsl_eigen.h>
-#include <gsl/gsl_matrix.h>
-#include <gsl/gsl_integration.h>
-
 #define TE 0
 #define TM 1
 
@@ -17,20 +11,12 @@
 #define MAX(a,b) (((a)>(b))?(a):(b))
 #endif
 
-#define SLA(l,n,arg) (gsl_sf_bessel_Inu((l)+0.5, (n)*(arg)) * ((l)*gsl_sf_bessel_Inu((l)+0.5, (arg))     -     (arg)*gsl_sf_bessel_Inu((l)-0.5, (arg))))
-#define SLB(l,b,arg) (gsl_sf_bessel_Inu((l)+0.5, (arg))     * ((l)*gsl_sf_bessel_Inu((l)+0.5, (n)*(arg)) - (n)*(arg)*gsl_sf_bessel_Inu((l)-0.5, (arg))))
-#define SLC(l,b,arg) (gsl_sf_bessel_Inu((l)+0.5, (n)*(arg)) * ((l)*gsl_sf_bessel_Knu((l)+0.5, (arg))     +     (arg)*gsl_sf_bessel_Knu((l)-0.5, (arg))))
-#define SLD(l,b,arg) (gsl_sf_bessel_Knu((l)+0.5, (arg))     * ((l)*gsl_sf_bessel_Knu((l)+0.5, (n)*(arg)) - (n)*(arg)*gsl_sf_bessel_Knu((l)-0.5, (arg))))
-
-#define IS_FINITE(x) ((!isnan(x) && !isinf(x)))
-
-// abbrevations for functions
-#define lngamma(x) (gsl_sf_lngamma(x))
-#define lnfac(x) (gsl_sf_lngamma(1+x))
+/*
 #define bessel_Iv(n,x)   (gsl_sf_bessel_Inu(n,x))
 #define bessel_lnIv(n,x) log(gsl_sf_bessel_Inu(n,x))
 #define bessel_Kv(n,x)   (gsl_sf_bessel_Knu(n,x))
 #define bessel_lnKv(n,x) (gsl_sf_bessel_lnKnu(n,x))
+*/
 
 typedef struct
 {
@@ -45,7 +31,9 @@ typedef struct
 typedef struct
 {
     double *al;
+    int *al_sign;
     double *bl;
+    int *bl_sign;
     int lmax;
     double arg;
 } casimir_mie_cache_t;
@@ -61,7 +49,8 @@ typedef struct
 
 typedef struct
 {
-    double A,B,C,D;
+    double logA,logB,logC,logD;
+    int signA, signB, signC, signD;
 } casimir_integrals_t;
 
 double casimir_lnLambda(int l1, int l2, int m);
@@ -104,7 +93,7 @@ int casimir_mie_cache_alloc(casimir_t *self, casimir_mie_cache_t *cache, int lma
 void casimir_mie_cache_free(casimir_mie_cache_t *cache);
 
 double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache);
-int casimir_logdet1m(gsl_matrix *M, double *logdet, int n, int m, const char *desc);
+//int casimir_logdet1m(gsl_matrix *M, double *logdet, int n, int m, const char *desc);
 
 double casimir_logdetD_approx(casimir_t *self, int n, int m, casimir_mie_cache_t *cache);
 #endif
