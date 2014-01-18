@@ -11,12 +11,71 @@ int test_Lambda(void);
 int test_Xi(void);
 int test_integration(void);
 int test_mie(void);
-int test_bessel(void);
+int test_besselI(void);
+int test_besselK(void);
 
-int test_bessel(void)
+int test_besselI(void)
 {
     unittest_t test;
-    unittest_init(&test, "Bessel function", "Test modified Bessel function I_nu and K_nu");
+    unittest_init(&test, "Bessel function", "Test modified Bessel function I_nu");
+
+    AssertAlmostEqual(&test, bessel_lnInu(0,1e-6), -7.1335466316266976);
+    AssertAlmostEqual(&test, bessel_lnInu(0,1e-5), -5.9822540851131745);
+    //AssertAlmostEqual(&test, bessel_lnInu(0,1e-4), -4.830961536966152);
+    AssertAlmostEqual(&test, bessel_lnInu(0,1e-3), -3.6796688254691348);
+    AssertAlmostEqual(&test, bessel_lnInu(0,1e-2), -2.528359779027661);
+    AssertAlmostEqual(&test, bessel_lnInu(0,1e-1), -1.3754177876781697);
+    AssertAlmostEqual(&test, bessel_lnInu(0,1e0),  -0.06435199107353172);
+    AssertAlmostEqual(&test, bessel_lnInu(0,5e0),  3.2762971096179068);
+    AssertAlmostEqual(&test, bessel_lnInu(0,1e1),  7.9297689182371505);
+    AssertAlmostEqual(&test, bessel_lnInu(0,1e2),  96.77847637380128);
+    /*
+    AssertAlmostEqual(&test, bessel_lnInu(0,1e3),  
+    AssertAlmostEqual(&test, bessel_lnInu(0,1e4),  
+    AssertAlmostEqual(&test, bessel_lnInu(0,1e5),  
+    AssertAlmostEqual(&test, bessel_lnInu(0,1e6),  
+
+    AssertAlmostEqual(&test, bessel_lnKnu(1,1e-6),
+    AssertAlmostEqual(&test, bessel_lnKnu(1,1),
+    AssertAlmostEqual(&test, bessel_lnKnu(1,3),
+    AssertAlmostEqual(&test, bessel_lnKnu(1,1e6),
+
+    AssertAlmostEqual(&test, bessel_lnKnu(2,1e-6),
+    AssertAlmostEqual(&test, bessel_lnKnu(2,1),
+    AssertAlmostEqual(&test, bessel_lnKnu(2,5),
+    AssertAlmostEqual(&test, bessel_lnKnu(2,1e6),
+
+    AssertAlmostEqual(&test, bessel_lnKnu(3,1),
+
+    AssertAlmostEqual(&test, bessel_lnKnu(23,1e-6),
+    AssertAlmostEqual(&test, bessel_lnKnu(23,5),
+    AssertAlmostEqual(&test, bessel_lnKnu(23,1e6),
+
+    AssertAlmostEqual(&test, bessel_lnKnu(119,1e-6),
+    AssertAlmostEqual(&test, bessel_lnKnu(119,0.5),
+    AssertAlmostEqual(&test, bessel_lnKnu(119,3),
+    AssertAlmostEqual(&test, bessel_lnKnu(119,30),
+    AssertAlmostEqual(&test, bessel_lnKnu(119,300),
+
+    AssertAlmostEqual(&test, bessel_lnKnu(702,1e-4),
+    AssertAlmostEqual(&test, bessel_lnKnu(702,3),
+    AssertAlmostEqual(&test, bessel_lnKnu(702,1234),
+    AssertAlmostEqual(&test, bessel_lnKnu(702,12345),
+
+    //AssertAlmostEqual(&test, bessel_lnKnu(1000,1e-3),
+    //AssertAlmostEqual(&test, bessel_lnKnu(1000,1e-2),
+    AssertAlmostEqual(&test, bessel_lnKnu(1000,1e-1),
+    AssertAlmostEqual(&test, bessel_lnKnu(1000,3),
+    AssertAlmostEqual(&test, bessel_lnKnu(1000,1e3),
+    */
+
+    return test_results(&test, stderr);
+}
+
+int test_besselK(void)
+{
+    unittest_t test;
+    unittest_init(&test, "Bessel function", "Test modified Bessel function K_nu");
 
     AssertAlmostEqual(&test, bessel_lnKnu(0,1e-6), 7.133545631626864);
     AssertAlmostEqual(&test, bessel_lnKnu(0,1e-5), 5.9822440851298415);
@@ -209,7 +268,8 @@ int main(int argc, char *argv[])
     test_Xi();
     test_integration();
     test_mie();
-    test_bessel();
+    test_besselI();
+    test_besselK();
     
     return 0;
 }
