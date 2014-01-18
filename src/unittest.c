@@ -45,7 +45,7 @@ int _AssertAlmostEqual(int line, unittest_t *test, double x, double y)
     else
     {
         test->failed++;
-        fprintf(stderr, "FAILED: %g != %g on line %d\n", x, y, line);
+        fprintf(stderr, "FAILED: %.20g != %.20g on line %d\n", x, y, line);
         return 1;
     }
 }
