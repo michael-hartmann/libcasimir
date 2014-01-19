@@ -31,15 +31,6 @@ double inline casimir_lnLambda(int l1, int l2, int m)
     return (log(2.*l1+1)+log(2*l2+1)-log(4)-log(l1)-log(l1+1)-log(l2)-log(l2+1)+lnfac(l1-m)+lnfac(l2-m)-lnfac(l1+m)-lnfac(l2+m))/2.0;
 }
 
-/* casimir_Lambda
- * This function returns the Λ prefactor for given l1,l2,m.
- *
- * See casimir_lnLambda
- */
-double inline casimir_Lambda(int l1, int l2, int m)
-{
-    return exp(casimir_lnLambda(l1, l2, m));
-}
 
 /*
  * Convert the Free Energy F in SI units to Free Energy F in units of Script/(hbar*c)
@@ -86,13 +77,6 @@ double casimir_lnXi(int l1, int l2, int m, int *sign)
            +lnfac(2*l1)+lnfac(2*l2)+lnfac(l1+l2)-log(4)*(2*l1+l2+1)-lnfac(l1-1)-lnfac(l2-1);
 }
 
-double casimir_Xi(int l1, int l2, int m)
-{
-    int sign;
-    double Xi = casimir_lnXi(l1,l2,m,&sign);
-    return copysign(exp(Xi), sign);
-}
-
 
 /*
  * The Casimir class provides methods to calculate the free energy of the
@@ -116,18 +100,19 @@ int casimir_init(casimir_t *self, double RbyScriptL, double T)
 
     self->T          = T;
     self->RbyScriptL = RbyScriptL;
-    self->eps        = EPS_PRECISION;
+    self->precision  = EPS_PRECISION;
     self->verbose    = 0;
 
     return 0;
 }
 
 /*
- * Set maximum value for l
+ * Set maximum value for l. lmax must be positive.
  */
 void casimir_set_lmax(casimir_t *self, int lmax)
 {
-    self->lmax = lmax;
+    if(lmax > 0)
+        self->lmax = lmax;
 }
 
 double casimir_get_lmax(casimir_t *self)
@@ -137,12 +122,13 @@ double casimir_get_lmax(casimir_t *self)
 
 void casimir_set_verbose(casimir_t *self, int verbose)
 {
-    self->verbose = verbose;
+    self->verbose = verbose ? 1 : 0;
 }
 
-void casimir_set_eps(casimir_t *self, double eps)
+void casimir_set_precision(casimir_t *self, double precision)
 {
-    self->eps = eps;
+    if(precision > 0)
+        self->precision = precision;
 }
 
 /*
@@ -296,7 +282,7 @@ double casimir_F(casimir_t *self, int *nmax)
 {
     int n = 0;
     double F = 0;
-    double eps = self->eps;
+    double precision = self->precision;
     double TRbyScriptL = self->T*self->RbyScriptL;
 
     /* So, here we sum up all m and n that contribute to F.
@@ -324,7 +310,7 @@ double casimir_F(casimir_t *self, int *nmax)
              * As for larger m value will be even smaller, we can skip the
              * summation here. 
              */
-            if(F != 0 && fabs(value/F) < eps)
+            if(F != 0 && fabs(value/F) < precision)
             {
                 F += value;
                 break;

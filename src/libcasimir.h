@@ -1,5 +1,5 @@
-#ifndef __CASIMIR_H
-#define __CASIMIR_H
+#ifndef __LIBCASIMIR_H
+#define __LIBCASIMIR_H
 
 #ifndef MIN
 #define MIN(a,b) (((a)<(b))?(a):(b))
@@ -14,8 +14,7 @@ typedef struct
     double T;
     int lmax;
     int verbose;
-
-    double eps;
+    double precision;
 } casimir_t;
 
 typedef struct
@@ -44,9 +43,7 @@ typedef struct
 } casimir_integrals_t;
 
 double casimir_lnLambda(int l1, int l2, int m);
-double casimir_Lambda(int l1, int l2, int m);
 double casimir_lnXi(int l1, int l2, int m, int *sign);
-double casimir_Xi(int l1,int l2, int m);
 
 double casimir_F_SI_to_scaled(double F_SI, double ScriptL_SI);
 double casimir_F_scaled_to_SI(double F, double ScriptL_SI);
@@ -60,7 +57,7 @@ int casimir_init(casimir_t *self, double RbyScriptL, double T);
 double casimir_get_lmax(casimir_t *self);
 void casimir_set_lmax(casimir_t *self, int lmax);
 void casimir_set_limits(casimir_t *self, int limits);
-void casimir_set_eps(casimir_t *self, double eps);
+void casimir_set_precision(casimir_t *self, double precision);
 void casimir_set_verbose(casimir_t *self, int verbose);
 void casimir_free(casimir_t *self);
 
