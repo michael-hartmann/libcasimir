@@ -235,17 +235,18 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    printf("# precision=%g, ", precision);
-    printf("# lfac=%g, ", lfac);
+    printf("# precision=%g\n", precision);
+    printf("# lfac=%g\n", lfac);
     if(lQ[2] == 1)
-        printf("L=%g, ", lQ[0]);
+        printf("# L=%g\n", lQ[0]);
     else
-        printf("L=%g...%g (%d), ", lQ[0],lQ[1],(int)lQ[2]);
+        printf("# L=%g...%g (%d)\n", lQ[0],lQ[1],(int)lQ[2]);
     if(lT[2] == 1)
-        printf("T=%g\n", lT[0]);
+        printf("# T=%g\n", lT[0]);
     else
-        printf("T=%g...%g (%d)\n", lT[0],lT[1],(int)lT[2]);
+        printf("# T=%g...%g (%d)\n", lT[0],lT[1],(int)lT[2]);
 
+    printf("#\n");
     printf("# R/(L+R), T, F, lmax, nmax, time\n");
 
     i = 0;
