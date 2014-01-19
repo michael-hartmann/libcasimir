@@ -16,5 +16,6 @@
 */
 double bessel_lnInu(const int n, const double x);
 double bessel_lnKnu(const int n, const double x);
+double bessel_lnInuKnu(const int nu, const double x, double *lnInu, double *lnKnu);
 
 #endif
