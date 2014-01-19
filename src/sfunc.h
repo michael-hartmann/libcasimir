@@ -1,7 +1,7 @@
 #ifndef __SFUNC_H
 #define __SFUNC_H
 
-#define M_LOGPIE 1.1447298858494002
+#define M_LOGPI 1.1447298858494002
 
 // abbrevations for functions
 #define lngamma(x) (lgamma(x))

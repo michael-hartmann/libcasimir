@@ -69,7 +69,7 @@ double bessel_lnInu(const int n, const double x)
 double bessel_lnKnu(const int nu, const double x)
 {
     int l;
-    double prefactor = -x+0.5*(M_LOGPIE-M_LN2-log(x));
+    double prefactor = -x+0.5*(M_LOGPI-M_LN2-log(x));
     __float128 Km = 1;
     __float128 Kp = 1+1./x;
 

@@ -169,7 +169,7 @@ void casimir_lna0_lnb0(int l, double *a0, int *sign_a0, double *b0, int *sign_b0
 {
     *sign_a0 = pow(-1, l);
     *sign_b0 = pow(-1, l+1);
-    *b0 = log(M_PI)-lngamma(l+0.5)-lngamma(l+1.5);
+    *b0 = M_LOGPI-lngamma(l+0.5)-lngamma(l+1.5);
     *a0 = *b0+log1p(1.0/l);
 }
 
@@ -182,7 +182,7 @@ double casimir_lna(int l, double arg, int *sign)
     double lnIlm = bessel_lnInu(l-1, arg);
     double lnIlp = bessel_lnInu(l,   arg);
 
-    double prefactor = log(M_PI)-log(2)+lnIlp-lnKlp;
+    double prefactor = M_LOGPI-log(2)+lnIlp-lnKlp;
     double lnfrac = log(arg)-log(l);
 
     *sign = pow(-1, l+1);
@@ -220,7 +220,7 @@ double casimir_lna(int l, double arg, int *sign)
 double casimir_lnb(int l, double arg, int *sign)
 {
     *sign = pow(-1, l+1);
-    return log(M_PI)-M_LN2+bessel_lnInu(l,arg)-bessel_lnKnu(l,arg);
+    return M_LOGPI-M_LN2+bessel_lnInu(l,arg)-bessel_lnKnu(l,arg);
 }
 
 /*
@@ -541,11 +541,6 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
                     matrix_set(MM, i,j, matrix_get(M, dim+i,dim+j));
                 }
 
-            /*
-            casimir_logdet1m(EE, &logdet_EE, n, m, "EE");
-            casimir_logdet1m(MM, &logdet_MM, n, m, "MM");
-            */
-
             logdet = matrix_logdet(EE)+matrix_logdet(MM);
 
             matrix_free(EE);
@@ -553,7 +548,6 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
         }
         else
             logdet = matrix_logdet(M);
-            //casimir_logdet1m(M, &logdet, n, m, "M");
 
 
         matrix_free(M);
