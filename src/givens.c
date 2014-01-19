@@ -5,6 +5,7 @@
 #include "libcasimir.h"
 #include "givens.h"
 
+/* Allocate space for a quadratic matrix of size x size. */
 matrix_t *matrix_alloc(size_t size)
 {
     matrix_t *matrix = malloc(sizeof(matrix_t));
@@ -22,6 +23,7 @@ matrix_t *matrix_alloc(size_t size)
     return matrix;
 }
 
+/*
 void matrix_fprintf(const matrix_t *m, FILE *stream, const char *format, const char *lines, const char *rows)
 {
     size_t i, j;
@@ -37,7 +39,9 @@ void matrix_fprintf(const matrix_t *m, FILE *stream, const char *format, const c
         fprintf(stream, "%s", lines);
     }
 }
+*/
 
+/* Free space of matrix m */
 void matrix_free(matrix_t *m)
 {
     if(m->M != NULL)
@@ -48,16 +52,19 @@ void matrix_free(matrix_t *m)
     free(m);
 }
 
+/* get matrix element m_(i,j) */
 __float inline matrix_get(const matrix_t *m, size_t i, size_t j)
 {
     return m->M[i*m->size+j];
 }
 
+/* set matrix element m_(i,j) to x */
 void inline matrix_set(matrix_t *m, size_t i, size_t j, __float x)
 {
     m->M[i*m->size+j] = x;
 }
 
+/* calculate log(det(M)) */
 __float matrix_logdet(matrix_t *M)
 {
     size_t i, j, n;
@@ -118,6 +125,7 @@ __float matrix_logdet(matrix_t *M)
     return det;
 }
 
+/*
 void matrix_info(FILE *stream, matrix_t *M)
 {
     int i,j;
@@ -160,3 +168,4 @@ void matrix_info(FILE *stream, matrix_t *M)
     quadmath_snprintf(str_diff_diag, sizeof(str_diff_diag), "%+Qg", (__log(diag_max)-__log(diag_min))/__log(10));
     fprintf(stream, "zeros=%d, nans=%d, infs=%d, min=%s, max=%s, diag_min=%s, diag_max=%s, diff=%s\n", zeros, nans, infs, str_min, str_max, str_diag_min, str_diag_max, str_diff_diag);
 }
+*/
