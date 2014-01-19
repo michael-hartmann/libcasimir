@@ -1,22 +1,12 @@
 #ifndef __CASIMIR_H
 #define __CASIMIR_H
 
-#define TE 0
-#define TM 1
-
 #ifndef MIN
 #define MIN(a,b) (((a)<(b))?(a):(b))
 #endif
 #ifndef MAX
 #define MAX(a,b) (((a)>(b))?(a):(b))
 #endif
-
-/*
-#define bessel_Iv(n,x)   (gsl_sf_bessel_Inu(n,x))
-#define bessel_lnIv(n,x) log(gsl_sf_bessel_Inu(n,x))
-#define bessel_Kv(n,x)   (gsl_sf_bessel_Knu(n,x))
-#define bessel_lnKv(n,x) (gsl_sf_bessel_lnKnu(n,x))
-*/
 
 typedef struct
 {
@@ -74,17 +64,8 @@ void casimir_set_eps(casimir_t *self, double eps);
 void casimir_set_verbose(casimir_t *self, int verbose);
 void casimir_free(casimir_t *self);
 
-double casimir_a(casimir_t *self, int l, double arg);
-double casimir_b(casimir_t *self, int l, double arg);
-
 double casimir_lna(int l, double arg, int *sign);
 double casimir_lnb(int l, double arg, int *sign);
-
-double casimir_epsilon(casimir_t *self, double xi);
-double casimir_rTE(casimir_t *self, double x, double xi);
-double casimir_rTM(casimir_t *self, double x, double xi);
-
-void casimir_integrands_vec(double x, void *params, double *vec, int len);
 
 double casimir_F(casimir_t *self, int *nmax);
 
@@ -93,7 +74,5 @@ int casimir_mie_cache_alloc(casimir_t *self, casimir_mie_cache_t *cache, int lma
 void casimir_mie_cache_free(casimir_mie_cache_t *cache);
 
 double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache);
-//int casimir_logdet1m(gsl_matrix *M, double *logdet, int n, int m, const char *desc);
 
-double casimir_logdetD_approx(casimir_t *self, int n, int m, casimir_mie_cache_t *cache);
 #endif

@@ -224,22 +224,6 @@ double casimir_lnb(int l, double arg, int *sign)
 }
 
 /*
- * Returns the TE reflection coefficient for the plate
- */
-inline double casimir_rTE(casimir_t *self, double x, double arg)
-{
-    return -1;
-}
-
-/*
- * Returns the TM reflection coefficient for the plate
- */
-double casimir_rTM(casimir_t *self, double x, double xi)
-{
-    return +1;
-}
-
-/*
  * Initialize the mie cache.
  * This function must be called before any call to casimir_mie_cache_alloc
  */
