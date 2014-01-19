@@ -8,6 +8,7 @@
 #include "libcasimir.h"
 #include "integration.h"
 
+/*
 void polyprint(double p[], size_t len);
 
 void polyprint(double p[], size_t len)
@@ -19,6 +20,7 @@ void polyprint(double p[], size_t len)
             printf("%+gx^%d ", p[k], k);
     printf("\n");
 }
+*/
 
 /*
  * Multiply the polynomials p1 and p2. The result is stored in pdest, which
@@ -35,20 +37,13 @@ void inline polymult(double p1[], size_t len_p1, double p2[], size_t len_p2, dou
             pdest[i+j] += p1[i]*p2[j];
 }
 
-double polyintegrate(double p[], size_t len, int l1, int l2, int m, double scale)
-{
-    size_t i;
-    double value = 0;
-    double lnLambda = casimir_lnLambda(l1, l2, m);
-    double logscale = log(fabs(scale));
-    double sign     = copysign(1, scale);
-
-    for(i = 0; i < len; i++)
-        value += sign*exp(logscale+lnLambda+lngamma(1+i))*p[i];
-
-    return value;
-}
-
+/* Integrate the function f(x)*exp(-x) from 0 to inf 
+ * f(x) is the polynomial of length len stored in p
+ * l1,l2,m are needed to calculate the prefactor Lambda(l1,l2,m)
+ * 
+ * This function returns the logarithm of the integral. The sign will be stored
+ * in sign.
+ */
 double log_polyintegrate(double p[], size_t len, int l1, int l2, int m, int *sign)
 {
     size_t i;
@@ -127,7 +122,7 @@ void polydplm(double pl1[], double pl2[], int l1, int l2, int m, double xi)
 /*
  * Returns the integrals A,B,C,D for l1,l2,m,xi and p=TE,TM
  */
-int casimir_integrate(casimir_integrals_t *cint, int l1, int l2, int m, double xi)
+void casimir_integrate(casimir_integrals_t *cint, int l1, int l2, int m, double xi)
 {
     double pdpl1m[l1-m+2];
     double pdpl2m[l2-m+2];
@@ -177,18 +172,16 @@ int casimir_integrate(casimir_integrals_t *cint, int l1, int l2, int m, double x
         polymult(pmpdpl1m, sizeof(pmpdpl1m)/sizeof(double), ppl2m,  sizeof(ppl2m)/sizeof(double),  pmpdpl1mppl2m);
         polymult(pmpdpl1m, sizeof(pmpdpl1m)/sizeof(double), pdpl2m, sizeof(pdpl2m)/sizeof(double), pmpdpl1mpdpl2m);
 
-        cint->logA = 2*log(m)+logprefactor+log_polyintegrate(pmppl1mppl2m,   sizeof(pmppl1mppl2m)/sizeof(double),   l1,l2,m,&cint->signA);
+        cint->logA = 2*log(m)+logprefactor+log_polyintegrate(pmppl1mppl2m, sizeof(pmppl1mppl2m)/sizeof(double), l1,l2,m,&cint->signA);
         cint->signA *= pow(-1,l2);
 
         cint->logB = logprefactor+log_polyintegrate(pmpdpl1mpdpl2m, sizeof(pmpdpl1mpdpl2m)/sizeof(double), l1,l2,m,&cint->signB);
         cint->signB *= pow(-1,l2+1);
         
-        cint->logC = log(m)+logprefactor+log_polyintegrate(pmppl1mpdpl2m,  sizeof(pmppl1mpdpl2m)/sizeof(double),  l1,l2,m,&cint->signC);
+        cint->logC = log(m)+logprefactor+log_polyintegrate(pmppl1mpdpl2m, sizeof(pmppl1mpdpl2m)/sizeof(double), l1,l2,m,&cint->signC);
         cint->signC *= pow(-1,l2+1);
         
-        cint->logD = log(m)+logprefactor+log_polyintegrate(pmpdpl1mppl2m,  sizeof(pmpdpl1mppl2m)/sizeof(double),  l1,l2,m,&cint->signD);
+        cint->logD = log(m)+logprefactor+log_polyintegrate(pmpdpl1mppl2m, sizeof(pmpdpl1mppl2m)/sizeof(double), l1,l2,m,&cint->signD);
         cint->signD *= pow(-1,l2);
     }
-
-    return 0;
 }
