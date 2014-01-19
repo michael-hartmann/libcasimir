@@ -8,7 +8,6 @@
 #include "libcasimir.h"
 #include "integration.h"
 
-static double inline binom(int n, int k);
 void polyprint(double p[], size_t len);
 
 void polyprint(double p[], size_t len)
@@ -19,11 +18,6 @@ void polyprint(double p[], size_t len)
         if(p[k] != 0)
             printf("%+gx^%d ", p[k], k);
     printf("\n");
-}
-
-static double inline binom(int n, int k)
-{
-    return exp(lngamma(1+n)-lngamma(1+k)-lngamma(1+n-k));
 }
 
 /*
