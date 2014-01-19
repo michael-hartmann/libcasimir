@@ -157,24 +157,26 @@ void casimir_lna0_lnb0(int l, double *a0, int *sign_a0, double *b0, int *sign_b0
     *a0 = *b0+log1p(1.0/l);
 }
 
-double casimir_lna(int l, double arg, int *sign)
+double casimir_lna(int l, const double arg, int *sign)
 {
-    double nominator, denominator,frac;
-
-    double lnKlp = bessel_lnKnu(l,   arg);
-    double lnKlm = bessel_lnKnu(l-1, arg);
-    double lnIlm = bessel_lnInu(l-1, arg);
-    double lnIlp = bessel_lnInu(l,   arg);
-
-    double prefactor = M_LOGPI-log(2)+lnIlp-lnKlp;
+    double nominator, denominator, frac, ret;
+    double lnKlp,lnKlm,lnIlm,lnIlp;
+    double prefactor;
     double lnfrac = log(arg)-log(l);
 
+    /* we could do both calculation together. but it doesn't cost much time -
+     * so why bother? 
+     */
+    bessel_lnInuKnu(l-1, arg, &lnIlm, &lnKlm);
+    bessel_lnInuKnu(l,   arg, &lnIlp, &lnKlp);
+
+    prefactor = M_LOGPI-log(2)+lnIlp-lnKlp;
     *sign = pow(-1, l+1);
 
     // nominator
     {
         frac = exp(lnfrac+lnIlm-lnIlp);
-        if(frac < 0.1)
+        if(frac < 1)
             nominator = log1p(fabs(-frac));
         else
         {
@@ -187,13 +189,18 @@ double casimir_lna(int l, double arg, int *sign)
     // denominator
     {
         frac = exp(lnfrac+lnKlm-lnKlp);
-        if(frac < 0.1)
+        if(frac < 1)
             denominator = log1p(frac);
         else
             denominator = log(1+frac);
     }
 
-    return prefactor+nominator-denominator;
+    ret = prefactor+nominator-denominator;
+
+    assert(!isnan(ret));
+    assert(!isinf(ret));
+
+    return ret;
 }
 
 /*        
@@ -201,10 +208,19 @@ double casimir_lna(int l, double arg, int *sign)
  *
  * Restrictions: l integer, l>=1, xi>0
  */        
-double casimir_lnb(int l, double arg, int *sign)
+double casimir_lnb(int l, const double arg, int *sign)
 {
+    double lnInu, lnKnu, ret;
+
+    bessel_lnInuKnu(l, arg, &lnInu, &lnKnu);
     *sign = pow(-1, l+1);
-    return M_LOGPI-M_LN2+bessel_lnInu(l,arg)-bessel_lnKnu(l,arg);
+
+    ret = M_LOGPI-M_LN2+lnInu-lnKnu;
+    
+    assert(!isnan(ret));
+    assert(!isinf(ret));
+
+    return ret;
 }
 
 /*
