@@ -1,30 +1,19 @@
-#include <stdio.h>
 #include <ctype.h>
 #include <getopt.h>
+#include <math.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-#include <time.h>
-#include <math.h>
 #include <sys/time.h>
+#include <time.h>
+#include <unistd.h>
 
+#include "casimir.h"
 #include "libcasimir.h"
 
-#define SCALE_LIN 0
-#define SCALE_LOG 1
+#define PRECISION 1e-10
 
-#define kB      1.38064880e-23
-#define HBAR    1.05457173e-34
-#define C       299792458
-
-/* prototypes */
-int count(const char *str, char c);
-const char *indexn(const char *str, char c, int n);
-double now(void);
-void usage(FILE *stream);
-double iv(double list[4], int i);
-void parse_range(char param, const char *_optarg, double list[]);
-
+/* This function counts how many times the character c in string str appears */
 int count(const char *str, char c)
 {
     int i = 0;
@@ -35,17 +24,21 @@ int count(const char *str, char c)
     return i;
 }
 
+/* This function returns a pointer to the n-th occurrence of the character c in
+ * the string s. If the character c occures less than n times, NULL is
+ * returned. 
+ */
 const char *indexn(const char *str, char c, int n)
 {
     int i = 0;
     while(*str++ != '\0')
-        if(*str == c)
-            if(++i == n)
-                return str;
+        if(*str == c && ++i == n)
+            return str;
 
     return NULL;
 }
 
+/* This function returns the seconds since 1st Jan 1970 in µs precision */
 double now(void)
 {
     struct timeval tv;
@@ -54,6 +47,7 @@ double now(void)
     return tv.tv_sec + tv.tv_usec*1e-6;
 }
 
+/* print usage */
 void usage(FILE *stream)
 {
     fprintf(stream, "Usage: casimir [OPTIONS]\n\
@@ -72,6 +66,9 @@ Further options:\n\
     -L\n\
         Set lmax to given value. When -L is used, -l will be ignored\n\
 \n\
+    -p, --precision\n\
+        Set precision to given value. Default: %g\n\
+\n\
     --buffering\n\
         Enable buffering. By default buffering for stderr and stdout is\n\
         disabled.\n\
@@ -80,7 +77,7 @@ Further options:\n\
         The progress is printed to stderr unless this flag is set.\n\
 \n\
     -h,--help\n\
-        Show this help\n");
+        Show this help\n", PRECISION);
 }
 
 double iv(double list[4], int i)
@@ -136,7 +133,7 @@ void parse_range(char param, const char *_optarg, double list[])
 
 int main(int argc, char *argv[])
 {
-    double precision = 1e-10;
+    double precision = PRECISION;
     double lT[4] = { 0,0,0,SCALE_LIN };
     double lQ[4] = { 0,0,0,SCALE_LIN };
     double lfac = 5;
@@ -158,13 +155,14 @@ int main(int argc, char *argv[])
           { "buffering", no_argument,       &buffering_flag, 1 },
           { "help",      no_argument,       0, 'h' },
           { "lscale",    required_argument, 0, 'l' },
+          { "precision", required_argument, 0, 'p' },
           { 0, 0, 0, 0 }
         };
 
         /* getopt_long stores the option index here. */
         int option_index = 0;
       
-        c = getopt_long (argc, argv, "Q:T:a:l:L:h", long_options, &option_index);
+        c = getopt_long (argc, argv, "Q:T:a:l:L:p:h", long_options, &option_index);
       
         /* Detect the end of the options. */
         if (c == -1)
@@ -186,6 +184,9 @@ int main(int argc, char *argv[])
               lmax = atoi(optarg);
           case 'l':
               lfac = atof(optarg);
+              break;
+          case 'p':
+              precision = atof(optarg);
               break;
           case 'h':
               usage(stdout);
@@ -215,6 +216,12 @@ int main(int argc, char *argv[])
         usage(stderr);
         exit(1);
     }
+    if(precision <= 0)
+    {
+        fprintf(stderr, "--precision must be positive\n\n");
+        usage(stderr);
+        exit(1);
+    }
     if(lQ[0] <= 0 || lQ[0] >= 1 || lQ[1] <= 0 || lQ[1] >= 1)
     {
         fprintf(stderr, "-Q must be in 0 < Q < 1\n\n");
@@ -228,6 +235,7 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
+    printf("# precision=%g, ", precision);
     printf("# lfac=%g, ", lfac);
     if(lQ[2] == 1)
         printf("L=%g, ", lQ[0]);
@@ -253,7 +261,7 @@ int main(int argc, char *argv[])
             T = iv(lT, iT);
 
             casimir_init(&casimir, Q, T);
-            casimir_set_eps(&casimir, precision);
+            casimir_set_precision(&casimir, precision);
 
             if(lmax > 0)
                 casimir_set_lmax(&casimir, lmax);
