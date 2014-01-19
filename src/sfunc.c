@@ -36,6 +36,21 @@ void bessel_lnInuKnu(int nu, const double x, double *lnInu_p, double *lnKnu_p)
             lnKnu  = prefactor+logq(lnKnu);
         }
 
+        if(isnanq(lnKnup) || isinfq(lnKnup))
+        {
+            /* so, we couldn't calculate lnKnup and lnKnu. Maybe we can at
+             * least use the asymptotic behaviour for small values.
+             */
+            if(x < sqrt(nu)*1e3)
+            {
+                /* small arguments */
+                lnKnu  = lngamma(nu+0.5)-M_LN2+(nu+0.5)*(M_LN2-log(x));
+                lnKnup = lngamma(nu+1.5)-M_LN2+(nu+1.5)*(M_LN2-log(x));
+            }
+            else
+                lnKnu = lnKnup = NAN;
+        }
+
         if(lnKnu_p != NULL)
             *lnKnu_p = lnKnu;
     }
