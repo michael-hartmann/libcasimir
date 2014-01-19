@@ -61,8 +61,8 @@ void casimir_set_precision(casimir_t *self, double precision);
 void casimir_set_verbose(casimir_t *self, int verbose);
 void casimir_free(casimir_t *self);
 
-double casimir_lna(int l, double arg, int *sign);
-double casimir_lnb(int l, double arg, int *sign);
+double casimir_lna(int l, const double arg, int *sign);
+double casimir_lnb(int l, const double arg, int *sign);
 
 double casimir_F(casimir_t *self, int *nmax);
 
