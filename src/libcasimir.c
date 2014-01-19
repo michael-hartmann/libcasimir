@@ -4,10 +4,8 @@
 
 #include "givens.h"
 #include "sfunc.h"
-
 #include "integration.h"
 #include "libcasimir.h"
-#include "gausslaguerre.h"
 
 #define FACTOR_LMAX 5
 #define HBARC 3.161526510740123e-26
