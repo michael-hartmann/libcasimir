@@ -73,7 +73,10 @@ Further options:\n\
         Enable buffering. By default buffering for stderr and stdout is\n\
         disabled.\n\
 \n\
-    --quiet\n\
+    -v, --verbose\n\
+        Be more verbose.\n\
+\n\
+    -q, --quiet\n\
         The progress is printed to stderr unless this flag is set.\n\
 \n\
     -h,--help\n\
@@ -139,7 +142,7 @@ int main(int argc, char *argv[])
     double lfac = 5;
     int i, iT, iQ;
     int lmax = 0;
-    int buffering_flag = 0, quiet_flag = 0;
+    int buffering_flag = 0, quiet_flag = 0, verbose_flag = 0;
 
     printf("# %s", argv[0]);
     for(i = 1; i < argc; i++)
@@ -151,6 +154,7 @@ int main(int argc, char *argv[])
         int c;
         struct option long_options[] =
         {
+          { "verbose",   no_argument,       &verbose_flag,   1 },
           { "quiet",     no_argument,       &quiet_flag,     1 },
           { "buffering", no_argument,       &buffering_flag, 1 },
           { "help",      no_argument,       0, 'h' },
@@ -162,7 +166,7 @@ int main(int argc, char *argv[])
         /* getopt_long stores the option index here. */
         int option_index = 0;
       
-        c = getopt_long (argc, argv, "Q:T:a:l:L:p:h", long_options, &option_index);
+        c = getopt_long (argc, argv, "Q:T:s:a:l:L:p:vqh", long_options, &option_index);
       
         /* Detect the end of the options. */
         if (c == -1)
@@ -182,6 +186,12 @@ int main(int argc, char *argv[])
               break;
           case 'L':
               lmax = atoi(optarg);
+          case 'q':
+              quiet_flag = 1;
+              break;
+          case 'v':
+              verbose_flag = 1;
+              break;
           case 'l':
               lfac = atof(optarg);
               break;
@@ -197,7 +207,7 @@ int main(int argc, char *argv[])
             break;
       
           default:
-            abort ();
+            abort();
         }
     }
 
@@ -263,6 +273,7 @@ int main(int argc, char *argv[])
 
             casimir_init(&casimir, Q, T);
             casimir_set_precision(&casimir, precision);
+            casimir_set_verbose(&casimir, verbose_flag);
 
             if(lmax > 0)
                 casimir_set_lmax(&casimir, lmax);
