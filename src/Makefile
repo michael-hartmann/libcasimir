@@ -8,10 +8,10 @@ OPTIMIZATION=3
 SOURCES=sfunc.c integration.c libcasimir.c givens.c
 
 casimir:
-	$(CC) -O$(OPTIMIZATION) $(CFLAGS) $(SOURCES) casimir.c $(LDFLAGS) -o casimir
+	$(CC) -O$(OPTIMIZATION) $(SOURCES) $(CFLAGS) casimir.c $(LDFLAGS) -o casimir
 
 tests:
-	$(CC) -O$(OPTIMIZATION) $(CFLAGS) $(SOURCES) unittest.c tests.c $(LDFLAGS) -o tests
+	$(CC) -O$(OPTIMIZATION) $(SOURCES) $(CFLAGS) unittest.c tests.c $(LDFLAGS) -o tests
 
 clean:
 	rm -f casimir tests
