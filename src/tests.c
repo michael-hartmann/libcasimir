@@ -4,6 +4,7 @@
 #include "libcasimir.h"
 #include "integration.h"
 #include "sfunc.h"
+#include "givens.h"
 
 #include "unittest.h"
 
@@ -13,6 +14,37 @@ int test_integration(void);
 int test_mie(void);
 int test_besselI(void);
 int test_besselK(void);
+int test_givens(void);
+
+int test_givens()
+{
+    matrix_t *M;
+    unittest_t test;
+    unittest_init(&test, "QR decomposition", "Test QR decomposition using givens rotation");
+
+    {
+        M = matrix_alloc(3);
+        matrix_set(M, 0,0, -20);
+        matrix_set(M, 0,1,  2);
+        matrix_set(M, 0,2, -3);
+        matrix_set(M, 1,0, -1);
+        matrix_set(M, 1,1,  1);
+        matrix_set(M, 1,2,  3);
+        matrix_set(M, 2,0,  2);
+        matrix_set(M, 2,1,  1);
+        matrix_set(M, 2,2, -1);
+
+        printf("froebenius_norm: %g\n", (double)matrix_froebenius(M));
+        matrix_balance(M);
+        printf("froebenius_norm: %g\n", (double)matrix_froebenius(M));
+
+        AssertAlmostEqual(&test, matrix_logdet(M), log(99));
+
+        matrix_free(M);
+    }
+
+    return test_results(&test, stderr);
+}
 
 int test_besselI(void)
 {
@@ -280,6 +312,7 @@ int main(int argc, char *argv[])
     test_mie();
     test_besselI();
     test_besselK();
+    test_givens();
     
     return 0;
 }
