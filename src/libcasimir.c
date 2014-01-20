@@ -405,8 +405,8 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
                 matrix_set(MM, l1-min, l2-min, elem_MM);
             }
     
-        logdet_EE = matrix_logdet(EE);
-        logdet_MM = matrix_logdet(MM);
+        logdet_EE = matrix_logdet(EE,1);
+        logdet_MM = matrix_logdet(MM,1);
 
         matrix_free(EE);
         matrix_free(MM);
@@ -513,7 +513,7 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
 
         /*
         fprintf(stderr, "%d\n", (int)M->size1);
-        gsl_matrix_fprintf(stderr, M, "%g");
+        matrix_fprintf(stderr, M, "%g");
         */
 
         if(m == 0)
@@ -529,13 +529,13 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
                     matrix_set(MM, i,j, matrix_get(M, dim+i,dim+j));
                 }
 
-            logdet = matrix_logdet(EE)+matrix_logdet(MM);
+            logdet = matrix_logdet(EE,1)+matrix_logdet(MM,1);
 
             matrix_free(EE);
             matrix_free(MM);
         }
         else
-            logdet = matrix_logdet(M);
+            logdet = matrix_logdet(M,1);
 
 
         matrix_free(M);
