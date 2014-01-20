@@ -319,7 +319,8 @@ double casimir_F(casimir_t *self, int *nmax)
         for(m = 0; m <= self->lmax; m++)
         {
             double value = casimir_logdetD(self,n,m,&cache);
-            fprintf(stderr, "# n=%d, m=%d, %.15g\n", n, m, value);
+            if(self->verbose)
+                fprintf(stderr, "# n=%d, m=%d, value=%.15g\n", n, m, value);
 
             /* If F is !=0 and value/F < 1e-16, then F+value = F. The addition
              * has no effect.
