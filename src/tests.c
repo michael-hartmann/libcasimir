@@ -34,11 +34,7 @@ int test_givens()
         matrix_set(M, 2,1,  1);
         matrix_set(M, 2,2, -1);
 
-        printf("froebenius_norm: %g\n", (double)matrix_froebenius(M));
-        matrix_balance(M);
-        printf("froebenius_norm: %g\n", (double)matrix_froebenius(M));
-
-        AssertAlmostEqual(&test, matrix_logdet(M), log(99));
+        AssertAlmostEqual(&test, matrix_logdet(M,1), log(99));
 
         matrix_free(M);
     }
