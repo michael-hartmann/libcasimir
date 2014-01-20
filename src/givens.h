@@ -24,7 +24,7 @@ void matrix_fprintf(const matrix_t *m, FILE *stream, const char *format, const c
 __float inline matrix_get(const matrix_t *m, size_t i, size_t j);
 void inline matrix_set(matrix_t *m, size_t i, size_t j, __float x);
 
-__float matrix_logdet(matrix_t *M);
+__float matrix_logdet(matrix_t *M, const int balance);
 
 void matrix_balance(matrix_t *A);
 

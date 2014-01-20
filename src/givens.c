@@ -64,6 +64,7 @@ void inline matrix_set(matrix_t *m, size_t i, size_t j, __float x)
     m->M[i*m->size+j] = x;
 }
 
+/* calculate froebenius norm of matrix */
 __float matrix_froebenius(matrix_t *M)
 {
     int i,j;
@@ -78,22 +79,14 @@ __float matrix_froebenius(matrix_t *M)
 }
 
 /* calculate log(det(M)) */
-__float matrix_logdet(matrix_t *M)
+__float matrix_logdet(matrix_t *M, const int balance)
 {
     size_t i, j, n;
     size_t dim = M->size;
     __float det = 0;
 
-    {
-        double norm_before = matrix_froebenius(M);
-        double min_before  = matrix_absmin(M);
-        double max_before  = matrix_absmax(M);
+    if(balance)
         matrix_balance(M);
-        double norm_after = matrix_froebenius(M);
-        double min_after  = matrix_absmin(M);
-        double max_after  = matrix_absmax(M);
-        fprintf(stderr, "norm: %g vs %g, max %g vs %g, min %g vs %g\n", norm_before, norm_after, max_before, max_after, min_before, min_after);
-    }
 
     for(j = 0; j < dim-1; j++)
         for(i = j+1; i < dim; i++)
