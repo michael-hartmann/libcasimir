@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 
 #include "libcasimir.h"
+#include "sfunc.h"
 #include "givens.h"
 
 /* Allocate space for a quadratic matrix of size x size. */
@@ -64,12 +64,36 @@ void inline matrix_set(matrix_t *m, size_t i, size_t j, __float x)
     m->M[i*m->size+j] = x;
 }
 
+__float matrix_froebenius(matrix_t *M)
+{
+    int i,j;
+    int dim = M->size;
+    __float norm = 0;
+
+    for(i = 0; i < dim; i++)
+        for(j = 0; j < dim; j++)
+            norm += pow_2(matrix_get(M, i,j));
+
+    return __sqrt(norm);
+}
+
 /* calculate log(det(M)) */
 __float matrix_logdet(matrix_t *M)
 {
     size_t i, j, n;
     size_t dim = M->size;
     __float det = 0;
+
+    {
+        double norm_before = matrix_froebenius(M);
+        double min_before  = matrix_absmin(M);
+        double max_before  = matrix_absmax(M);
+        matrix_balance(M);
+        double norm_after = matrix_froebenius(M);
+        double min_after  = matrix_absmin(M);
+        double max_after  = matrix_absmax(M);
+        fprintf(stderr, "norm: %g vs %g, max %g vs %g, min %g vs %g\n", norm_before, norm_after, max_before, max_after, min_before, min_after);
+    }
 
     for(j = 0; j < dim-1; j++)
         for(i = j+1; i < dim; i++)
@@ -169,3 +193,132 @@ void matrix_info(FILE *stream, matrix_t *M)
     fprintf(stream, "zeros=%d, nans=%d, infs=%d, min=%s, max=%s, diag_min=%s, diag_max=%s, diff=%s\n", zeros, nans, infs, str_min, str_max, str_diag_min, str_diag_max, str_diff_diag);
 }
 */
+
+__float matrix_absmax(matrix_t *M)
+{
+    int i,j;
+    int dim = M->size;
+    __float max = __abs(matrix_get(M, 0,0));
+
+    for(i = 0; i < dim; i++)
+        for(j = 0; j < dim; j++)
+            max = MAX(max, __abs(matrix_get(M, i,j)));
+
+    return max;
+}
+
+__float matrix_absmin(matrix_t *M)
+{
+    int i,j;
+    int dim = M->size;
+    __float min = __abs(matrix_get(M, 0,0));
+
+    for(i = 0; i < dim; i++)
+        for(j = 0; j < dim; j++)
+            min = MIN(min, __abs(matrix_get(M, i,j)));
+
+    return min;
+}
+
+/* Balance a general matrix by scaling the rows and columns, so the
+ * new row and column norms are the same order of magnitude.
+ *
+ * B =  D^-1 A D
+ *
+ * where D is a diagonal matrix
+ * 
+ * This is necessary for the unsymmetric eigenvalue problem since the
+ * calculation can become numerically unstable for unbalanced
+ * matrices.  
+ *
+ * See Golub & Van Loan, "Matrix Computations" (3rd ed), Section 7.5.7
+ * and Wilkinson & Reinsch, "Handbook for Automatic Computation", II/11 p320.
+ */
+void matrix_balance(matrix_t *A)
+{
+    size_t i,j;
+    const size_t N = A->size;
+    __float D[N];
+    int not_converged = 1;
+    //gsl_vector_view v;
+  
+    /* initialize D to the identity matrix */
+    for(i = 0; i < N; i++) 
+        D[i] = 1;
+  
+    while(not_converged)
+    {
+        __float g, f, s;
+        __float row_norm, col_norm;
+  
+        not_converged = 0;
+  
+        for (i = 0; i < N; ++i)
+        {
+            row_norm = 0;
+            col_norm = 0;
+  
+            for (j = 0; j < N; ++j)
+                if (j != i)
+                {
+                  col_norm += __abs(matrix_get(A, j, i));
+                  row_norm += __abs(matrix_get(A, i, j));
+                }
+  
+            if ((col_norm == 0.0) || (row_norm == 0.0))
+              continue;
+  
+            g = row_norm / FLOAT_RADIX;
+            f = 1.0;
+            s = col_norm + row_norm;
+  
+            /*
+             * find the integer power of the machine radix which
+             * comes closest to balancing the matrix
+             */
+            while (col_norm < g)
+            {
+                f *= FLOAT_RADIX;
+                col_norm *= FLOAT_RADIX_SQ;
+            }
+  
+            g = row_norm * FLOAT_RADIX;
+  
+            while (col_norm > g)
+            {
+                f /= FLOAT_RADIX;
+                col_norm /= FLOAT_RADIX_SQ;
+            }
+  
+            if ((row_norm + col_norm) < 0.95 * s * f)
+            {
+                int k;
+                not_converged = 1;
+  
+                g = 1.0 / f;
+  
+                /*
+                 * apply similarity transformation D, where
+                 * D_{ij} = f_i * delta_{ij}
+                 */
+  
+                /* multiply by D^{-1} on the left */
+                //v = gsl_matrix_row(A, i);
+                //gsl_blas_dscal(g, &v.vector);
+                for(k = 0; k < N; k++)
+                    matrix_set(A, i,k, g*matrix_get(A,i,k));
+
+
+                /* multiply by D on the right */
+                //v = gsl_matrix_column(A, i);
+                //gsl_blas_dscal(f, &v.vector);
+                for(k = 0; k < N; k++)
+                    matrix_set(A, k,i, f*matrix_get(A,k,i));
+  
+                /* keep track of transformation */
+                for(k = 0; k < N; k++)
+                    D[k] *= f;
+            }
+        }
+    }
+}
