@@ -316,6 +316,7 @@ double casimir_F(casimir_t *self, int *nmax)
         casimir_mie_cache_init(&cache, n*TRbyScriptL);
         casimir_mie_cache_alloc(self, &cache, self->lmax);
 
+        double sum_n = 0;
         for(m = 0; m <= self->lmax; m++)
         {
             double value = casimir_logdetD(self,n,m,&cache);
@@ -338,7 +339,9 @@ double casimir_F(casimir_t *self, int *nmax)
                 value /= 2;
 
             F += value;
+            sum_n += value;
         }
+        fprintf(stderr, "# n=%d, value=%.15g\n", n, sum_n);
 
         casimir_mie_cache_free(&cache);
 
@@ -459,8 +462,8 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
 
                 /* M_EE */
                 {
-                    __float128 M_EE1 = -2*al1_sign                *( cint.signB*expq(lnal1+cint.logB)-cint.signA*expq(lnal1+cint.logA) );
-                    __float128 M_EE2 = -2*al2_sign*pow(-1, l1+l2) *( cint.signB*expq(lnal2+cint.logB)-cint.signA*expq(lnal2+cint.logA) );
+                    __float128 M_EE1 = -2*al1_sign               *( cint.signB*expq(lnal1+cint.logB)-cint.signA*expq(lnal1+cint.logA) );
+                    __float128 M_EE2 = -2*al2_sign*pow(-1, l1+l2)*( cint.signB*expq(lnal2+cint.logB)-cint.signA*expq(lnal2+cint.logA) );
 
                     assert(!isnanq(M_EE1)); assert(!isinfq(M_EE1));
                     assert(!isnanq(M_EE2)); assert(!isinfq(M_EE2));
@@ -471,8 +474,8 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
 
                 /* M_MM */
                 {
-                    __float128 M_MM1 = -2*bl1_sign                *( cint.signA*expq(lnbl1+cint.logA)-cint.signB*expq(lnbl1+cint.logB) );
-                    __float128 M_MM2 = -2*bl2_sign*pow(-1, l1+l2) *( cint.signA*expq(lnbl2+cint.logA)-cint.signB*expq(lnbl2+cint.logB) );
+                    __float128 M_MM1 = -2*bl1_sign               *( cint.signA*expq(lnbl1+cint.logA)-cint.signB*expq(lnbl1+cint.logB) );
+                    __float128 M_MM2 = -2*bl2_sign*pow(-1, l1+l2)*( cint.signA*expq(lnbl2+cint.logA)-cint.signB*expq(lnbl2+cint.logB) );
 
                     assert(!isnanq(M_MM1)); assert(!isinfq(M_MM1));
                     assert(!isnanq(M_MM2)); assert(!isinfq(M_MM2));
@@ -484,7 +487,7 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
                 /* M_EM */
                 {
                     __float128 M_EM1 = -2*al1_sign                *( cint.signD*expq(lnal1+cint.logD)-cint.signC*expq(lnal1+cint.logC) );
-                    __float128 M_EM2 = -2*al2_sign*pow(-1,l1+l2+1)*( cint.signD*expq(lnal2+cint.logD)-cint.signC*expq(lnal2+cint.logC) );
+                    __float128 M_EM2 = -2*al2_sign*pow(-1,l1+l2+1)*( cint.signC*expq(lnal2+cint.logC)-cint.signD*expq(lnal2+cint.logD) );
 
                     assert(!isnanq(M_EM1)); assert(!isinfq(M_EM1));
                     assert(!isnanq(M_EM2)); assert(!isinfq(M_EM2));
@@ -497,7 +500,7 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
                 /* M_ME */
                 {
                     __float128 M_ME1 = -2*bl1_sign                *( cint.signC*expq(lnbl1+cint.logC)-cint.signD*expq(lnbl1+cint.logD) );
-                    __float128 M_ME2 = -2*bl2_sign*pow(-1,l1+l2+1)*( cint.signC*expq(lnbl2+cint.logC)+cint.signD*expq(lnbl2+cint.logD) );
+                    __float128 M_ME2 = -2*bl2_sign*pow(-1,l1+l2+1)*( cint.signD*expq(lnbl2+cint.logD)-cint.signC*expq(lnbl2+cint.logC) );
 
                     assert(!isnanq(M_ME1)); assert(!isinfq(M_ME1));
                     assert(!isnanq(M_ME2)); assert(!isinfq(M_ME2));
