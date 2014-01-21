@@ -233,38 +233,37 @@ void matrix_balance(matrix_t *A)
     const size_t N = A->size;
     __float D[N];
     int not_converged = 1;
-    //gsl_vector_view v;
-  
+
     /* initialize D to the identity matrix */
-    for(i = 0; i < N; i++) 
+    for(i = 0; i < N; i++)
         D[i] = 1;
-  
+
     while(not_converged)
     {
         __float g, f, s;
         __float row_norm, col_norm;
-  
+
         not_converged = 0;
-  
+
         for (i = 0; i < N; ++i)
         {
             row_norm = 0;
             col_norm = 0;
-  
+
             for (j = 0; j < N; ++j)
                 if (j != i)
                 {
                   col_norm += __abs(matrix_get(A, j, i));
                   row_norm += __abs(matrix_get(A, i, j));
                 }
-  
+
             if ((col_norm == 0.0) || (row_norm == 0.0))
               continue;
-  
+
             g = row_norm / FLOAT_RADIX;
             f = 1.0;
             s = col_norm + row_norm;
-  
+
             /*
              * find the integer power of the machine radix which
              * comes closest to balancing the matrix
@@ -274,44 +273,133 @@ void matrix_balance(matrix_t *A)
                 f *= FLOAT_RADIX;
                 col_norm *= FLOAT_RADIX_SQ;
             }
-  
+
             g = row_norm * FLOAT_RADIX;
-  
+
             while (col_norm > g)
             {
                 f /= FLOAT_RADIX;
                 col_norm /= FLOAT_RADIX_SQ;
             }
-  
+
             if ((row_norm + col_norm) < 0.95 * s * f)
             {
                 int k;
                 not_converged = 1;
-  
+
                 g = 1.0 / f;
-  
+
                 /*
                  * apply similarity transformation D, where
                  * D_{ij} = f_i * delta_{ij}
                  */
-  
+
                 /* multiply by D^{-1} on the left */
-                //v = gsl_matrix_row(A, i);
-                //gsl_blas_dscal(g, &v.vector);
                 for(k = 0; k < N; k++)
                     matrix_set(A, i,k, g*matrix_get(A,i,k));
 
 
                 /* multiply by D on the right */
-                //v = gsl_matrix_column(A, i);
-                //gsl_blas_dscal(f, &v.vector);
                 for(k = 0; k < N; k++)
                     matrix_set(A, k,i, f*matrix_get(A,k,i));
-  
+
                 /* keep track of transformation */
                 for(k = 0; k < N; k++)
                     D[k] *= f;
             }
         }
     }
+}
+
+void matrix_log_balance(matrix_t *A)
+{
+    size_t i,j;
+    const size_t N = A->size;
+    __float D[N];
+    int not_converged = 1;
+
+    /* initialize D to the identity matrix */
+    for(i = 0; i < N; i++)
+        D[i] = 0;
+
+    while(not_converged)
+    {
+        __float g, f, s;
+        __float row_norm, col_norm;
+
+        not_converged = 0;
+
+        for (i = 0; i < N; ++i)
+        {
+            row_norm = __log(0);
+            col_norm = __log(0);
+
+            for (j = 0; j < N; ++j)
+                if (j != i)
+                {
+                    col_norm = logadd(col_norm, matrix_get(A,j,i));
+                    row_norm = logadd(row_norm, matrix_get(A,i,j));
+                }
+
+            if ((col_norm == __log(0)) || (row_norm == __log(0)))
+              continue;
+
+            g = row_norm - __log(FLOAT_RADIX);
+            f = 0;
+            s = logadd(col_norm, row_norm);
+
+            /*
+             * find the integer power of the machine radix which
+             * comes closest to balancing the matrix
+             */
+            while (col_norm < g)
+            {
+                f += __log(FLOAT_RADIX);
+                col_norm += __log(FLOAT_RADIX_SQ);
+            }
+
+            g = row_norm + __log(FLOAT_RADIX);
+
+            while (col_norm > g)
+            {
+                f -= __log(FLOAT_RADIX);
+                col_norm -= __log(FLOAT_RADIX_SQ);
+            }
+
+            if (logadd(row_norm, col_norm) < (__log(0.95)+s+f))
+            {
+                int k;
+                not_converged = 1;
+
+                g = -f;
+
+                /*
+                 * apply similarity transformation D, where
+                 * D_{ij} = f_i * delta_{ij}
+                 */
+
+                /* multiply by D^{-1} on the left */
+                for(k = 0; k < N; k++)
+                    matrix_set(A, i,k, g+matrix_get(A,i,k));
+
+
+                /* multiply by D on the right */
+                for(k = 0; k < N; k++)
+                    matrix_set(A, k,i, f+matrix_get(A,k,i));
+
+                /* keep track of transformation */
+                for(k = 0; k < N; k++)
+                    D[k] += f;
+            }
+        }
+    }
+}
+
+void matrix_exp(matrix_t *m)
+{
+    size_t i, dim = m->size;
+    __float *M = m->M;
+
+    for(i = 0; i < dim*dim; i++)
+        M[i] = __exp(M[i]);
 }
