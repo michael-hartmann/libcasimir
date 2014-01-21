@@ -1,8 +1,32 @@
+#include <assert.h>
+#include <stdio.h>
 #include <math.h>
 #include <quadmath.h>
 
 #include "sfunc.h"
 
+double logadd(double a, double b)
+{
+    if(a == -INFINITY && b == -INFINITY)
+        return -INFINITY;
+    else if(a<b)
+    {
+        double t = a;
+        a = b;
+        b = t;
+    }
+
+    // now: a>b
+    double ret = a + log1p(exp(b-a));
+    if(isnan(ret) || isnan(ret))
+    {
+        fprintf(stderr, "logadd: a=%g, b=%g\n", a, b);
+    }
+    assert(!isnan(ret));
+    assert(!isinf(ret));
+
+    return ret;
+}
 
 double inline binom(int n, int k)
 {

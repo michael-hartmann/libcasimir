@@ -8,6 +8,8 @@
 #define pow_2(x) (x*x)
 #define lnfac(x) (lgamma(1+x))
 
+double logadd(double a, double b);
+
 double inline binom(int n, int k);
 
 double bessel_lnInu(const int n, const double x);
