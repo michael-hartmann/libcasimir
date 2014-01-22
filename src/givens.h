@@ -5,8 +5,6 @@
 #define FLOAT_RADIX       2.0
 #define FLOAT_RADIX_SQ    (FLOAT_RADIX * FLOAT_RADIX)
 
-//#define QUAD_PRECISION
-
 #ifdef QUAD_PRECISION
     #include <quadmath.h>
 
@@ -36,8 +34,8 @@ matrix_t *matrix_alloc(size_t size);
 void matrix_free(matrix_t *m);
 void matrix_fprintf(const matrix_t *m, FILE *stream, const char *format, const char *lines, const char *rows);
 
-__float inline matrix_get(const matrix_t *m, size_t i, size_t j);
-void inline matrix_set(matrix_t *m, size_t i, size_t j, __float x);
+#define matrix_get(m, i, j)   (m->M[(i)*m->size+(j)])
+#define matrix_set(m, i, j,v) (m->M[(i)*m->size+(j)]=v)
 
 __float matrix_logdet(matrix_t *M, const int balance);
 

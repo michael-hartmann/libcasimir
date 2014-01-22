@@ -52,18 +52,6 @@ void matrix_free(matrix_t *m)
     free(m);
 }
 
-/* get matrix element m_(i,j) */
-__float inline matrix_get(const matrix_t *m, size_t i, size_t j)
-{
-    return m->M[i*m->size+j];
-}
-
-/* set matrix element m_(i,j) to x */
-void inline matrix_set(matrix_t *m, size_t i, size_t j, __float x)
-{
-    m->M[i*m->size+j] = x;
-}
-
 /* calculate froebenius norm of matrix */
 __float matrix_froebenius(matrix_t *M)
 {
