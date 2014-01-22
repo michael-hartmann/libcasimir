@@ -15,6 +15,51 @@ int test_mie(void);
 int test_besselI(void);
 int test_besselK(void);
 int test_givens(void);
+int test_logadd(void);
+
+int test_logadd()
+{
+    int sign;
+    double ret;
+    unittest_t test;
+    unittest_init(&test, "logadd", "add log");
+
+    AssertAlmostEqual(&test, log(10+20), logadd(log(10),log(20)));
+    AssertAlmostEqual(&test, log(900), logadd(log(600),log(300)));
+    AssertAlmostEqual(&test, log(10), logadd(log(10),log(0)));
+
+    // + +
+    ret = logadd_s(log(2), 1, log(4), 1, &sign);
+    AssertAlmostEqual(&test, log(6), ret);
+    AssertEqual(&test, sign, +1);
+
+    // - -
+    ret = logadd_s(log(2), -1, log(4), -1, &sign);
+    AssertAlmostEqual(&test, log(6), ret);
+    AssertEqual(&test, sign, -1);
+
+    // + -
+    ret = logadd_s(log(2), +1, log(4), -1, &sign);
+    AssertAlmostEqual(&test, log(2), ret);
+    AssertEqual(&test, sign, -1);
+
+    // - +
+    ret = logadd_s(log(2), -1, log(4), +1, &sign);
+    AssertAlmostEqual(&test, log(2), ret);
+    AssertEqual(&test, sign, +1);
+
+    // a == b
+    ret = logadd_s(log(4), -1, log(4), +1, &sign);
+    Assert(&test, isinf(ret));
+    Assert(&test, ret < 0);
+
+    // large values
+    ret = logadd_s(1000, +1, 1004, +1, &sign);
+    AssertAlmostEqual(&test, ret, 1004.018149927917809740354983318);
+    AssertEqual(&test, sign, +1);
+
+    return test_results(&test, stderr);
+}
 
 int test_givens()
 {
@@ -23,18 +68,17 @@ int test_givens()
     unittest_init(&test, "QR decomposition", "Test QR decomposition using givens rotation");
 
     {
-        M = matrix_alloc(3);
-        matrix_set(M, 0,0, -20);
-        matrix_set(M, 0,1,  2);
-        matrix_set(M, 0,2, -3);
-        matrix_set(M, 1,0, -1);
-        matrix_set(M, 1,1,  1);
-        matrix_set(M, 1,2,  3);
-        matrix_set(M, 2,0,  2);
-        matrix_set(M, 2,1,  1);
-        matrix_set(M, 2,2, -1);
+        M = matrix_alloc(2);
+        matrix_set(M, 0,0, log(20));
+        matrix_set(M, 0,1, log(2)+3000*log(10));
+        matrix_set(M, 1,0, log(1)-3001*log(10));
+        matrix_set(M, 1,1, log(1));
 
-        AssertAlmostEqual(&test, matrix_logdet(M,1), log(99));
+        matrix_log_balance(M);
+
+        matrix_exp(M);
+
+        AssertAlmostEqual(&test, matrix_logdet(M,0), log(19.8));
 
         matrix_free(M);
     }
@@ -309,6 +353,7 @@ int main(int argc, char *argv[])
     test_besselI();
     test_besselK();
     test_givens();
+    test_logadd();
     
     return 0;
 }
