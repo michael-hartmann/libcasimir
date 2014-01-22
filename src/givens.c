@@ -67,14 +67,11 @@ __float matrix_froebenius(matrix_t *M)
 }
 
 /* calculate log(det(M)) */
-__float matrix_logdet(matrix_t *M, const int balance)
+__float matrix_logdet(matrix_t *M)
 {
     size_t i, j, n;
     size_t dim = M->size;
     __float det = 0;
-
-    if(balance)
-        matrix_balance(M);
 
     for(j = 0; j < dim-1; j++)
         for(i = j+1; i < dim; i++)
@@ -90,25 +87,25 @@ __float matrix_logdet(matrix_t *M, const int balance)
                 if(b == 0)
                 {
                     c = __copysign(1,a);
-                    s = 0.0q;
+                    s = 0;
                 }
                 else if(a == 0)
                 {
-                    c = 0.0q;
+                    c = 0;
                     s = -__copysign(1, b);
                 }
                 else if(__abs(b) > __abs(a))
                 {
                     __float t = a/b;
                     __float u = __copysign(__sqrt(1+t*t),b);
-                    s = -1.0q/u;
+                    s = -1/u;
                     c = -s*t;
                 }
                 else
                 {
                     __float t = b/a;
                     __float u = __copysign(__sqrt(1+t*t),a);
-                    c = 1.0q/u;
+                    c = 1/u;
                     s = -c*t;
                 }
 

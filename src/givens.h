@@ -37,7 +37,7 @@ void matrix_fprintf(const matrix_t *m, FILE *stream, const char *format, const c
 #define matrix_get(m, i, j)   (m->M[(i)*m->size+(j)])
 #define matrix_set(m, i, j,v) (m->M[(i)*m->size+(j)]=v)
 
-__float matrix_logdet(matrix_t *M, const int balance);
+__float matrix_logdet(matrix_t *M);
 
 void matrix_balance(matrix_t *A);
 void matrix_log_balance(matrix_t *A);
