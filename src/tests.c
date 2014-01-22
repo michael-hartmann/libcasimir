@@ -48,6 +48,10 @@ int test_logadd()
     AssertAlmostEqual(&test, log(2), ret);
     AssertEqual(&test, sign, +1);
 
+    // - +
+    ret = logadd_s(log(2), -1, -INFINITY, +1, &sign);
+    AssertAlmostEqual(&test, log(2), ret);
+
     // a == b
     ret = logadd_s(log(4), -1, log(4), +1, &sign);
     Assert(&test, isinf(ret));
