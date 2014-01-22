@@ -297,7 +297,7 @@ void casimir_mie_cache_free(casimir_mie_cache_t *cache)
  */
 double casimir_F(casimir_t *self, int *nmax)
 {
-    int n = 1;
+    int n = 0;
     double F = 0;
     double precision = self->precision;
     double TRbyScriptL = self->T*self->RbyScriptL;
@@ -320,10 +320,6 @@ double casimir_F(casimir_t *self, int *nmax)
         double sum_n = 0;
         for(m = 0; m <= self->lmax; m++)
         {
-            // XXX
-            if(n == 2)
-                break;
-
             double value = casimir_logdetD(self,n,m,&cache);
             if(self->verbose)
                 fprintf(stderr, "# n=%d, m=%d, value=%.15g\n", n, m, value);
@@ -443,8 +439,8 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
         /* now EE and MM contain the "normal" matrix elements, so we can simply
          * calculate the determinant of EE and MM 
          */
-        logdet_EE = matrix_logdet(EE,0);
-        logdet_MM = matrix_logdet(MM,0);
+        logdet_EE = matrix_logdet(EE);
+        logdet_MM = matrix_logdet(MM);
 
         /* free space for matrices */
         matrix_free(EE);
@@ -458,8 +454,8 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
     {
         double nTRbyScriptL = n*self->T*self->RbyScriptL;
         matrix_t *M       = matrix_alloc(2*dim);
-        //matrix_t *M_signs = matrix_alloc(2*dim);
-        int *signs = malloc(2*2*dim*dim*sizeof(int));
+        matrix_t *M_signs = matrix_alloc(2*dim);
+        //int *signs = malloc(2*2*dim*dim*sizeof(int));
     
         /* M_EE, -M_EM
            M_ME,  M_MM */
@@ -467,7 +463,8 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
         {
             for(l2 = min; l2 <= l1; l2++)
             {
-                //const int i = l1-min, j = l2-min;
+                const int i = l1-min, j = l2-min;
+                int sign;
                 casimir_integrals_t cint;
                 double lnal1 = cache->al[l1];
                 double lnbl1 = cache->bl[l1];
@@ -506,65 +503,79 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
 
                 /* M_EE */
                 {
-                    __float128 D_EE1 = (l1 == l2 ? 1 : 0) - (-2)*al1_sign               *( cint.signB*expq(lnal1+cint.logB)-cint.signA*expq(lnal1+cint.logA) );
-                    __float128 D_EE2 = (l1 == l2 ? 1 : 0) - (-2)*al2_sign*pow(-1, l1+l2)*( cint.signB*expq(lnal2+cint.logB)-cint.signA*expq(lnal2+cint.logA) );
+                    double D_EE1 = M_LN2 + logadd_s(lnal1+cint.logB, cint.signB, lnal1+cint.logA, -cint.signA, &sign);
+                    int sign_EE1 = sign*al1_sign;
+                    double D_EE2 = M_LN2 + logadd_s(lnal2+cint.logB, cint.signB, lnal2+cint.logA, -cint.signA, &sign);
+                    int sign_EE2 = sign*al2_sign*pow(-1, l1+l2);
 
-                    assert(!isnanq(D_EE1)); assert(!isinfq(D_EE1));
-                    assert(!isnanq(D_EE2)); assert(!isinfq(D_EE2));
+                    double D_MM1 = M_LN2 + logadd_s(lnbl1+cint.logA, cint.signA, lnbl1+cint.logB, -cint.signB, &sign);
+                    int sign_MM1 = sign*bl1_sign;
+                    double D_MM2 = M_LN2 + logadd_s(lnbl2+cint.logA, cint.signA, lnbl2+cint.logB, -cint.signB, &sign);
+                    int sign_MM2 = sign*bl2_sign*pow(-1, l1+l2);
 
-                    signs[(l1-min)*2*dim+l2-min] = (int)copysignq(1, D_EE1);
-                    matrix_set(M, l1-min, l2-min, logq(fabsq(D_EE1))); /* M_EE */
+                    if(l1 == l2)
+                    {
+                        D_EE1 = logadd_s(0, +1, D_EE1, sign_EE1, &sign_EE1);
+                        D_EE2 = logadd_s(0, +1, D_EE2, sign_EE2, &sign_EE2);
 
-                    signs[(l2-min)*2*dim+l1-min] = (int)copysignq(1, D_EE2);
-                    matrix_set(M, l2-min, l1-min, logq(fabsq(D_EE2))); /* M_EE */
+                        D_MM1 = logadd_s(0, +1, D_MM1, sign_MM1, &sign_MM1);
+                        D_MM2 = logadd_s(0, +1, D_MM2, sign_MM2, &sign_MM2);
+                    }
+
+                    assert(!isnan(D_EE1)); assert(!isinf(D_EE1));
+                    assert(!isnan(D_EE2)); assert(!isinf(D_EE2));
+                    assert(!isnan(D_MM1)); assert(!isinf(D_MM1));
+                    assert(!isnan(D_MM2)); assert(!isinf(D_MM2));
+
+                    matrix_set(M_signs, i,j, sign_EE1);
+                    matrix_set(M, i,j, D_EE1); /* M_EE */
+
+                    matrix_set(M_signs, j,i, sign_EE2);
+                    matrix_set(M, j,i, D_EE2);
+
+                    matrix_set(M_signs, i+dim,j+dim, sign_MM1);
+                    matrix_set(M, i+dim,j+dim, D_MM1); /* M_EE */
+
+                    matrix_set(M_signs, j+dim,i+dim, sign_MM2);
+                    matrix_set(M, j+dim,i+dim, D_MM2);
                 }
 
-                /* M_MM */
-                {
-                    __float128 D_MM1 = (l1 == l2 ? 1 : 0) - (-2)*bl1_sign               *( cint.signA*expq(lnbl1+cint.logA)-cint.signB*expq(lnbl1+cint.logB) );
-                    __float128 D_MM2 = (l1 == l2 ? 1 : 0) - (-2)*bl2_sign*pow(-1, l1+l2)*( cint.signA*expq(lnbl2+cint.logA)-cint.signB*expq(lnbl2+cint.logB) );
-
-                    assert(!isnanq(D_MM1)); assert(!isinfq(D_MM1));
-                    assert(!isnanq(D_MM2)); assert(!isinfq(D_MM2));
-
-                    signs[(dim+l1-min)*2*dim + dim+l2-min] = (int)copysignq(1, D_MM1);
-                    matrix_set(M, dim+l1-min, dim+l2-min, logq(fabsq(D_MM1))); /* M_MM */
-
-                    signs[(dim+l2-min)*2*dim + dim+l1-min] = (int)copysignq(1, D_MM2);
-                    matrix_set(M, dim+l2-min, dim+l1-min, logq(fabsq(D_MM2))); /* M_MM */
-                }
 
                 if(m != 0)
                 {
                     /* M_EM */
                     {
-                        __float128 D_EM1 = +2*al1_sign                *( cint.signD*expq(lnal1+cint.logD)-cint.signC*expq(lnal1+cint.logC) );
-                        __float128 D_EM2 = +2*al2_sign*pow(-1,l1+l2+1)*( cint.signC*expq(lnal2+cint.logC)-cint.signD*expq(lnal2+cint.logD) );
+                        double D_EM1 = M_LN2 + logadd_s(lnal1+cint.logD, cint.signD, lnal1+cint.logC, -cint.signC, &sign);
+                        int sign_EM1 = sign*al1_sign;
+                        double D_EM2 = M_LN2 + logadd_s(lnal2+cint.logC, cint.signC, lnal2+cint.logD, -cint.signD, &sign);
+                        int sign_EM2 = sign*al2_sign*pow(-1, l1+l2+1);
 
-                        assert(!isnanq(D_EM1)); assert(!isinfq(D_EM1));
-                        assert(!isnanq(D_EM2)); assert(!isinfq(D_EM2));
+                        assert(!isnan(D_EM1)); assert(!isinf(D_EM1));
+                        assert(!isnan(D_EM2)); assert(!isinf(D_EM2));
 
-                        signs[(dim+l1-min)*2*dim+l2-min] = (int)copysignq(1, D_EM1);
-                        matrix_set(M, dim+l1-min, l2-min, logq(fabsq(D_EM1))); /* M_EM */
+                        matrix_set(M_signs, dim+i,j, sign_EM1);
+                        matrix_set(M, dim+i, j, D_EM1); /* M_EM */
 
-                        signs[(dim+l2-min)*2*dim+l1-min] = (int)copysignq(1, D_EM2);
-                        matrix_set(M, dim+l2-min, l1-min, logq(fabsq(D_EM2))); /* M_EM */
+                        matrix_set(M_signs, dim+j,i, sign_EM2);
+                        matrix_set(M, dim+j, i, D_EM2); /* M_EM */
                     }
 
 
                     /* M_ME */
                     {
-                        __float128 D_ME1 = +2*bl1_sign                *( cint.signC*expq(lnbl1+cint.logC)-cint.signD*expq(lnbl1+cint.logD) );
-                        __float128 D_ME2 = +2*bl2_sign*pow(-1,l1+l2+1)*( cint.signD*expq(lnbl2+cint.logD)-cint.signC*expq(lnbl2+cint.logC) );
+                        double D_ME1 = M_LN2 + logadd_s(lnbl1+cint.logC, cint.signC, lnbl1+cint.logD, -cint.signD, &sign);
+                        int sign_ME1 = sign*bl1_sign;
+                        double D_ME2 = M_LN2 + logadd_s(lnbl2+cint.logD, cint.signD, lnbl2+cint.logC, -cint.signC, &sign);
+                        int sign_ME2 = sign*bl2_sign*pow(-1, l1+l2+1);
 
-                        assert(!isnanq(D_ME1)); assert(!isinfq(D_ME1));
-                        assert(!isnanq(D_ME2)); assert(!isinfq(D_ME2));
+                        assert(!isnan(D_ME1)); assert(!isinf(D_ME1));
+                        assert(!isnan(D_ME2)); assert(!isinf(D_ME2));
 
-                        signs[(l1-min)*2*dim+dim+l2-min] = (int)copysignq(1, D_ME1);
-                        matrix_set(M, l1-min, dim+l2-min, logq(fabsq(D_ME1))); /* - M_ME */
+                        matrix_set(M_signs, i,dim+j, sign_ME1);
+                        matrix_set(M, i, dim+j, D_ME1); /* - M_ME */
 
-                        signs[(l2-min)*2*dim+dim+l1-min] = (int)copysignq(1, D_ME2);
-                        matrix_set(M, l2-min, dim+l1-min, logq(fabsq(D_ME2))); /* - M_ME */
+                        matrix_set(M_signs, j,dim+i, sign_ME2);
+                        matrix_set(M, j, dim+i, D_ME2); /* - M_ME */
                     }
                 }
             }
@@ -592,11 +603,11 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
             for(l1 = 0; l1 < dim; l1++)
                 for(l2 = 0; l2 < dim; l2++)
                 {
-                    matrix_set(EE, l1,l2, signs[l1*2*dim+l2]*matrix_get(EE,l1,l2));
-                    matrix_set(MM, l1,l2, signs[(l1+dim)*2*dim+l2+dim]*matrix_get(MM,l1,l2));
+                    matrix_set(EE, l1,l2, matrix_get(M_signs, l1,l2)        *matrix_get(EE,l1,l2));
+                    matrix_set(MM, l1,l2, matrix_get(M_signs, l1+dim,l2+dim)*matrix_get(MM,l1,l2));
                 }
 
-            logdet = matrix_logdet(EE,0)+matrix_logdet(MM,0);
+            logdet = matrix_logdet(EE)+matrix_logdet(MM);
 
             matrix_free(EE);
             matrix_free(MM);
@@ -608,14 +619,14 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
 
             for(l1 = 0; l1 < 2*dim; l1++)
                 for(l2 = 0; l2 < 2*dim; l2++)
-                    matrix_set(M, l1,l2, signs[l1*2*dim+l2]*matrix_get(M,l1,l2));
+                    matrix_set(M, l1,l2, matrix_get(M_signs, l1,l2)*matrix_get(M,l1,l2));
 
-            logdet = matrix_logdet(M,0);
+            logdet = matrix_logdet(M);
         }
 
 
         matrix_free(M);
-        free(signs);
+        matrix_free(M_signs);
         assert(!isinf(logdet));
         return logdet;
     }
