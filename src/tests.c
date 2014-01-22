@@ -78,7 +78,7 @@ int test_givens()
 
         matrix_exp(M);
 
-        AssertAlmostEqual(&test, matrix_logdet(M,0), log(19.8));
+        AssertAlmostEqual(&test, matrix_logdet(M), log(19.8));
 
         matrix_free(M);
     }
