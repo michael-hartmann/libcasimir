@@ -5,6 +5,31 @@
 
 #include "sfunc.h"
 
+double logadd_s(double a, int sign_a, double b, int sign_b, int *sign)
+{
+    if(a == -INFINITY)
+    {
+        *sign = sign_b;
+        return b;
+    }
+    else if(b == -INFINITY)
+    {
+        *sign = sign_a;
+        return a;
+    }
+
+    if(a > b)
+    {
+        *sign = sign_a;
+        return a + log1p(sign_a*sign_b*exp(b-a));
+    }
+    else
+    {
+        *sign = sign_b;
+        return b + log1p(sign_a*sign_b*exp(a-b));
+    }
+}
+
 double logadd(double a, double b)
 {
     if(a == -INFINITY && b == -INFINITY)
