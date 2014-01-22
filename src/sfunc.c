@@ -53,6 +53,11 @@ double logadd(double a, double b)
     return ret;
 }
 
+double inline lbinom(int n, int k)
+{
+    return lngamma(1+n)-lngamma(1+k)-lngamma(1+n-k);
+}
+
 double inline binom(int n, int k)
 {
     return exp(lngamma(1+n)-lngamma(1+k)-lngamma(1+n-k));

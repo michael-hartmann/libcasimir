@@ -11,6 +11,7 @@
 double logadd(double a, double b);
 double logadd_s(double a, int sign_a, double b, int sign_b, int *sign);
 
+double inline lbinom(int n, int k);
 double inline binom(int n, int k);
 
 double bessel_lnInu(const int n, const double x);
