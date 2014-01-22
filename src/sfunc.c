@@ -5,7 +5,7 @@
 
 #include "sfunc.h"
 
-double logadd_s(double a, int sign_a, double b, int sign_b, int *sign)
+double inline logadd_s(double a, int sign_a, double b, int sign_b, int *sign)
 {
     if(a == -INFINITY)
     {
@@ -30,7 +30,7 @@ double logadd_s(double a, int sign_a, double b, int sign_b, int *sign)
     }
 }
 
-double logadd(double a, double b)
+double inline logadd(double a, double b)
 {
     if(a == -INFINITY && b == -INFINITY)
         return -INFINITY;

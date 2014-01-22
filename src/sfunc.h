@@ -8,8 +8,8 @@
 #define pow_2(x) (x*x)
 #define lnfac(x) (lgamma(1+x))
 
-double logadd(double a, double b);
-double logadd_s(double a, int sign_a, double b, int sign_b, int *sign);
+double inline logadd(double a, double b);
+double inline logadd_s(double a, int sign_a, double b, int sign_b, int *sign);
 
 double inline lbinom(int n, int k);
 double inline binom(int n, int k);
