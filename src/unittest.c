@@ -35,6 +35,21 @@ int _AssertEqual(int line, unittest_t *test, int x, int y)
     }
 }
 
+int _Assert(int line, unittest_t *test, int boolean)
+{
+    if(boolean)
+    {
+        test->passed++;
+        return 0;
+    }
+    else
+    {
+        test->failed++;
+        fprintf(stderr, "FAILED: on line %d\n", line);
+        return 1;
+    }
+}
+
 int _AssertAlmostEqual(int line, unittest_t *test, double x, double y)
 {
     if(fabs(1-x/y) < EPS)
