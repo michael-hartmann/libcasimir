@@ -32,25 +32,14 @@ double inline logadd_s(double a, int sign_a, double b, int sign_b, int *sign)
 
 double inline logadd(double a, double b)
 {
-    if(a == -INFINITY && b == -INFINITY)
-        return -INFINITY;
+    if(a == -INFINITY)
+        return b;
+    else if(b == -INFINITY)
+        return a;
     else if(a<b)
-    {
-        double t = a;
-        a = b;
-        b = t;
-    }
-
-    // now: a>b
-    double ret = a + log1p(exp(b-a));
-    if(isnan(ret) || isnan(ret))
-    {
-        fprintf(stderr, "logadd: a=%g, b=%g\n", a, b);
-    }
-    assert(!isnan(ret));
-    assert(!isinf(ret));
-
-    return ret;
+        return b + log1p(exp(a-b));
+    else
+        return a + log1p(exp(b-a));
 }
 
 double inline lbinom(int n, int k)
