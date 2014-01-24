@@ -80,7 +80,10 @@ Further options:\n\
         The progress is printed to stderr unless this flag is set.\n\
 \n\
     -h,--help\n\
-        Show this help\n", PRECISION);
+        Show this help\n\
+\n\
+\n\
+Compiled %s, %s\n", PRECISION, __DATE__, __TIME__);
 }
 
 double iv(double list[4], int i)
