@@ -329,7 +329,7 @@ void matrix_log_balance(matrix_t *A)
             if ((col_norm == __log(0)) || (row_norm == __log(0)))
               continue;
 
-            g = row_norm - __log(FLOAT_RADIX);
+            g = row_norm - LOG_FLOAT_RADIX;
             f = 0;
             s = logadd(col_norm, row_norm);
 
@@ -339,19 +339,19 @@ void matrix_log_balance(matrix_t *A)
              */
             while (col_norm < g)
             {
-                f += __log(FLOAT_RADIX);
-                col_norm += __log(FLOAT_RADIX_SQ);
+                f += LOG_FLOAT_RADIX;
+                col_norm += LOG_FLOAT_RADIX_SQ;
             }
 
-            g = row_norm + __log(FLOAT_RADIX);
+            g = row_norm + LOG_FLOAT_RADIX;
 
             while (col_norm > g)
             {
-                f -= __log(FLOAT_RADIX);
-                col_norm -= __log(FLOAT_RADIX_SQ);
+                f -= LOG_FLOAT_RADIX;
+                col_norm -= LOG_FLOAT_RADIX_SQ;
             }
 
-            if (logadd(row_norm, col_norm) < (__log(0.95)+s+f))
+            if (logadd(row_norm, col_norm) < (LOG_095+s+f))
             {
                 int k;
                 not_converged = 1;

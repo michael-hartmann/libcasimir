@@ -4,6 +4,9 @@
 
 #define FLOAT_RADIX       2.0
 #define FLOAT_RADIX_SQ    (FLOAT_RADIX * FLOAT_RADIX)
+#define LOG_FLOAT_RADIX   M_LN2
+#define LOG_FLOAT_RADIX_SQ 2*M_LN2
+#define LOG_095 -0.05129329438755058
 
 #ifdef QUAD_PRECISION
     #include <quadmath.h>
