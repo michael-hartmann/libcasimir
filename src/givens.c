@@ -23,6 +23,24 @@ matrix_t *matrix_alloc(size_t size)
     return matrix;
 }
 
+/* Allocate space for a quadratic matrix of size x size. */
+matrix_sign_t *matrix_sign_alloc(size_t size)
+{
+    matrix_sign_t *matrix = malloc(sizeof(matrix_sign_t));
+    if(matrix == NULL)
+        return NULL;
+
+    matrix->size = size;
+    matrix->M = malloc(size*size*sizeof(char));
+    if(matrix->M == NULL)
+    {
+        matrix_sign_free(matrix);
+        return NULL;
+    }
+
+    return matrix;
+}
+
 /*
 void matrix_fprintf(const matrix_t *m, FILE *stream, const char *format, const char *lines, const char *rows)
 {
@@ -43,6 +61,17 @@ void matrix_fprintf(const matrix_t *m, FILE *stream, const char *format, const c
 
 /* Free space of matrix m */
 void matrix_free(matrix_t *m)
+{
+    if(m->M != NULL)
+    {
+        free(m->M);
+        m->M = NULL;
+    }
+    free(m);
+}
+
+/* Free space of matrix m */
+void matrix_sign_free(matrix_sign_t *m)
 {
     if(m->M != NULL)
     {

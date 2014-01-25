@@ -34,8 +34,15 @@ typedef struct {
     __float *M;
 } matrix_t;
 
+typedef struct {
+    size_t size;
+    char *M;
+} matrix_sign_t;
+
+matrix_sign_t *matrix_sign_alloc(size_t size);
 matrix_t *matrix_alloc(size_t size);
 void matrix_free(matrix_t *m);
+void matrix_sign_free(matrix_sign_t *m);
 void matrix_fprintf(const matrix_t *m, FILE *stream, const char *format, const char *lines, const char *rows);
 
 #define matrix_get(m, i, j)   (m->M[(i)*m->size+(j)])
