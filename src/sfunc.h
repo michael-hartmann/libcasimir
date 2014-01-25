@@ -1,18 +1,6 @@
 #ifndef __SFUNC_H
 #define __SFUNC_H
 
-#if defined(__ICC) || defined(__INTEL_COMPILER)
-    #define quad_t _Quad
-
-    _Quad __logq(_Quad);
-    _Quad __expq(_Quad);
-
-    #define logq __logq
-    #define expq __logq
-#elif defined(__GNUC__) || defined(__GNUG__)
-    #include <quadmath.h>
-#endif
-
 #define M_LOGPI 1.1447298858494002
 
 // abbrevations for functions

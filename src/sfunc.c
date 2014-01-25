@@ -1,8 +1,8 @@
 #include <assert.h>
 #include <stdio.h>
 #include <math.h>
-#include <quadmath.h>
 
+#include "quad.h"
 #include "sfunc.h"
 
 double inline logadd_s(double a, int sign_a, double b, int sign_b, int *sign)
