@@ -2,7 +2,7 @@
 #define __QUAD_H
 
 #if defined(__ICC) || defined(__INTEL_COMPILER)
-    #define quad_t _Quad
+    #define __float128 _Quad
 
     #define isinfq(x) (x/10 == x)
     #define isnanq(x) (x != x)
