@@ -1,7 +1,6 @@
 #ifndef __INTEGRATION_H
 #define __INTEGRATION_H
 
-#include <quadmath.h>
 #include "libcasimir.h"
 
 typedef struct {

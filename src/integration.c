@@ -1,6 +1,4 @@
-#include <complex.h>
 #include <math.h>
-#include <quadmath.h>
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>

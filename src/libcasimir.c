@@ -1,6 +1,6 @@
+#include <stdlib.h>
 #include <math.h>
 #include <assert.h>
-#include <quadmath.h>
 
 #include "givens.h"
 #include "sfunc.h"
