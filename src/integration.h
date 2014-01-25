@@ -8,6 +8,8 @@ typedef struct {
     int sign;
 } log_t;
 
+void polyprint(log_t p[], size_t len);
+
 void inline polymult(log_t p1[], size_t len_p1, log_t p2[], size_t len_p2, log_t pdest[]);
 double polyintegrate(log_t p[], size_t len, int l1, int l2, int m, double scale);
 void polym(log_t p[], int m, double xi);

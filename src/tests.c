@@ -5,17 +5,9 @@
 #include "integration.h"
 #include "sfunc.h"
 #include "givens.h"
-
 #include "unittest.h"
 
-int test_Lambda(void);
-int test_Xi(void);
-int test_integration(void);
-int test_mie(void);
-int test_besselI(void);
-int test_besselK(void);
-int test_givens(void);
-int test_logadd(void);
+#include "tests.h"
 
 int test_logadd()
 {

@@ -7,8 +7,6 @@
 #include "libcasimir.h"
 #include "integration.h"
 
-void polyprint(log_t p[], size_t len);
-
 void polyprint(log_t p[], size_t len)
 {
     int k;
