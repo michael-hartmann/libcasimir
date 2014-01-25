@@ -55,7 +55,7 @@ double inline binom(int n, int k)
 void bessel_lnInuKnu(int nu, const double x, double *lnInu_p, double *lnKnu_p)
 {
     int l;
-    __float128 lnKnu = 1, lnKnup = 1+1./x;
+    quad_t lnKnu = 1, lnKnup = 1+1./x;
 
     // calculate Knu, Knup
     {
@@ -70,7 +70,7 @@ void bessel_lnInuKnu(int nu, const double x, double *lnInu_p, double *lnKnu_p)
         {
             for(l = 2; l <= nu+1; l++)
             {
-                __float128 Kn = (2*l-1)*lnKnup/x + lnKnu;
+                quad_t Kn = (2*l-1)*lnKnup/x + lnKnu;
                 lnKnu  = lnKnup;
                 lnKnup = Kn;
             }
@@ -91,7 +91,7 @@ void bessel_lnInuKnu(int nu, const double x, double *lnInu_p, double *lnKnu_p)
                 lnKnup = lngamma(nu+1.5)-M_LN2+(nu+1.5)*(M_LN2-log(x));
             }
             else
-                lnKnu = lnKnup = NAN;
+                lnKnu = lnKnup = 0;
         }
 
         if(lnKnu_p != NULL)
@@ -102,10 +102,10 @@ void bessel_lnInuKnu(int nu, const double x, double *lnInu_p, double *lnKnu_p)
     {
         #define an(n,nu,x) (2*(nu+0.5+n)/x)
 
-        __float128 nom   = an(2,nu,x)+1/an(1,nu,x);
-        __float128 denom = an(2,nu,x);
-        __float128 ratio = (an(1,nu,x)*nom)/denom;
-        __float128 ratio_last = 0;
+        quad_t nom   = an(2,nu,x)+1/an(1,nu,x);
+        quad_t denom = an(2,nu,x);
+        quad_t ratio = (an(1,nu,x)*nom)/denom;
+        quad_t ratio_last = 0;
 
         l = 3;
         while(1)
