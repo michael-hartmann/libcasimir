@@ -26,49 +26,18 @@ void polyprint(log_t p[], size_t len)
  */
 void inline polymult(log_t p1[], size_t len_p1, log_t p2[], size_t len_p2, log_t pdest[])
 {
-    size_t i, j, N, len;
-    double *list_values = __builtin_assume_aligned(malloc(sizeof(double)*(len_p1+len_p2)), 16);
-    int *list_signs     = malloc(sizeof(int)*(len_p1+len_p2));
-    double max;
-
-    for(N = 0; N < len_p1+len_p2-1; N++)
+    size_t i, j;
+    for(i = 0; i < len_p1+len_p2-1; i++)
     {
-        len = 0;
-        max = -INFINITY;
-        for(i = 0; i <= MIN(N,len_p1-1); i++)
-        {
-            j = N-i;
-            if(j >= len_p2)
-                continue;
-
-            list_values[len] = p1[i].value+p2[j].value;
-            list_signs[len]  = p1[i].sign*p2[j].sign;
-            max = MAX(list_values[len], max);
-
-            len++;
-        }
-
-        if(isinf(max))
-        {
-            pdest[N].value = -INFINITY;
-            pdest[N].sign = 1;
-        }
-        else
-        {
-            double sum = 0;
-            for(i = 0; i < len; i++)
-            {
-                sum += list_signs[i]*exp(list_values[i]-max);
-                //printf("sum %d, %d %g => %g\n", (int)i, list[i].sign, list[i].value, sum);
-            }
-
-            pdest[N].value = max+log(fabs(sum));
-            pdest[N].sign = copysign(1, sum);
-        }
+        pdest[i].value = -INFINITY;
+        pdest[i].sign  = +1;
     }
 
-    free(list_values);
-    free(list_signs);
+    for(i = 0; i < len_p1; i++)
+        for(j = 0; j < len_p2; j++)
+        {
+            pdest[i+j].value = logadd_s(pdest[i+j].value, pdest[i+j].sign, p1[i].value+p2[j].value, p1[i].sign*p2[j].sign, &(pdest[i+j].sign));
+        }
 }
 
 /* Integrate the function f(x)*exp(-x) from 0 to inf 
@@ -81,21 +50,20 @@ void inline polymult(log_t p1[], size_t len_p1, log_t p2[], size_t len_p2, log_t
 double log_polyintegrate(log_t p[], size_t len, int l1, int l2, int m, int *sign)
 {
     size_t i;
-    double value = 0;
+    double value = -INFINITY;
     double lnLambda = casimir_lnLambda(l1, l2, m);
-    double lnfac_max = lnfac(len-1);
+
+    *sign = +1;
 
     assert(!isnan(lnLambda));
     assert(!isinf(lnLambda));
 
     for(i = 0; i < len; i++)
-        value += exp(lnfac(i)+p[i].value-lnfac_max)* p[i].sign;
-
-    *sign = copysign(1, value);
+        value = logadd_s(value, *sign, lnfac(i)+p[i].value, p[i].sign, sign);
 
     assert(!isnan(value));
     //assert(!isinf(value));
-    return lnLambda+lnfac_max+log(fabs(value));
+    return lnLambda+value;
 }
 
 void polym(log_t p[], int m, double xi)
