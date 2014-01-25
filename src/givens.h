@@ -1,5 +1,6 @@
 #ifndef __GIVENS_H
 #define __GIVENS_H
+
 #include <stdio.h>
 
 #define FLOAT_RADIX       2.0
@@ -9,7 +10,7 @@
 #define LOG_095 -0.05129329438755058
 
 #ifdef QUAD_PRECISION
-    #include <quadmath.h>
+    #include <quad.h>
 
     #define __float    __float128
     #define __abs      fabsq
