@@ -20,6 +20,8 @@
     #define log1pq __log1pq(_Quad);
 #elif defined(__GNUC__) || defined(__GNUG__)
     #include <quadmath.h>
+#else
+    #error "I'm sorry, but quad precision is only supported with gcc or icc at the moment."
 #endif
 
 #endif
