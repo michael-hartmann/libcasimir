@@ -1,14 +1,14 @@
 .PHONY: casimir tests
 all: casimir tests
 
-CC=gcc
-CFLAGS=-Werror -Wall -Wmissing-prototypes -Wstrict-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wcast-align -Wwrite-strings -Wnested-externs -fshort-enums -fno-common
+CC = gcc
+OPTIMIZATION = 3
+SOURCES = sfunc.c integration.c libcasimir.c givens.c
+CFLAGS += -Werror -Wall -Wmissing-prototypes -Wstrict-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -fshort-enums -fno-common
 ifeq ($(CC),gcc)
-    LDFLAGS=-lquadmath
+    LDFLAGS += -lquadmath
 endif
-LDFLAGS+= -lm
-OPTIMIZATION=3
-SOURCES=sfunc.c integration.c libcasimir.c givens.c
+LDFLAGS += -lm
 
 casimir:
 	$(CC) -O$(OPTIMIZATION) $(SOURCES) $(CFLAGS) casimir.c $(LDFLAGS) -o casimir
