@@ -5,10 +5,14 @@ CC = gcc
 OPTIMIZATION = 3
 SOURCES = sfunc.c integration.c libcasimir.c givens.c
 CFLAGS += -Werror -Wall -Wmissing-prototypes -Wstrict-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -fshort-enums -fno-common
+LDFLAGS += -lm
 ifeq ($(CC),gcc)
     LDFLAGS += -lquadmath
 endif
-LDFLAGS += -lm
+ifeq ($(CC),icc)
+    LDFLAGS += -Qoption,c,--extended_float_type
+endif
+
 
 casimir:
 	$(CC) -O$(OPTIMIZATION) $(SOURCES) $(CFLAGS) casimir.c $(LDFLAGS) -o casimir
