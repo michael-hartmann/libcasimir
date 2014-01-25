@@ -12,7 +12,6 @@
 #define KB   1.3806488e-23
 
 #define EPS_PRECISION 1e-16
-#define sign_t char
 
 /* casimir_lnLambda 
  * This function returns the logarithm of the Λ prefactor for given l1,l2,m.
@@ -381,8 +380,8 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
     if(n == 0)
     {
         double lnRbyScriptL = log(self->RbyScriptL);
-        matrix_t *EE_signs = matrix_alloc(dim);
-        matrix_t *MM_signs = matrix_alloc(dim);
+        matrix_sign_t *EE_signs = matrix_sign_alloc(dim);
+        matrix_sign_t *MM_signs = matrix_sign_alloc(dim);
         matrix_t *EE       = matrix_alloc(dim);
         matrix_t *MM       = matrix_alloc(dim);
 
@@ -445,8 +444,8 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
         /* free space for matrices */
         matrix_free(EE);
         matrix_free(MM);
-        matrix_free(EE_signs);
-        matrix_free(MM_signs);
+        matrix_sign_free(EE_signs);
+        matrix_sign_free(MM_signs);
 
         return logdet_EE+logdet_MM;
     }
@@ -454,8 +453,7 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
     {
         double nTRbyScriptL = n*self->T*self->RbyScriptL;
         matrix_t *M       = matrix_alloc(2*dim);
-        matrix_t *M_signs = matrix_alloc(2*dim);
-        //int *signs = malloc(2*2*dim*dim*sizeof(int));
+        matrix_sign_t *M_signs = matrix_sign_alloc(2*dim);
     
         /* M_EE, -M_EM
            M_ME,  M_MM */
@@ -626,7 +624,7 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
 
 
         matrix_free(M);
-        matrix_free(M_signs);
+        matrix_sign_free(M_signs);
         assert(!isinf(logdet));
         return logdet;
     }
