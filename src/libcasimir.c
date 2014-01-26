@@ -170,7 +170,7 @@ double casimir_lna(int l, const double arg, int *sign)
     bessel_lnInuKnu(l-1, arg, &lnIlm, &lnKlm);
     bessel_lnInuKnu(l,   arg, &lnIlp, &lnKlp);
 
-    prefactor = M_LOGPI-log(2)+lnIlp-lnKlp;
+    prefactor = M_LOGPI-M_LN2+lnIlp-lnKlp;
     *sign = pow(-1, l+1);
 
     // nominator
