@@ -4,30 +4,83 @@ from __future__ import division
 import subprocess
 from time import sleep
 from numpy import linspace
+from os import system
 
-USER = "hartmmic"
-IDLE = 5
-MAX_PROCESSES = 60
+USER = "hartmmic"  # user name on cluster
+IDLE = 5           # idle time
+MAX_PROCESSES = 60 # max number of processes that run at the same time
 
-R = 1e-6
-start = 0.001
-stop  = 15
-N = 600
+INFO = True                                      # send a mail when tasks have finished
+MAIL = "michael.hartmann@physik.uni-augsburg.de" # mail address
+BODY = "T for small values"                      # body of mail
+SUBJECT = "job list finished"                    # subject of mail
 
+Q_start = 0.9 # start value for Q
+Q_stop  = 0.9 # stop value for Q
+Q_N     = 1   # number
+
+T_start = 0.0005 # start value for T
+T_stop  = 1.5    # stop value for T
+T_N     = 200    # number
+
+# get running jobs and job ids
 def get_running_jobs(user):
-    proc = subprocess.Popen(['squeue', '-u', user], stdout=subprocess.PIPE)
+    proc = subprocess.Popen(['squeue', '-h', '-u', user], stdout=subprocess.PIPE)
     i = 0
+    jobids_running = []
     for line in iter(proc.stdout.readline,''):
-       i += 1
-    return i-1
+        l = line.split()
+        jobid = int(l[0])
+        jobids_running.append(jobid)
+        i += 1
+    return i, jobids_running
+
+# run command and return job id
+def run(cmd):
+    cmd = ["/bin/bash", "-c", "sbatch /alcc/gpfs1/home/theo1/hartmmic/run %s" % cmd]
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+    line = proc.stdout.readline()
+    jobid = int(line.split()[-1])
+    return jobid
+
+# launch jobs
+jobids_started = []
+for i,Q in enumerate(linspace(Q_start, Q_stop, Q_N)):
+    for j,T in enumerate(linspace(T_start, T_stop, T_N)):
+
+    while True:
+        jobs_running,jobids_running = get_running_jobs(USER)
+        if jobs_running < MAX_PROCESSES:
+            break
+        else:
+            sleep(IDLE)
+
+    cmd = "casimir -Q %g -T %g " % (Q, T)
+    jobid = run(cmd)
+    jobids_started.append(jobid)
+    print "%d/%d, %s" % ((i*T_N)+j+1, T_N*Q_N, cmd)
 
 
-for i,RbyL in enumerate(linspace(start, stop, N)):
-    L = R/RbyL
-    
-    #while get_running_jobs(USER) <= MAX_PROCESSES:
-    #    sleep(IDLE)
+# wait till all jobs have ended
+while True:
+    quit = False
+    jobs_running,jobids_running = get_running_jobs(USER)
+    if jobs_running == 0:
+        quit = True
+    else:
+        quit = True
+        for jobid in jobids_started:
+            if jobid in jobids_running:
+                quit = False
 
-    cmd = "sbatch ~/run casimir -l 5 -R 1e-6 -L %g -T 1,501,501" % (L)
-    system(cmd)
-    print "%d/%d, %s" % (i+1, N, cmd)
+    if quit:
+        break
+
+    sleep(IDLE)
+
+
+# send mail
+if INFO:
+    system("echo %s | mail -s 'job list ende' %s" % (DESC, MAIL))
+
+print "All jobs ended."
