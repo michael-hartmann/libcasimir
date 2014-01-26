@@ -435,6 +435,10 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
                 matrix_set(MM, l1,l2, matrix_get(MM_signs, l1,l2)*matrix_get(MM,l1,l2));
             }
 
+        /* free space for sign matrices */
+        matrix_sign_free(EE_signs);
+        matrix_sign_free(MM_signs);
+
         /* now EE and MM contain the "normal" matrix elements, so we can simply
          * calculate the determinant of EE and MM 
          */
@@ -444,8 +448,6 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
         /* free space for matrices */
         matrix_free(EE);
         matrix_free(MM);
-        matrix_sign_free(EE_signs);
-        matrix_sign_free(MM_signs);
 
         return logdet_EE+logdet_MM;
     }
@@ -605,6 +607,10 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
                     matrix_set(MM, l1,l2, matrix_get(M_signs, l1+dim,l2+dim)*matrix_get(MM,l1,l2));
                 }
 
+            /* free space for sign matrices */
+            matrix_sign_free(M_signs);
+
+            /* calculate log det */
             logdet = matrix_logdet(EE)+matrix_logdet(MM);
 
             matrix_free(EE);
@@ -619,12 +625,15 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
                 for(l2 = 0; l2 < 2*dim; l2++)
                     matrix_set(M, l1,l2, matrix_get(M_signs, l1,l2)*matrix_get(M,l1,l2));
 
+            /* free space for sign matrices */
+            matrix_sign_free(M_signs);
+
+            /* calculate log det */
             logdet = matrix_logdet(M);
         }
 
 
         matrix_free(M);
-        matrix_sign_free(M_signs);
         assert(!isinf(logdet));
         return logdet;
     }
