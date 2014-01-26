@@ -114,14 +114,13 @@ g = graph.graphxy(
 )
 
 mapping = {
-    "R":    1,
-    "L":    2,
-    "T":    3,
-    "F":    4,
-    "nmax": 5,
-    "lmax": 6,
-    "f":    7,
-    "S":    8
+    "Q":    1,
+    "T":    2,
+    "F":    3,
+    "nmax": 4,
+    "lmax": 5,
+    "f":    6,
+    "S":    7
 }
 
 indexx = mapping[options.x]-1
