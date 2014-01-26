@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <math.h>
+#include "quad.h"
 
 #define FLOAT_RADIX       2.0
 #define FLOAT_RADIX_SQ    (FLOAT_RADIX * FLOAT_RADIX)
@@ -10,22 +11,17 @@
 #define LOG_FLOAT_RADIX_SQ 2*M_LN2
 #define LOG_095 -0.05129329438755058
 
-#ifdef QUAD_PRECISION
-    #include <quad.h>
-#endif
 
-#define MATRIX_TYPEDEF(NAME, TYPE) \
+#define MATRIX_TYPEDEF(NAME, MATRIX_TYPE) \
     typedef struct { \
         size_t size; \
-        TYPE *M; \
+        MATRIX_TYPE *M; \
     } NAME
 
 
 MATRIX_TYPEDEF(matrix_t, double);
 MATRIX_TYPEDEF(matrix_char_t, char);
-#ifdef QUAD_PRECISION
-    MATRIX_TYPEDEF(matrix_quad_t, __float128);
-#endif
+MATRIX_TYPEDEF(matrix_quad_t, __float128);
 
 #define MATRIX_ALLOC(FUNCTION_PREFIX, MATRIX_TYPE, TYPE) \
     MATRIX_TYPE *FUNCTION_PREFIX ## _alloc(size_t size)  \
@@ -149,7 +145,7 @@ MATRIX_TYPEDEF(matrix_char_t, char);
 #define MATRIX_LOGDET_HEADER(FUNCTION_PREFIX, MATRIX_TYPE, TYPE) TYPE FUNCTION_PREFIX ## _logdet(MATRIX_TYPE *M)
 
 #define MATRIX_ABSMAX(FUNCTION_PREFIX, MATRIX_TYPE, TYPE, ABS_FUNCTION) \
-    TYPE FUNCTION_PREFIX ## _absmax(matrix_t *M) \
+    TYPE FUNCTION_PREFIX ## _absmax(MATRIX_TYPE *M) \
     { \
         size_t i,j, dim = M->size; \
         TYPE max = ABS_FUNCTION(matrix_get(M, 0,0)); \
@@ -164,7 +160,7 @@ MATRIX_TYPEDEF(matrix_char_t, char);
 #define MATRIX_ABSMAX_HEADER(FUNCTION_PREFIX, MATRIX_TYPE, TYPE) TYPE FUNCTION_PREFIX ## _absmax(MATRIX_TYPE *M) \
 
 #define MATRIX_ABSMIN(FUNCTION_PREFIX, MATRIX_TYPE, TYPE, ABS_FUNCTION) \
-    TYPE FUNCTION_PREFIX ## _absmin(matrix_t *M) \
+    TYPE FUNCTION_PREFIX ## _absmin(MATRIX_TYPE *M) \
     { \
         size_t i,j, dim = M->size; \
         TYPE max = ABS_FUNCTION(matrix_get(M, 0,0)); \
@@ -382,30 +378,13 @@ MATRIX_LOG_BALANCE_HEADER(matrix, matrix_t);
 MATRIX_ALLOC_HEADER(matrix_char, matrix_char_t);
 MATRIX_FREE_HEADER (matrix_char, matrix_char_t);
 
-#ifdef QUAD_PRECISION
-    MATRIX_ALLOC_HEADER(matrix_quad, matrix_quad_t);
-    MATRIX_FREE_HEADER (matrix_quad, matrix_quad_t);
-    MATRIX_EXP_HEADER  (matrix_quad, matrix_quad_t);
-    MATRIX_FROEBENIUS_HEADER(matrix_quad, matrix_quad_t, __float128);
-    MATRIX_LOGDET_HEADER    (matrix_quad, matrix_quad_t, __float128);
-    MATRIX_ABSMIN_HEADER    (matrix_quad, matrix_quad_t, __float128);
-    MATRIX_ABSMAX_HEADER    (matrix_quad, matrix_quad_t, __float128);
-    MATRIX_BALANCE_HEADER   (matrix_quad, matrix_quad_t);
-#endif
-
-// more complicated
-/*
-__float matrix_logdet(matrix_t *M);
-
-void matrix_balance(matrix_t *A);
-void matrix_log_balance(matrix_t *A);
-
-void matrix_info(FILE *stream, matrix_t *M);
-__float matrix_froebenius(matrix_t *M);
-__float matrix_absmax(matrix_t *M);
-__float matrix_absmin(matrix_t *M);
-
-void matrix_exp(matrix_t *M);
-*/
+MATRIX_ALLOC_HEADER(matrix_quad, matrix_quad_t);
+MATRIX_FREE_HEADER (matrix_quad, matrix_quad_t);
+MATRIX_EXP_HEADER  (matrix_quad, matrix_quad_t);
+MATRIX_FROEBENIUS_HEADER(matrix_quad, matrix_quad_t, __float128);
+MATRIX_LOGDET_HEADER    (matrix_quad, matrix_quad_t, __float128);
+MATRIX_ABSMIN_HEADER    (matrix_quad, matrix_quad_t, __float128);
+MATRIX_ABSMAX_HEADER    (matrix_quad, matrix_quad_t, __float128);
+MATRIX_BALANCE_HEADER   (matrix_quad, matrix_quad_t);
 
 #endif

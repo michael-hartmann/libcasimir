@@ -18,15 +18,11 @@ MATRIX_LOG_BALANCE(matrix, matrix_t, double, log);
 MATRIX_ALLOC(matrix_char, matrix_char_t, char);
 MATRIX_FREE (matrix_char, matrix_char_t);
 
-#ifdef QUAD_PRECISION
-    MATRIX_ALLOC(matrix_quad, matrix_quad_t, __float128);
-    MATRIX_FREE (matrix_quad, matrix_quad_t);
-    MATRIX_EXP       (matrix_quad, matrix_quad_t, __float128, quad;
-    MATRIX_FROEBENIUS(matrix_quad, matrix_quad_t, __float128, sqrtq);
-    MATRIX_LOGDET    (matrix_quad, matrix_quad_t, __float128, fabsq, copysignq, sqrtq, logq);
-    MATRIX_ABSMIN    (matrix_quad, matrix_quad_t, __float128, fabsq);
-    MATRIX_ABSMAX    (matrix_quad, matrix_quad_t, __float128, fabsq);
-    MATRIX_BALANCE   (matrix_quad, matrix_quad_t, __float128, fabsq, logq);
-#endif
-
-
+MATRIX_ALLOC(matrix_quad, matrix_quad_t, __float128);
+MATRIX_FREE (matrix_quad, matrix_quad_t);
+MATRIX_EXP       (matrix_quad, matrix_quad_t, __float128, expq);
+MATRIX_FROEBENIUS(matrix_quad, matrix_quad_t, __float128, sqrtq);
+MATRIX_LOGDET    (matrix_quad, matrix_quad_t, __float128, fabsq, copysignq, sqrtq, logq);
+MATRIX_ABSMIN    (matrix_quad, matrix_quad_t, __float128, fabsq);
+MATRIX_ABSMAX    (matrix_quad, matrix_quad_t, __float128, fabsq);
+MATRIX_BALANCE   (matrix_quad, matrix_quad_t, __float128, fabsq);
