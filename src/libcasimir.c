@@ -2,7 +2,7 @@
 #include <math.h>
 #include <assert.h>
 
-#include "givens.h"
+#include "matrix.h"
 #include "sfunc.h"
 #include "integration.h"
 #include "libcasimir.h"
@@ -382,8 +382,8 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
     if(n == 0)
     {
         double lnRbyScriptL = log(self->RbyScriptL);
-        matrix_sign_t *EE_signs = matrix_sign_alloc(dim);
-        matrix_sign_t *MM_signs = matrix_sign_alloc(dim);
+        matrix_char_t *EE_signs = matrix_char_alloc(dim);
+        matrix_char_t *MM_signs = matrix_char_alloc(dim);
         matrix_t *EE       = matrix_alloc(dim);
         matrix_t *MM       = matrix_alloc(dim);
 
@@ -438,8 +438,8 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
             }
 
         /* free space for sign matrices */
-        matrix_sign_free(EE_signs);
-        matrix_sign_free(MM_signs);
+        matrix_char_free(EE_signs);
+        matrix_char_free(MM_signs);
 
         /* now EE and MM contain the "normal" matrix elements, so we can simply
          * calculate the determinant of EE and MM 
@@ -457,7 +457,7 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
     {
         double nTRbyScriptL = n*self->T*self->RbyScriptL;
         matrix_t *M       = matrix_alloc(2*dim);
-        matrix_sign_t *M_signs = matrix_sign_alloc(2*dim);
+        matrix_char_t *M_signs = matrix_char_alloc(2*dim);
     
         /* M_EE, -M_EM
            M_ME,  M_MM */
@@ -610,7 +610,7 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
                 }
 
             /* free space for sign matrices */
-            matrix_sign_free(M_signs);
+            matrix_char_free(M_signs);
 
             /* calculate log det */
             logdet = matrix_logdet(EE)+matrix_logdet(MM);
@@ -628,7 +628,7 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
                     matrix_set(M, l1,l2, matrix_get(M_signs, l1,l2)*matrix_get(M,l1,l2));
 
             /* free space for sign matrices */
-            matrix_sign_free(M_signs);
+            matrix_char_free(M_signs);
 
             /* calculate log det */
             logdet = matrix_logdet(M);

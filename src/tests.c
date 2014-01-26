@@ -4,7 +4,7 @@
 #include "libcasimir.h"
 #include "integration.h"
 #include "sfunc.h"
-#include "givens.h"
+#include "matrix.h"
 #include "unittest.h"
 
 #include "tests.h"

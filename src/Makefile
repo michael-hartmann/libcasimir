@@ -3,7 +3,7 @@ all: casimir tests
 
 CC = gcc
 OPTIMIZATION = 3
-SOURCES = sfunc.c integration.c libcasimir.c givens.c
+SOURCES = sfunc.c integration.c libcasimir.c matrix.c
 CFLAGS += -Werror -Wall -Wmissing-prototypes -Wstrict-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -fshort-enums -fno-common
 LDFLAGS += -lm
 ifeq ($(CC),gcc)
