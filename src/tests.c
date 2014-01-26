@@ -9,6 +9,44 @@
 
 #include "tests.h"
 
+int test_logdet()
+{
+    unittest_t test;
+    casimir_t casimir;
+    casimir_mie_cache_t cache;
+    const double RbyScriptL = 0.97;
+    const double T = 0.1;
+    const int lmax = 200;
+    double logdet;
+
+    unittest_init(&test, "logdet M", "calculate logdet");
+
+    casimir_init(&casimir, RbyScriptL, T);
+    casimir_set_lmax(&casimir, lmax);
+
+    logdet = casimir_logdetD(&casimir, 0, 0, &cache);
+    AssertAlmostEqual(&test, logdet, -3.45236396285874);
+
+    logdet = casimir_logdetD(&casimir, 0, 1, &cache);
+    AssertAlmostEqual(&test, logdet, -2.63586999367158);
+
+    logdet = casimir_logdetD(&casimir, 0, 10, &cache);
+    AssertAlmostEqual(&test, logdet, -0.0276563864490425);
+
+    casimir_mie_cache_init(&cache, 1*T*RbyScriptL);
+    casimir_mie_cache_alloc(&casimir, &cache, lmax);
+
+    logdet = casimir_logdetD(&casimir, 1, 1, &cache);
+    AssertAlmostEqual(&test, logdet, -2.63900987016801);
+
+    casimir_mie_cache_free(&cache);
+
+    casimir_free(&casimir);
+
+    return test_results(&test, stderr);
+}
+
+
 int test_logadd()
 {
     int sign;
@@ -350,6 +388,7 @@ int main(int argc, char *argv[])
     test_besselK();
     test_givens();
     test_logadd();
+    test_logdet();
     
     return 0;
 }
