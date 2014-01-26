@@ -6,6 +6,7 @@ OPTIMIZATION = 3
 SOURCES = sfunc.c integration.c libcasimir.c matrix.c
 CFLAGS += -Werror -Wall -Wmissing-prototypes -Wstrict-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -fshort-enums -fno-common
 #CFLAGS += -DMATRIX_QUAD
+#CFLAGS += -DINTEGRATION_QUAD
 LDFLAGS += -lm
 ifeq ($(CC),gcc)
     LDFLAGS += -lquadmath
