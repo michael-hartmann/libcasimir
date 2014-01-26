@@ -341,7 +341,9 @@ double casimir_F(casimir_t *self, int *nmax)
             F += value;
             sum_n += value;
         }
-        fprintf(stderr, "# n=%d, value=%.15g\n", n, sum_n);
+
+        if(self->verbose)
+            fprintf(stderr, "# n=%d, value=%.15g\n", n, sum_n);
 
         casimir_mie_cache_free(&cache);
 
