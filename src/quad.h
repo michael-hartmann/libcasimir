@@ -21,8 +21,11 @@
     _Quad __log1pq(_Quad);
     #define log1pq __log1pq
 
-    _Quad __fabsq(_Quad, _Quad);
+    _Quad __fabsq(_Quad);
     #define fabsq __fabsq
+
+    _Quad __copysignq(_Quad);
+    #define copysignq __copysignq
 
 #elif defined(__GNUC__) || defined(__GNUG__)
     #include <quadmath.h>
