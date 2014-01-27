@@ -319,24 +319,27 @@ double casimir_F(casimir_t *self, int *nmax)
         double sum_n = 0;
         for(m = 0; m <= self->lmax; m++)
         {
-            double value = casimir_logdetD(self,n,m,&cache);
+            double value_orig = casimir_logdetD(self,n,m,&cache);
+            double value = value_orig;
+
             if(self->verbose)
                 fprintf(stderr, "# n=%d, m=%d, value=%.15g\n", n, m, value);
+
+            if(m == 0)
+                value /= 2;
+            if(n == 0)
+                value /= 2;
 
             /* If F is !=0 and value/F < 1e-16, then F+value = F. The addition
              * has no effect.
              * As for larger m value will be even smaller, we can skip the
              * summation here. 
              */
-            if(F != 0 && fabs(value/F) < precision)
+            if(F != 0 && fabs(value_orig/F) < precision)
             {
                 F += value;
                 break;
             }
-            if(m == 0)
-                value /= 2;
-            if(n == 0)
-                value /= 2;
 
             F += value;
             sum_n += value;
