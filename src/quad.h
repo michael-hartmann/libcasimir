@@ -24,7 +24,7 @@
     _Quad __fabsq(_Quad);
     #define fabsq __fabsq
 
-    _Quad __copysignq(_Quad);
+    _Quad __copysignq(_Quad, _Quad);
     #define copysignq __copysignq
 
 #elif defined(__GNUC__) || defined(__GNUG__)

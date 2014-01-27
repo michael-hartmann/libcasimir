@@ -6,7 +6,6 @@
 #include "sfunc.h"
 #include "libcasimir.h"
 #include "integration.h"
-#include "quad.h"
 
 #ifdef INTEGRATION_QUAD
     /*

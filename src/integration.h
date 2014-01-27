@@ -6,6 +6,8 @@
     void casimir_integrate(casimir_integrals_t *cint, int l1, int l2, int m, double xi);
 
     #ifdef INTEGRATION_QUAD
+        #include "quad.h"
+
         void inline polymult(__float128 p1[], size_t len_p1, __float128 p2[], size_t len_p2, __float128 pdest[]);
         double log_polyintegrate(__float128 p[], size_t len, int l1, int l2, int m, int *sign);
         void polym(__float128 p[], int m, __float128 xi);
