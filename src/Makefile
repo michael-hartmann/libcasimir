@@ -1,4 +1,4 @@
-.PHONY: casimir tests
+.PHONY: casimir tests n0
 all: casimir tests
 
 CC = gcc
