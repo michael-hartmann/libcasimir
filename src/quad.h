@@ -10,14 +10,20 @@
 
     /* define prototypes. without these prototypes icc will return nan. */
     _Quad __logq(_Quad);
-    _Quad __expq(_Quad);
-    _Quad __sqrtq(_Quad);
-    _Quad __log1pq(_Quad);
-
     #define logq __logq
+
+    _Quad __expq(_Quad);
     #define expq __expq
-    #define sqrtq __sqrtq(_Quad);
-    #define log1pq __log1pq(_Quad);
+
+    _Quad __sqrtq(_Quad);
+    #define sqrtq __sqrtq
+
+    _Quad __log1pq(_Quad);
+    #define log1pq __log1pq
+
+    _Quad __fabsq(_Quad);
+    #define fabsq __fabsq
+
 #elif defined(__GNUC__) || defined(__GNUG__)
     #include <quadmath.h>
 #else
