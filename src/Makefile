@@ -2,28 +2,29 @@
 all: casimir tests
 
 CC = gcc
-OPTIMIZATION = 3
 SOURCES = sfunc.c integration.c libcasimir.c matrix.c
 CFLAGS += -Werror -Wall -Wmissing-prototypes -Wstrict-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -fshort-enums -fno-common
 #CFLAGS += -DMATRIX_QUAD
 #CFLAGS += -DINTEGRATION_QUAD
 LDFLAGS += -lm
 ifeq ($(CC),gcc)
+    OPTIMIZATION = -O3
     LDFLAGS += -lquadmath
 endif
 ifeq ($(CC),icc)
+    OPTIMIZATION = -fast
     LDFLAGS += -Qoption,c,--extended_float_type
 endif
 
 
 casimir:
-	$(CC) -O$(OPTIMIZATION) $(SOURCES) $(CFLAGS) casimir.c $(LDFLAGS) -o casimir
+	$(CC) $(OPTIMIZATION) $(SOURCES) $(CFLAGS) casimir.c $(LDFLAGS) -o casimir
 
 n0:
-	$(CC) -O$(OPTIMIZATION) $(SOURCES) $(CFLAGS) n0.c $(LDFLAGS) -o n0
+	$(CC) $(OPTIMIZATION) $(SOURCES) $(CFLAGS) n0.c $(LDFLAGS) -o n0
 
 tests:
-	$(CC) -O$(OPTIMIZATION) $(SOURCES) $(CFLAGS) unittest.c tests.c $(LDFLAGS) -o tests
+	$(CC) $(OPTIMIZATION) $(SOURCES) $(CFLAGS) unittest.c tests.c $(LDFLAGS) -o tests
 
 clean:
 	rm -f casimir tests
