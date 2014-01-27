@@ -4,7 +4,7 @@
 #if defined(__ICC) || defined(__INTEL_COMPILER)
     #define __float128 _Quad
 
-    /* deine isinf and isnan */
+    /* define isinf and isnan */
     #define isinfq(x) (x/10 == x)
     #define isnanq(x) (x != x)
 
