@@ -21,7 +21,7 @@
     _Quad __log1pq(_Quad);
     #define log1pq __log1pq
 
-    _Quad __fabsq(_Quad);
+    _Quad __fabsq(_Quad, _Quad);
     #define fabsq __fabsq
 
 #elif defined(__GNUC__) || defined(__GNUG__)
