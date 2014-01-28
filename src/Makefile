@@ -4,6 +4,7 @@ all: casimir
 CC = gcc
 SOURCES = sfunc.c integration.c libcasimir.c matrix.c
 CFLAGS += -Werror -Wall -Wmissing-prototypes -Wstrict-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -fshort-enums -fno-common
+#CFLAGS += -DNDEBUG
 #CFLAGS += -DMATRIX_QUAD
 #CFLAGS += -DINTEGRATION_QUAD
 LDFLAGS += -lm
