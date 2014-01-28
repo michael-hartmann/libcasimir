@@ -30,16 +30,49 @@ double inline logadd_s(double a, int sign_a, double b, int sign_b, int *sign)
     }
 }
 
-double inline logadd(double a, double b)
+double inline logadd(const double a, const double b)
 {
     if(a == -INFINITY)
         return b;
     else if(b == -INFINITY)
         return a;
-    else if(a<b)
+    else if(a < b)
         return b + log1p(exp(a-b));
     else
         return a + log1p(exp(b-a));
+}
+
+double inline logadd_m(const double list[], size_t len)
+{
+    size_t i;
+    double sum;
+    double max = list[0];
+
+    for(i = 1; i < len; i++)
+        max = MAX(max, list[i]);
+
+    sum = exp(list[0]-max);
+    for(i = 1; i < len; i++)
+        sum += exp(list[i]-max);
+
+    return max + log(sum);
+}
+
+double inline logadd_ms(double list[], char signs[], size_t len, int *sign)
+{
+    size_t i;
+    double sum;
+    double max = list[0];
+
+    for(i = 1; i < len; i++)
+        max = MAX(max, list[i]);
+
+    sum = signs[0]*exp(list[0]-max);
+    for(i = 1; i < len; i++)
+        sum += signs[i]*exp(list[i]-max);
+
+    *sign = copysign(1, sum);
+    return max + log(fabs(sum));
 }
 
 double inline lbinom(int n, int k)
