@@ -191,6 +191,38 @@
      */
     void inline polymult(log_t p1[], size_t len_p1, log_t p2[], size_t len_p2, log_t pdest[])
     {
+        size_t i, power;
+        double list[len_p1+len_p2];
+        char signs[len_p1+len_p2];
+
+        for(power = 0; power < len_p1+len_p2-1; power++)
+        {
+            size_t len = 0;
+            const int min = power-len_p2+1;
+            for(i = MAX(0,min); i <= MIN(power,len_p1-1); i++)
+            {
+                const size_t j = power - i;
+
+                if(p1[i].value != -INFINITY && p2[j].value != -INFINITY)
+                {
+                    list[len]  = p1[i].value + p2[j].value;
+                    signs[len] = p1[i].sign  * p2[j].sign;
+                    len++;
+                }
+            }
+
+            if(len == 0)
+            {
+                pdest[power].value = -INFINITY;
+                pdest[power].sign  = +1;
+            }
+            else
+                pdest[power].value = logadd_ms(list, signs, len, &(pdest[power].sign));
+        }
+    }
+#if 0
+    void inline polymult(log_t p1[], size_t len_p1, log_t p2[], size_t len_p2, log_t pdest[])
+    {
         size_t i, j;
         for(i = 0; i < len_p1+len_p2-1; i++)
         {
@@ -202,6 +234,7 @@
             for(j = 0; j < len_p2; j++)
                 pdest[i+j].value = logadd_s(pdest[i+j].value, pdest[i+j].sign, p1[i].value+p2[j].value, p1[i].sign*p2[j].sign, &(pdest[i+j].sign));
     }
+#endif
 
     /* Integrate the function f(x)*exp(-x) from 0 to inf 
      * f(x) is the polynomial of length len stored in p
