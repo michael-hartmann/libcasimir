@@ -43,6 +43,14 @@ int main(int argc, char *argv[])
     RbyL = Q/(1-Q);
     lmax = ceil(RbyL*lfac);
 
+    // disable buffering
+    {
+        fflush(stdin);
+        fflush(stderr);
+        setvbuf(stdout, NULL, _IONBF, 0);
+        setvbuf(stderr, NULL, _IONBF, 0);
+    }
+
     fprintf(stderr, "# Q=%g, R/L=%g, precision=%g, lfac=%g, lmax=%d\n", Q, RbyL, precision, lfac, lmax);
     
     casimir_init(&casimir, Q, 0.1);
