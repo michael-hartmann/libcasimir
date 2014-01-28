@@ -1,13 +1,6 @@
 #ifndef __LIBCASIMIR_H
 #define __LIBCASIMIR_H
 
-#ifndef MIN
-#define MIN(a,b) (((a)<(b))?(a):(b))
-#endif
-#ifndef MAX
-#define MAX(a,b) (((a)>(b))?(a):(b))
-#endif
-
 typedef struct
 {
     double RbyScriptL; // R/(R+L)
