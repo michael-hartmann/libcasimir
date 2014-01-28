@@ -453,16 +453,12 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
             matrix_log_balance(EE);
             matrix_log_balance(MM);
 
-            /* exp the matrix */
-            matrix_exp(EE);
-            matrix_exp(MM);
-
             /* multiply the correct signs */
             for(l1 = 0; l1 < dim; l1++)
                 for(l2 = 0; l2 < dim; l2++)
                 {
-                    matrix_set(EE, l1,l2, matrix_get(EE_signs, l1,l2)*matrix_get(EE,l1,l2));
-                    matrix_set(MM, l1,l2, matrix_get(MM_signs, l1,l2)*matrix_get(MM,l1,l2));
+                    matrix_set(EE, l1,l2, matrix_get(EE_signs, l1,l2)*exp(matrix_get(EE,l1,l2)));
+                    matrix_set(MM, l1,l2, matrix_get(MM_signs, l1,l2)*exp(matrix_get(MM,l1,l2)));
                 }
 
             /* free space for sign matrices */
@@ -660,16 +656,13 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
                 matrix_quad_free(MM);
             #else
                 matrix_log_balance(EE);
-                matrix_exp(EE);
-
                 matrix_log_balance(MM);
-                matrix_exp(MM);
 
                 for(l1 = 0; l1 < dim; l1++)
                     for(l2 = 0; l2 < dim; l2++)
                     {
-                        matrix_set(EE, l1,l2, matrix_get(M_signs, l1,l2)        *matrix_get(EE,l1,l2));
-                        matrix_set(MM, l1,l2, matrix_get(M_signs, l1+dim,l2+dim)*matrix_get(MM,l1,l2));
+                        matrix_set(EE, l1,l2, matrix_get(M_signs, l1,l2)        *exp(matrix_get(EE,l1,l2)));
+                        matrix_set(MM, l1,l2, matrix_get(M_signs, l1+dim,l2+dim)*exp(matrix_get(MM,l1,l2)));
                     }
 
                 /* free space for sign matrices */
@@ -689,11 +682,10 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
                 logdet = matrix_quad_logdet(M);
             #else
                 matrix_log_balance(M);
-                matrix_exp(M);
 
                 for(l1 = 0; l1 < 2*dim; l1++)
                     for(l2 = 0; l2 < 2*dim; l2++)
-                        matrix_set(M, l1,l2, matrix_get(M_signs, l1,l2)*matrix_get(M,l1,l2));
+                        matrix_set(M, l1,l2, matrix_get(M_signs, l1,l2)*exp(matrix_get(M,l1,l2)));
 
                 /* free space for sign matrices */
                 matrix_char_free(M_signs);
