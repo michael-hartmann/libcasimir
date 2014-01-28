@@ -10,6 +10,7 @@
 
 #include "casimir.h"
 #include "libcasimir.h"
+#include "sfunc.h"
 
 #define PRECISION 1e-10
 
