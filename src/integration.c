@@ -192,8 +192,8 @@
     void inline polymult(log_t p1[], size_t len_p1, log_t p2[], size_t len_p2, log_t pdest[])
     {
         size_t i, power;
-        double list[len_p1+len_p2];
-        char signs[len_p1+len_p2];
+        double list[len_p1+len_p2-1];
+        char signs[len_p1+len_p2-1];
 
         for(power = 0; power < len_p1+len_p2-1; power++)
         {
@@ -246,19 +246,14 @@
     double log_polyintegrate(log_t p[], size_t len, int l1, int l2, int m, int *sign)
     {
         size_t i;
-        double value = -INFINITY;
+        double value;
         double lnLambda = casimir_lnLambda(l1, l2, m);
 
-        *sign = +1;
-
-        assert(!isnan(lnLambda));
-        assert(!isinf(lnLambda));
-
-        for(i = 0; i < len; i++)
+        value = p[0].value;
+        *sign = p[0].sign;
+        for(i = 1; i < len; i++)
             value = logadd_s(value, *sign, lnfac(i)+p[i].value, p[i].sign, sign);
 
-        assert(!isnan(value));
-        //assert(!isinf(value));
         return lnLambda+value;
     }
 
