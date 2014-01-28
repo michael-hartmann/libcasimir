@@ -280,8 +280,14 @@ MATRIX_TYPEDEF(matrix_quad_t, __float128);
     { \
         size_t i,j; \
         const size_t N = A->size; \
-        TYPE D[N]; \
         int not_converged = 1; \
+        TYPE *D; \
+        TYPE *list_row; \
+        TYPE *list_column; \
+\
+        D           = (TYPE *)malloc(N*sizeof(TYPE)); \
+        list_row    = (TYPE *)malloc(N*sizeof(TYPE)); \
+        list_column = (TYPE *)malloc(N*sizeof(TYPE)); \
  \
         /* initialize D to the identity matrix */ \
         for(i = 0; i < N; i++) \
@@ -289,30 +295,34 @@ MATRIX_TYPEDEF(matrix_quad_t, __float128);
  \
         while(not_converged) \
         { \
+            size_t len = 0; \
             TYPE g, f, s; \
             TYPE row_norm, col_norm; \
  \
             not_converged = 0; \
- \
+\
             for (i = 0; i < N; ++i) \
             { \
-                row_norm = LOG_FUNCTION(0); \
-                col_norm = LOG_FUNCTION(0); \
- \
+                len = 0; \
+\
                 for (j = 0; j < N; ++j) \
                     if (j != i) \
                     { \
-                        col_norm = logadd(col_norm, matrix_get(A,j,i)); \
-                        row_norm = logadd(row_norm, matrix_get(A,i,j)); \
+                        list_column[len] = matrix_get(A,j,i); \
+                        list_row[len]    = matrix_get(A,i,j); \
+                        len++; \
                     } \
- \
+\
+                row_norm = logadd_m(list_row,    len); \
+                col_norm = logadd_m(list_column, len); \
+\
                 if ((col_norm == LOG_FUNCTION(0)) || (row_norm == LOG_FUNCTION(0))) \
                   continue; \
- \
+\
                 g = row_norm - LOG_FLOAT_RADIX; \
                 f = 0; \
                 s = logadd(col_norm, row_norm); \
- \
+\
                 /* \
                  * find the integer power of the machine radix which \
                  * comes closest to balancing the matrix \
@@ -322,15 +332,15 @@ MATRIX_TYPEDEF(matrix_quad_t, __float128);
                     f += LOG_FLOAT_RADIX; \
                     col_norm += LOG_FLOAT_RADIX_SQ; \
                 } \
- \
+\
                 g = row_norm + LOG_FLOAT_RADIX; \
- \
+\
                 while (col_norm > g) \
                 { \
                     f -= LOG_FLOAT_RADIX; \
                     col_norm -= LOG_FLOAT_RADIX_SQ; \
                 } \
- \
+\
                 if (logadd(row_norm, col_norm) < (LOG_095+s+f)) \
                 { \
                     int k; \
@@ -358,6 +368,10 @@ MATRIX_TYPEDEF(matrix_quad_t, __float128);
                 } \
             } \
         } \
+\
+        free(D); \
+        free(list_column); \
+        free(list_row); \
     }
 
 #define MATRIX_LOG_BALANCE_HEADER(FUNCTION_PREFIX, MATRIX_TYPE) void FUNCTION_PREFIX ## _log_balance(MATRIX_TYPE *A)
