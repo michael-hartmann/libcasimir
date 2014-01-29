@@ -298,6 +298,7 @@ double casimir_F(casimir_t *self, int *nmax)
 {
     int n = 0;
     double F = 0;
+    double F0 = 0;
     double precision = self->precision;
     double TRbyScriptL = self->T*self->RbyScriptL;
 
@@ -316,44 +317,48 @@ double casimir_F(casimir_t *self, int *nmax)
         casimir_mie_cache_init(&cache, n*TRbyScriptL);
         casimir_mie_cache_alloc(self, &cache, self->lmax);
 
-        double sum_n = 0;
+        double sum_n  = 0;
+        double sum_n0 = 0;
         for(m = 0; m <= self->lmax; m++)
         {
-            double value_orig = casimir_logdetD(self,n,m,&cache);
-            double value = value_orig;
+            double value = casimir_logdetD(self,n,m,&cache);
+            if(sum_n0 == 0)
+                sum_n0 = value;
 
             if(self->verbose)
                 fprintf(stderr, "# n=%d, m=%d, value=%.15g\n", n, m, value);
 
-            if(m == 0)
-                value /= 2;
-            if(n == 0)
-                value /= 2;
+            {
+                double contribution = value;
+
+                if(m == 0)
+                    contribution /= 2;
+                if(n == 0)
+                    contribution /= 2;
+
+                sum_n += contribution;
+            }
 
             /* If F is !=0 and value/F < 1e-16, then F+value = F. The addition
              * has no effect.
              * As for larger m value will be even smaller, we can skip the
              * summation here. 
              */
-            if(F != 0 && fabs(value_orig/F) < precision)
-            {
-                F += value;
+            if(fabs(value/sum_n0) < precision)
                 break;
-            }
-
-            F += value;
-            sum_n += value;
         }
+
+        F += sum_n;
+
+        if(F0 == 0)
+            F0 = sum_n;
 
         if(self->verbose)
             fprintf(stderr, "# n=%d, value=%.15g\n", n, sum_n);
 
         casimir_mie_cache_free(&cache);
 
-        /* If m == 0, all other terms will be even smaller and we can skip the
-         * summation.
-         */
-        if(m == 0)
+        if(fabs(sum_n/F0) < precision)
         {
             /* get out of here */
             if(nmax != NULL)
