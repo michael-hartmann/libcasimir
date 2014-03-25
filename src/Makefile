@@ -7,7 +7,7 @@ CFLAGS += -Werror -Wall -Wmissing-prototypes -Wstrict-prototypes -Wshadow -Wpoin
 #CFLAGS += -DNDEBUG
 #CFLAGS += -DMATRIX_QUAD
 #CFLAGS += -DINTEGRATION_QUAD
-LDFLAGS += -lm
+LDFLAGS += -lm -llapacke
 ifeq ($(CC),gcc)
     OPTIMIZATION = -O3
     LDFLAGS += -lquadmath

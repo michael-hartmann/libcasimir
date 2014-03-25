@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <math.h>
+#include <lapacke.h>
 #include "quad.h"
 
 #define FLOAT_RADIX       2.0
@@ -82,6 +83,20 @@ MATRIX_TYPEDEF(matrix_quad_t, __float128);
     }
 
 #define MATRIX_FROEBENIUS_HEADER(FUNCTION_PREFIX, MATRIX_TYPE, TYPE) TYPE FUNCTION_PREFIX ## _froebenius(MATRIX_TYPE *M)
+
+#define MATRIX_LOGDET_LAPACK(FUNCTION_PREFIX, MATRIX_TYPE, TYPE, ABS_FUNCTION, COPYSIGN_FUNCTION, SQRT_FUNCTION, LOG_FUNCTION) \
+    TYPE FUNCTION_PREFIX ## _logdet(MATRIX_TYPE *M) \
+    { \
+        double det = 0; \
+        int i,dim = M->size; \
+        int IPIV[dim]; \
+        LAPACKE_dgetrf(LAPACK_COL_MAJOR, dim, dim, M->M, dim,IPIV); \
+\
+        for(i = 0; i < dim; i++) \
+            det += LOG_FUNCTION(ABS_FUNCTION(matrix_get(M, i, i))); \
+        return det; \
+    }
+
 
 #define MATRIX_LOGDET(FUNCTION_PREFIX, MATRIX_TYPE, TYPE, ABS_FUNCTION, COPYSIGN_FUNCTION, SQRT_FUNCTION, LOG_FUNCTION) \
     TYPE FUNCTION_PREFIX ## _logdet(MATRIX_TYPE *M) \
