@@ -9,7 +9,7 @@ MATRIX_ALLOC(matrix, matrix_t, double);
 MATRIX_FREE (matrix, matrix_t);
 MATRIX_EXP  (matrix, matrix_t, double, exp);
 MATRIX_FROEBENIUS (matrix, matrix_t, double, sqrt);
-MATRIX_LOGDET_LAPACK     (matrix, matrix_t, double, fabs, copysign, sqrt, log);
+MATRIX_LOGDET(matrix, matrix_t, double, fabs, copysign, sqrt, log);
 MATRIX_ABSMIN     (matrix, matrix_t, double, fabs);
 MATRIX_ABSMAX     (matrix, matrix_t, double, fabs);
 MATRIX_BALANCE    (matrix, matrix_t, double, fabs);
