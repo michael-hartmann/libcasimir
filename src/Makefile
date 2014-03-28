@@ -7,7 +7,7 @@ CFLAGS += -Werror -Wall -Wmissing-prototypes -Wstrict-prototypes -Wshadow -Wpoin
 #CFLAGS += -DNDEBUG
 #CFLAGS += -DMATRIX_QUAD
 #CFLAGS += -DINTEGRATION_QUAD
-LDFLAGS += -lm -llapacke
+LDFLAGS += -lm
 ifeq ($(CC),gcc)
     OPTIMIZATION = -O3
     LDFLAGS += -lquadmath
@@ -21,11 +21,11 @@ endif
 casimir:
 	$(CC) $(OPTIMIZATION) $(SOURCES) $(CFLAGS) casimir.c $(LDFLAGS) -o casimir
 
-n0:
-	$(CC) $(OPTIMIZATION) $(SOURCES) $(CFLAGS) n0.c $(LDFLAGS) -o casimir_n0
+casimir_hiT:
+	$(CC) $(OPTIMIZATION) $(SOURCES) $(CFLAGS) casimir_hiT.c $(LDFLAGS) -pthread -o casimir_hiT
 
 tests:
 	$(CC) $(OPTIMIZATION) $(SOURCES) $(CFLAGS) unittest.c tests.c $(LDFLAGS) -o casimir_tests
 
 clean:
-	rm -f casimir casimir_tests casimir_n0
+	rm -f casimir casimir_tests casimir_hiT
