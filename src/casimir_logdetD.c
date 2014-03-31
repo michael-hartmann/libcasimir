@@ -11,8 +11,6 @@
 #include "sfunc.h"
 #include "libcasimir.h"
 
-#define PRECISION 1e-10
-
 /* This function returns the seconds since 1st Jan 1970 in µs precision */
 static double now(void)
 {
@@ -43,9 +41,6 @@ Further options:\n\
     -L\n\
         Set lmax to given value. When -L is used, -l will be ignored\n\
 \n\
-    -p, --precision\n\
-        Set precision to given value. Default: %g\n\
-\n\
     --buffering\n\
         Enable buffering. By default buffering for stderr and stdout is\n\
         disabled.\n\
@@ -57,13 +52,12 @@ Further options:\n\
         Show this help\n\
 \n\
 \n\
-Compiled %s, %s\n", PRECISION, __DATE__, __TIME__);
+Compiled %s, %s\n", __DATE__, __TIME__);
 }
 
 int main(int argc, char *argv[])
 {
-    double precision = PRECISION;
-    double T,Q;
+    double T = -1, Q = -1;
     double lfac = 5;
     int i, n = -1, m = -1;
     int lmax = 0;
@@ -83,14 +77,13 @@ int main(int argc, char *argv[])
           { "buffering", no_argument,       &buffering_flag, 1 },
           { "help",      no_argument,       0, 'h' },
           { "lscale",    required_argument, 0, 'l' },
-          { "precision", required_argument, 0, 'p' },
           { 0, 0, 0, 0 }
         };
 
         /* getopt_long stores the option index here. */
         int option_index = 0;
       
-        c = getopt_long (argc, argv, "Q:T:n:m:s:a:l:L:p:vqh", long_options, &option_index);
+        c = getopt_long (argc, argv, "Q:T:n:m:s:a:l:L:vqh", long_options, &option_index);
       
         /* Detect the end of the options. */
         if (c == -1)
@@ -115,9 +108,6 @@ int main(int argc, char *argv[])
               break;
           case 'l':
               lfac = atof(optarg);
-              break;
-          case 'p':
-              precision = atof(optarg);
               break;
           case 'n':
               n = atoi(optarg);
@@ -153,12 +143,6 @@ int main(int argc, char *argv[])
         usage(stderr);
         exit(1);
     }
-    if(precision <= 0)
-    {
-        fprintf(stderr, "--precision must be positive\n\n");
-        usage(stderr);
-        exit(1);
-    }
     if(Q <= 0 || Q >= 1)
     {
         fprintf(stderr, "-Q must be in 0 < Q < 1\n\n");
@@ -178,11 +162,14 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    printf("# precision=%g\n", precision);
+    if(lmax <= 0)
+        lmax = MAX((int)ceil(Q/(1-Q)*lfac), 5);
+
     printf("# lfac=%g\n", lfac);
     printf("# Q = %g\n", Q);
     printf("# n = %d\n", n);
     printf("# m = %d\n", m);
+    printf("# lmax = %d\n", lmax);
     printf("#\n");
     printf("# R/(L+R), T, F, lmax, nmax, time\n");
 
@@ -193,16 +180,11 @@ int main(int argc, char *argv[])
         double nTRbyScriptL = n*T*Q;
 
         casimir_init(&casimir, Q, T);
-        casimir_set_precision(&casimir, precision);
         casimir_set_verbose(&casimir, verbose_flag);
-
-        if(lmax > 0)
-            casimir_set_lmax(&casimir, lmax);
-        else
-            casimir_set_lmax(&casimir, MAX((int)ceil(Q/(1-Q)*lfac), 5));
+        casimir_set_lmax(&casimir, lmax);
 
         casimir_mie_cache_init(&cache, nTRbyScriptL);
-        casimir_mie_cache_alloc(&casimir, &cache, casimir.lmax);
+        casimir_mie_cache_alloc(&casimir, &cache, lmax);
         value = casimir_logdetD(&casimir, n, m, &cache);
         casimir_mie_cache_free(&cache);
         casimir_free(&casimir);
