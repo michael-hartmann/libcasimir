@@ -68,6 +68,8 @@ pthread_t *start_thread(double LbyR, int m, int lmax, double precision)
     p->precision = precision;
     p->lmax      = lmax;
     p->m         = m;
+    p->value     = -1;
+    p->time      = -1;
 
     pthread_create(thread, NULL, &logdetD0, (void *)p);
 
@@ -86,9 +88,6 @@ void *logdetD0(void *p)
     int m            = params->m;
     int lmax         = params->lmax;
 
-    free(p);
-    return_t *ret = (return_t *)xmalloc(sizeof(return_t));
-    
     casimir_init(&casimir, 1/(1+LbyR), 0.1);
     casimir_set_precision(&casimir, precision);
     casimir_set_verbose(&casimir, VERBOSE);
@@ -100,11 +99,10 @@ void *logdetD0(void *p)
     if(m == 0)
         value /= 2;
     
-    ret->m     = m;
-    ret->value = value;
-    ret->time  = now()-start;
+    params->value = value;
+    params->time  = now()-start;
 
-    return ret;
+    return params;
 }
 
 int main(int argc, char *argv[])
@@ -215,12 +213,11 @@ int main(int argc, char *argv[])
     for(i = 0; i < cores; i++)
         threads[i] = NULL;
 
-    //for(m = 0; m < lmax; m++)
     m = 0;
     while(m < lmax)
     {
         int bye = 0;
-        return_t *r;
+        param_t *r;
 
         // try to start threads
         for(i = 0; i < cores; i++)
@@ -230,7 +227,7 @@ int main(int argc, char *argv[])
             else if(pthread_tryjoin_np(*threads[i], (void *)&r) == 0)
             {
                 values[r->m] = r->value;
-                fprintf(stderr, "# m=%d, value=%g, time=%g\n", r->m, r->value, r->time);
+                fprintf(stderr, "# m=%d, value=%.15g, time=%g\n", r->m, r->value, r->time);
                 if(r->value/sumF(values, lmax) < precision)
                     bye = 1;
                 free(r);
@@ -247,12 +244,12 @@ int main(int argc, char *argv[])
     fprintf(stderr, "# waiting for last threads to finish\n");
     for(i = 0; i < cores; i++)
     {
-        return_t *r;
+        param_t *r;
         if(threads[i] != NULL)
         {
             pthread_join(*threads[i], (void *)&r);
             values[r->m] = r->value;
-            fprintf(stderr, "# m=%d, value=%g, time=%g\n", r->m, r->value, r->time);
+            fprintf(stderr, "# m=%d, value=%.15g, time=%g\n", r->m, r->value, r->time);
             free(r);
             threads[i] = NULL;
         }

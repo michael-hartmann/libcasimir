@@ -2,16 +2,9 @@
 #define CASIMIR_HIT
 
 typedef struct {
-    int m;
-    double value;
-    double time;
-} return_t;
-
-typedef struct {
-    double LbyR;
-    int m;
-    double precision;
-    int lmax;
+    double LbyR, precision;
+    int lmax, m;
+    double value, time;
 } param_t;
 
 double now(void);
