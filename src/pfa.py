@@ -25,10 +25,31 @@ def integrand(x, LbyR, T):
 
 def pfa(LbyR, T):
     I = quad(integrand, 1, 1+1/LbyR, args=(LbyR, T))
-    print I
+    #print I
     return -T/(4*pi)*I[0]
 
-LbyR = 0.03
-T    = 1
+if __name__ == "__main__":
+    from sys import argv, exit
 
-print pfa(LbyR, T)
+    def usage(self):
+        print "%s LbyR, T" % (self)
+        print "\tLbyR: ratio L/R, LbyR > 0"
+        print "\tT:    temperature, T > 0"
+
+    if argv < 3:
+        usage(argv[0])
+        exit(1)
+    
+    try:
+        LbyR = float(argv[1])
+        T    = float(argv[2])
+
+        if LbyR < 0:
+            raise BaseException("LbyR < 0")
+        if T < 0:
+            raise BaseException("R < 0")
+    except:
+        usage(argv[0])
+        exit(1)
+
+    print pfa(LbyR, T)
