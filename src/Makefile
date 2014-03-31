@@ -21,6 +21,9 @@ endif
 casimir:
 	$(CC) $(OPTIMIZATION) $(SOURCES) $(CFLAGS) casimir.c $(LDFLAGS) -o casimir
 
+casimir_logdetD:
+	$(CC) $(OPTIMIZATION) $(SOURCES) $(CFLAGS) casimir_logdetD.c $(LDFLAGS) -o casimir_logdetD
+
 casimir_hiT:
 	$(CC) $(OPTIMIZATION) $(SOURCES) $(CFLAGS) casimir_hiT.c $(LDFLAGS) -pthread -o casimir_hiT
 
