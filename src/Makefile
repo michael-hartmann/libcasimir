@@ -1,4 +1,4 @@
-.PHONY: casimir tests n0
+.PHONY: casimir casimir_tests casimir_hiT casimir_logdetD
 all: casimir
 
 CC = gcc
@@ -27,8 +27,8 @@ casimir_logdetD:
 casimir_hiT:
 	$(CC) $(OPTIMIZATION) $(SOURCES) $(CFLAGS) casimir_hiT.c $(LDFLAGS) -pthread -o casimir_hiT
 
-tests:
+casimir_tests:
 	$(CC) $(OPTIMIZATION) $(SOURCES) $(CFLAGS) unittest.c tests.c $(LDFLAGS) -o casimir_tests
 
 clean:
-	rm -f casimir casimir_tests casimir_hiT
+	rm -f casimir casimir_tests casimir_hiT casimir_logdetD
