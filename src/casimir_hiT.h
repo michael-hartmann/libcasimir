@@ -4,7 +4,7 @@
 typedef struct {
     double LbyR, precision;
     int lmax, m;
-    double value, time;
+    double value, time, logdet_EE, logdet_MM;
 } param_t;
 
 double now(void);

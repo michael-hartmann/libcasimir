@@ -81,7 +81,7 @@ void *logdetD0(void *p)
 {       
     casimir_t casimir;
     double start = now();
-    double value;
+    double value, logdet_EE, logdet_MM;
     param_t *params = p;
     double LbyR      = params->LbyR;
     double precision = params->precision;
@@ -93,14 +93,25 @@ void *logdetD0(void *p)
     casimir_set_verbose(&casimir, VERBOSE);
     casimir_set_lmax(&casimir, lmax);
     
-    value = casimir_logdetD(&casimir,0,m,NULL)/2;
+    value = casimir_logdetD0(&casimir, m, &logdet_EE, &logdet_MM);
     casimir_free(&casimir);
     
+    // n == 0
+    logdet_EE /= 2;
+    logdet_MM /= 2;
+    value     /= 2;
+
     if(m == 0)
-        value /= 2;
+    {
+        logdet_EE /= 2;
+        logdet_MM /= 2;
+        value     /= 2;
+    }
     
-    params->value = value;
-    params->time  = now()-start;
+    params->value     = value;
+    params->logdet_EE = logdet_EE;
+    params->logdet_MM = logdet_MM;
+    params->time      = now()-start;
 
     return params;
 }
@@ -114,7 +125,7 @@ int main(int argc, char *argv[])
     int i, m;
     double start_time = now();
     double LbyR = -1;
-    double *values;
+    double *values, *EE;
     pthread_t **threads;
 
     while (1)
@@ -205,9 +216,13 @@ int main(int argc, char *argv[])
     fprintf(stderr, "# L/R=%g, precision=%g, lmax=%d, cores=%d\n", LbyR, precision, lmax, cores);
     
     values = (double *)xmalloc(lmax*sizeof(double));
+    EE     = (double *)xmalloc(lmax*sizeof(double));
 
     for(i = 0; i < lmax; i++)
+    {
         values[i] = 0;
+        EE[i]     = 0;
+    }
 
     threads = (pthread_t **)xmalloc(cores*sizeof(pthread_t));
     for(i = 0; i < cores; i++)
@@ -227,7 +242,8 @@ int main(int argc, char *argv[])
             else if(pthread_tryjoin_np(*threads[i], (void *)&r) == 0)
             {
                 values[r->m] = r->value;
-                fprintf(stderr, "# m=%d, value=%.15g, time=%g\n", r->m, r->value, r->time);
+                EE[r->m]     = r->logdet_EE;
+                fprintf(stderr, "# m=%d, value=%.15g, logdet_EE=%.15g, logdet_MM=%.15g, time=%g\n", r->m, r->value, r->logdet_EE, r->logdet_MM, r->time);
                 if(r->value/sumF(values, lmax) < precision)
                     bye = 1;
                 free(r);
@@ -249,7 +265,8 @@ int main(int argc, char *argv[])
         {
             pthread_join(*threads[i], (void *)&r);
             values[r->m] = r->value;
-            fprintf(stderr, "# m=%d, value=%.15g, time=%g\n", r->m, r->value, r->time);
+            EE[r->m]     = r->logdet_EE;
+            fprintf(stderr, "# m=%d, value=%.15g, logdet_EE=%.15g, logdet_MM=%.15g, time=%g\n", r->m, r->value, r->logdet_EE, r->logdet_MM, r->time);
             free(r);
             threads[i] = NULL;
         }
@@ -257,10 +274,11 @@ int main(int argc, char *argv[])
     
     free(threads);
 
-    printf("# L/R, value, time\n");
-    printf("%.15g, %.15g, %.15g\n", LbyR, sumF(values, lmax), now()-start_time);
+    printf("# L/R, value_perf, value_Drude, time\n");
+    printf("%.15g, %.15g, %.15g, %.15g\n", LbyR, sumF(values, lmax), sumF(EE, lmax), now()-start_time);
 
     free(values);
+    free(EE);
 
     return 0;
 }
