@@ -118,8 +118,70 @@ void fft_free(fft_t *self)
     self->W_re = self->W_im = NULL;
 }
 
+int fft_polymult3(log_t p1[], log_t p2[], log_t p3[], int len)
+{
+    int i;
+    fft_t self;
+    log_t *p1_im, *p2_im, *p3_im;
 
+    if(fft_init(&self, len) != 0)
+        return -1;
 
+    p1_im = (log_t *)malloc(len*sizeof(log_t));
+    p2_im = (log_t *)malloc(len*sizeof(log_t));
+    p3_im = (log_t *)malloc(len*sizeof(log_t));
+
+    for(i = 0; i < len; i++)
+    {
+        p1_im[i].value = log(0); p1_im[i].sign = +1;
+        p2_im[i].value = log(0); p2_im[i].sign = +1;
+        p3_im[i].value = log(0); p3_im[i].sign = +1;
+    }
+
+    fft(&self, p1, p1_im);
+    fft(&self, p2, p2_im);
+    fft(&self, p3, p3_im);
+
+    /*
+    fft_permute_bitrev(&self, p1, p1_im);
+    fft_permute_bitrev(&self, p2, p2_im);
+    fft_permute_bitrev(&self, p3, p3_im);
+    */
+
+    for(i = 0; i < len; i++)
+    {
+        double re, im;
+        int re_sign, im_sign;
+        /* p2*p3 => p2 */
+        re = logadd_s(p2[i].value+p3[i].value, p2[i].sign*p3[i].sign, p2_im[i].value+p3_im[i].value, -p2_im[i].sign*p3_im[i].sign, &re_sign);
+        im = logadd_s(p2_im[i].value+p3[i].value, p2_im[i].sign*p3[i].sign, p2[i].value+p3_im[i].value, p2[i].sign*p3_im[i].sign, &im_sign);
+        p2[i].value    = re;
+        p2[i].sign     = re_sign;
+        p2_im[i].value = im;
+        p2_im[i].sign  = im_sign;
+
+        /* p2*p1 => p1 */
+        re = logadd_s(p2[i].value+p1[i].value, p2[i].sign*p1[i].sign, p2_im[i].value+p1_im[i].value, -p2_im[i].sign*p1_im[i].sign, &re_sign);
+        im = logadd_s(p2_im[i].value+p1[i].value, p2_im[i].sign*p1[i].sign, p2[i].value+p1_im[i].value, p2[i].sign*p1_im[i].sign, &im_sign);
+        p1[i].value    = re;
+        p1[i].sign     = re_sign;
+        p1_im[i].value = im;
+        p1_im[i].sign  = im_sign;
+
+        //printf("%d: M %g%+gi\n", i, p1[i].sign*exp(p1[i].value), p1_im[i].sign*exp(p1_im[i].value));
+    }
+
+    fft_permute_bitrev(&self, p1, p1_im);
+    ifft(&self, p1, p1_im);
+    fft_permute_bitrev(&self, p1, p1_im);
+    fft_free(&self);
+
+    free(p1_im);
+    free(p2_im);
+    free(p3_im);
+
+    return 0;
+}
 
 /* fft on a set of n points given by A_re and A_im. Bit-reversal permuted roots-of-unity lookup table
  * is given by W_re and W_im. More specifically,  W is the array of first n/2 nth roots of unity stored
@@ -135,9 +197,9 @@ void fft_free(fft_t *self)
  *         (www.cs.berkeley.edu/~demmel/cs267/lecture24/lecture24.html)
  *       - Also, look "Cormen Leicester Rivest [CLR] - Introduction to Algorithms" book for another variant of Iterative-FFT
  */
-void fft(fft_t *self, int dir, log_t *A_re, log_t *A_im) 
+static void _fft(fft_t *self, int dir, log_t *A_re, log_t *A_im) 
 {
-    int n = self->n;
+    const int n = self->n;
     int m, g, b, mt, k;
     
     if(dir > 0)
@@ -203,31 +265,50 @@ void fft(fft_t *self, int dir, log_t *A_re, log_t *A_im)
     }
 }
 
+void ifft(fft_t *self, log_t *A_re, log_t *A_im)
+{
+    _fft(self, -1, A_re, A_im);
+
+}
+
+void fft(fft_t *self, log_t *A_re, log_t *A_im) 
+{
+    _fft(self, +1, A_re, A_im);
+}
+
+#if 0
 int main(int argc, char *argv[])
 {
     int n = 4;
     int i;
-    fft_t self;
-    log_t A_re[4];
-    log_t A_im[4];
-    
-    A_re[0].value = log(1); A_re[0].sign = 1;
-    A_re[1].value = log(2); A_re[1].sign = 1;
-    A_re[2].value = log(3); A_re[2].sign = 1;
-    A_re[3].value = log(4); A_re[3].sign = 1;
-
-    A_im[0].value = log(0); A_im[0].sign = 1;
-    A_im[1].value = log(0); A_im[1].sign = 1;
-    A_im[2].value = log(0); A_im[2].sign = 1;
-    A_im[3].value = log(0); A_im[3].sign = 1;
-    
-    fft_init(&self, n);
-    fft(&self, -1, A_re, A_im);
-    fft_permute_bitrev(&self, A_re, A_im);
-    fft_free(&self);
+    log_t p1[n], p2[n], p3[n];
     
     for(i = 0; i < n; i++)
-        printf("%d: %+g%+gi\n", i, A_re[i].sign*exp(A_re[i].value), A_im[i].sign*exp(A_im[i].value));
+    {
+        p1[i].sign = 1;
+        p2[i].sign = 1;
+        p3[i].sign = 1;
+
+        if(i > 1)
+        {
+            p1[i].value = log(0);
+            p2[i].value = log(0);
+            p3[i].value = log(0);
+        }
+        else
+        {
+            p1[i].value = log(i+1);
+            p2[i].value = log(i+2);
+            p3[i].value = log(i+3);
+        }
+    }
+
+    fft_polymult3(p1, p2, p3, n);
+    
+    printf("\n\n");
+    for(i = 0; i < n; i++)
+        printf("%d: %+g\n", i, p1[i].sign*exp(p1[i].value));
 
     return 0;
 }
+#endif
