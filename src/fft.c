@@ -118,47 +118,34 @@ void fft_free(fft_t *self)
     self->W_re = self->W_im = NULL;
 }
 
-int fft_polymult3(log_t p1[], log_t p2[], log_t p3[], int len)
+int fft_polymult(log_t p1[], log_t p2[], int len)
 {
     int i;
     fft_t self;
-    log_t *p1_im, *p2_im, *p3_im;
+    log_t *p1_im, *p2_im;
 
     if(fft_init(&self, len) != 0)
         return -1;
 
     p1_im = (log_t *)malloc(len*sizeof(log_t));
     p2_im = (log_t *)malloc(len*sizeof(log_t));
-    p3_im = (log_t *)malloc(len*sizeof(log_t));
 
     for(i = 0; i < len; i++)
     {
         p1_im[i].value = log(0); p1_im[i].sign = +1;
         p2_im[i].value = log(0); p2_im[i].sign = +1;
-        p3_im[i].value = log(0); p3_im[i].sign = +1;
     }
 
     fft(&self, p1, p1_im);
     fft(&self, p2, p2_im);
-    fft(&self, p3, p3_im);
 
-    /*
-    fft_permute_bitrev(&self, p1, p1_im);
-    fft_permute_bitrev(&self, p2, p2_im);
-    fft_permute_bitrev(&self, p3, p3_im);
-    */
+    //fft_permute_bitrev(&self, p1, p1_im);
+    //fft_permute_bitrev(&self, p2, p2_im);
 
     for(i = 0; i < len; i++)
     {
         double re, im;
         int re_sign, im_sign;
-        /* p2*p3 => p2 */
-        re = logadd_s(p2[i].value+p3[i].value, p2[i].sign*p3[i].sign, p2_im[i].value+p3_im[i].value, -p2_im[i].sign*p3_im[i].sign, &re_sign);
-        im = logadd_s(p2_im[i].value+p3[i].value, p2_im[i].sign*p3[i].sign, p2[i].value+p3_im[i].value, p2[i].sign*p3_im[i].sign, &im_sign);
-        p2[i].value    = re;
-        p2[i].sign     = re_sign;
-        p2_im[i].value = im;
-        p2_im[i].sign  = im_sign;
 
         /* p2*p1 => p1 */
         re = logadd_s(p2[i].value+p1[i].value, p2[i].sign*p1[i].sign, p2_im[i].value+p1_im[i].value, -p2_im[i].sign*p1_im[i].sign, &re_sign);
@@ -178,7 +165,6 @@ int fft_polymult3(log_t p1[], log_t p2[], log_t p3[], int len)
 
     free(p1_im);
     free(p2_im);
-    free(p3_im);
 
     return 0;
 }
@@ -249,14 +235,14 @@ static void _fft(fft_t *self, int dir, log_t *A_re, log_t *A_im)
                 A_im[b].value = logadd_s(u_im, u_im_sign, t_im, t_im_sign, &A_im[b].sign);
 
                 A_re[b+mt].value = logadd_s(u_re, u_re_sign, t_re, -t_re_sign, &A_re[b+mt].sign);
-                A_im[b+mt].value = logadd_s(u_im, u_re_sign, t_im, -t_im_sign, &A_im[b+mt].sign);
+                A_im[b+mt].value = logadd_s(u_im, u_im_sign, t_im, -t_im_sign, &A_im[b+mt].sign);
             }
         }
     }
     
     if(dir == -1)
     {
-        double logn = log(n);
+        const double logn = log(n);
         for(m = 0; m < n; m++)
         {
             A_re[m].value -= logn;
@@ -279,31 +265,28 @@ void fft(fft_t *self, log_t *A_re, log_t *A_im)
 #if 0
 int main(int argc, char *argv[])
 {
-    int n = 4;
+    int n = 8;
     int i;
-    log_t p1[n], p2[n], p3[n];
+    log_t p1[n], p2[n];
     
     for(i = 0; i < n; i++)
     {
         p1[i].sign = 1;
         p2[i].sign = 1;
-        p3[i].sign = 1;
 
         if(i > 1)
         {
             p1[i].value = log(0);
             p2[i].value = log(0);
-            p3[i].value = log(0);
         }
         else
         {
             p1[i].value = log(i+1);
             p2[i].value = log(i+2);
-            p3[i].value = log(i+3);
         }
     }
 
-    fft_polymult3(p1, p2, p3, n);
+    fft_polymult(p1, p2, n);
     
     printf("\n\n");
     for(i = 0; i < n; i++)
