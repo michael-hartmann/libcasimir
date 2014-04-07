@@ -18,7 +18,7 @@ static int fft_log_2(int n)
 /* treats inp as a numbits number and bitreverses it. 
  * inp < 2^(numbits) for meaningful bit-reversal
  */ 
-int fft_bitrev(int inp, int numbits)
+static int fft_bitrev(int inp, int numbits)
 {
     int i, rev=0;
 
