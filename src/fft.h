@@ -1,17 +1,17 @@
 #ifndef FFT_H
 #define FFT_H
 
+#include "integration.h"
+
 typedef struct {
-    int n;
-    int log2n;
-    double *W_re;
-    double *W_im;
+    int n, log2n;
+    log_t *W_re, *W_im;
 } fft_t;
 
-void fft_init(fft_t *self, int n);
+int  fft_init(fft_t *self, int n);
 void fft_free(fft_t *self);
 
-void fft(fft_t *self, int dir, int n, double *A_re, double *A_im);
-void fft_permute_bitrev(fft_t *self, double *A_re, double *A_im);
+void fft(fft_t *self, int dir, log_t *A_re, log_t *A_im);
+void fft_permute_bitrev(fft_t *self, log_t *A_re, log_t *A_im);
 
 #endif
