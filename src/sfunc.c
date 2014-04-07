@@ -173,3 +173,18 @@ double bessel_lnInu(const int nu, const double x)
     bessel_lnInuKnu(nu, x, &Inu, NULL);
     return Inu;
 }
+
+int round2up(int x)
+{
+    int i = 0, y = x;
+
+    while(x > 0)
+    {
+        x &= ~(1 << i++);
+    }
+
+    if(y & ~(1 << (i-1)))
+        return 1 << i;
+    else
+        return 1 << (i-1);
+}
