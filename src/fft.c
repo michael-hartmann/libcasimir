@@ -4,6 +4,17 @@
 
 #include "fft.h"
 
+/* returns log n (to the base 2), if n is positive and power of 2 */ 
+static int fft_log_2(int n) 
+{
+    int res; 
+    for(res=0; n >= 2; res++) 
+        n = n >> 1; 
+
+    return res; 
+}
+ 
+
 /* treats inp as a numbits number and bitreverses it. 
  * inp < 2^(numbits) for meaningful bit-reversal
  */ 
@@ -21,12 +32,12 @@ int fft_bitrev(int inp, int numbits)
 }
 
 /* permutes the array using a bit-reversal permutation */ 
-void fft_permute_bitrev(int n, double *A_re, double *A_im) 
+void fft_permute_bitrev(fft_t *self, double *A_re, double *A_im) 
 { 
-    int i, bri, log2n;
+    int i, bri;
     double t_re, t_im;
-    
-    log2n = fft_log_2(n); 
+    int n     = self->n;
+    int log2n = self->log2n;
     
     for(i = 0; i < n; i++)
     {
@@ -51,32 +62,38 @@ void fft_permute_bitrev(int n, double *A_re, double *A_im)
  * Note: W is bit-reversal permuted because fft(..) goes faster if this is done.
  *       see that function for more details on why we treat 'i' as a (log2n-1) bit number.
  */
-void fft_compute_W(int n, double *W_re, double *W_im)
+void fft_init(fft_t *self, int n)
 {
     int i, br;
     int log2n = fft_log_2(n);
+
+    self->n     = n;
+    self->log2n = log2n;
+
+    self->W_re = (double *)malloc(n/2*sizeof(double));
+    self->W_im = (double *)malloc(n/2*sizeof(double));
     
     for (i = 0; i < (n/2); i++)
     {
         br = fft_bitrev(i, log2n-1); 
-        W_re[br] = +cos(i*2*M_PI/n);  
-        W_im[br] = -sin(i*2*M_PI/n);  
+        self->W_re[br] = +cos(i*2*M_PI/n);  
+        self->W_im[br] = -sin(i*2*M_PI/n);  
     }
 }
 
-
-
-
-/* returns log n (to the base 2), if n is positive and power of 2 */ 
-int fft_log_2(int n) 
+void fft_free(fft_t *self)
 {
-    int res; 
-    for(res=0; n >= 2; res++) 
-        n = n >> 1; 
+    if(self->W_re != NULL)
+        free(self->W_re);
+    if(self->W_im != NULL)
+        free(self->W_im);
 
-    return res; 
+    self->W_re = self->W_im = NULL;
 }
- 
+
+
+
+
 /* fft on a set of n points given by A_re and A_im. Bit-reversal permuted roots-of-unity lookup table
  * is given by W_re and W_im. More specifically,  W is the array of first n/2 nth roots of unity stored
  * in a permuted bitreversal order.
@@ -92,11 +109,13 @@ int fft_log_2(int n)
  *       - Also, look "Cormen Leicester Rivest [CLR] - Introduction to Algorithms" book for another variant of Iterative-FFT
  */
 
-void fft(int dir, int n, double *A_re, double *A_im, double *W_re, double *W_im) 
+void fft(fft_t *self, int dir, int n, double *A_re, double *A_im) 
 {
     double w_re, w_im, u_re, u_im, t_re, t_im;
     int m, g, b;
     int mt, k;
+    double *W_re = self->W_re;
+    double *W_im = self->W_im;
     
     if(dir > 0)
         dir = 1;
@@ -155,17 +174,17 @@ int main(int argc, char *argv[])
 {
     int n;
     int i;
+    fft_t self;
     
     n = 8;
     
     double A_re[]  = { 1, 2, 3, 4, 5, 6, 7, 8 };
     double A_im[]  = { 0, 0, 0, 0, 0, 0, 0, 0 };
-    double W_re[4];
-    double W_im[4];
     
-    fft_compute_W(n, W_re, W_im); 
-    fft(-1, n, A_re, A_im, W_re, W_im);
-    fft_permute_bitrev(n, A_re, A_im);        
+    fft_init(&self, n);
+    fft(&self, -1, n, A_re, A_im);
+    fft_permute_bitrev(&self, A_re, A_im);        
+    fft_free(&self);
     
     for(i = 0; i < n; i++)
         printf("%d: %+g%+gi\n", i, A_re[i], A_im[i]);
