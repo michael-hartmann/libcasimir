@@ -10,6 +10,8 @@
     #define sqrtq     sqrtl
     #define log1pq    log1pl
     #define fabsq     fabsl
+    #define sinq      sinl
+    #define cosq      cosl
     #define copysignq copysignl
     #define isinfq(x) (x/10 == x)
     #define isnanq(x) (x != x)
@@ -25,6 +27,12 @@
         /* define prototypes. without these prototypes icc will return nan. */
         _Quad __logq(_Quad);
         #define logq __logq
+    
+        _Quad __cosq(_Quad);
+        #define cosq __cosq
+    
+        _Quad __sinq(_Quad);
+        #define sinq __sinq
     
         _Quad __expq(_Quad);
         #define expq __expq
