@@ -3,8 +3,7 @@
 
 #include <stdio.h>
 #include <math.h>
-#include <lapacke.h>
-#include "quad.h"
+#include "edouble.h"
 
 #define FLOAT_RADIX       2.0
 #define FLOAT_RADIX_SQ    (FLOAT_RADIX * FLOAT_RADIX)
@@ -22,7 +21,7 @@
 
 MATRIX_TYPEDEF(matrix_t, double);
 MATRIX_TYPEDEF(matrix_char_t, char);
-MATRIX_TYPEDEF(matrix_quad_t, __float128);
+MATRIX_TYPEDEF(matrix_edouble_t, edouble);
 
 #define MATRIX_ALLOC(FUNCTION_PREFIX, MATRIX_TYPE, TYPE) \
     MATRIX_TYPE *FUNCTION_PREFIX ## _alloc(size_t size)  \
@@ -407,13 +406,13 @@ MATRIX_LOG_BALANCE_HEADER(matrix, matrix_t);
 MATRIX_ALLOC_HEADER(matrix_char, matrix_char_t);
 MATRIX_FREE_HEADER (matrix_char, matrix_char_t);
 
-MATRIX_ALLOC_HEADER(matrix_quad, matrix_quad_t);
-MATRIX_FREE_HEADER (matrix_quad, matrix_quad_t);
-MATRIX_EXP_HEADER  (matrix_quad, matrix_quad_t);
-MATRIX_FROEBENIUS_HEADER(matrix_quad, matrix_quad_t, __float128);
-MATRIX_LOGDET_HEADER    (matrix_quad, matrix_quad_t, __float128);
-MATRIX_ABSMIN_HEADER    (matrix_quad, matrix_quad_t, __float128);
-MATRIX_ABSMAX_HEADER    (matrix_quad, matrix_quad_t, __float128);
-MATRIX_BALANCE_HEADER   (matrix_quad, matrix_quad_t);
+MATRIX_ALLOC_HEADER(matrix_edouble, matrix_edouble_t);
+MATRIX_FREE_HEADER (matrix_edouble, matrix_edouble_t);
+MATRIX_EXP_HEADER  (matrix_edouble, matrix_edouble_t);
+MATRIX_FROEBENIUS_HEADER(matrix_edouble, matrix_edouble_t, edouble);
+MATRIX_LOGDET_HEADER    (matrix_edouble, matrix_edouble_t, edouble);
+MATRIX_ABSMIN_HEADER    (matrix_edouble, matrix_edouble_t, edouble);
+MATRIX_ABSMAX_HEADER    (matrix_edouble, matrix_edouble_t, edouble);
+MATRIX_BALANCE_HEADER   (matrix_edouble, matrix_edouble_t);
 
 #endif

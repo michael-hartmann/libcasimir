@@ -382,8 +382,8 @@ double casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logde
     dim = (max-min+1);
 
     #ifdef MATRIX_QUAD
-        matrix_quad_t *EE = matrix_quad_alloc(dim);
-        matrix_quad_t *MM = matrix_quad_alloc(dim);
+        matrix_edouble_t *EE = matrix_edouble_alloc(dim);
+        matrix_edouble_t *MM = matrix_edouble_alloc(dim);
     #else
         matrix_char_t *EE_signs = matrix_char_alloc(dim);
         matrix_char_t *MM_signs = matrix_char_alloc(dim);
@@ -434,15 +434,15 @@ double casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logde
 
     #ifdef MATRIX_QUAD
         /* balance the matrix */
-        matrix_quad_balance(EE);
-        matrix_quad_balance(MM);
+        matrix_edouble_balance(EE);
+        matrix_edouble_balance(MM);
 
-        value_EE = matrix_quad_logdet(EE);
-        value_MM = matrix_quad_logdet(MM);
+        value_EE = matrix_edouble_logdet(EE);
+        value_MM = matrix_edouble_logdet(MM);
 
         /* free space for matrices */
-        matrix_quad_free(EE);
-        matrix_quad_free(MM);
+        matrix_edouble_free(EE);
+        matrix_edouble_free(MM);
     #else
         /* balance the matrix */
         matrix_log_balance(EE);
@@ -499,7 +499,7 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
         return casimir_logdetD0(self, m, NULL, NULL);
 
     #ifdef MATRIX_QUAD
-        matrix_quad_t *M = matrix_quad_alloc(2*dim);
+        matrix_edouble_t *M = matrix_edouble_alloc(2*dim);
     #else
         matrix_t *M = matrix_alloc(2*dim);
         matrix_char_t *M_signs = matrix_char_alloc(2*dim);
@@ -649,8 +649,8 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
     {
         size_t i,j;
         #ifdef MATRIX_QUAD
-            matrix_quad_t *EE = matrix_quad_alloc(dim);
-            matrix_quad_t *MM = matrix_quad_alloc(dim);
+            matrix_edouble_t *EE = matrix_edouble_alloc(dim);
+            matrix_edouble_t *MM = matrix_edouble_alloc(dim);
         #else
             matrix_t *EE = matrix_alloc(dim);
             matrix_t *MM = matrix_alloc(dim);
@@ -664,13 +664,13 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
             }
 
         #ifdef MATRIX_QUAD
-            matrix_quad_balance(MM);
-            matrix_quad_balance(EE);
+            matrix_edouble_balance(MM);
+            matrix_edouble_balance(EE);
 
-            logdet = matrix_quad_logdet(EE)+matrix_quad_logdet(MM);
+            logdet = matrix_edouble_logdet(EE)+matrix_edouble_logdet(MM);
 
-            matrix_quad_free(EE);
-            matrix_quad_free(MM);
+            matrix_edouble_free(EE);
+            matrix_edouble_free(MM);
         #else
             matrix_log_balance(EE);
             matrix_log_balance(MM);
@@ -695,8 +695,8 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
     else
     {
         #ifdef MATRIX_QUAD
-            matrix_quad_balance(M);
-            logdet = matrix_quad_logdet(M);
+            matrix_edouble_balance(M);
+            logdet = matrix_edouble_logdet(M);
         #else
             matrix_log_balance(M);
 
@@ -713,7 +713,7 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
     }
 
     #ifdef MATRIX_QUAD
-        matrix_quad_free(M);
+        matrix_edouble_free(M);
     #else
         matrix_free(M);
     #endif

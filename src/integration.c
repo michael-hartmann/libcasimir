@@ -12,7 +12,7 @@
     * Multiply the polynomials p1 and p2. The result is stored in pdest, which
     * must have at least size len_p1+len_p2-1
     */
-    void inline polymult(__float128 p1[], size_t len_p1, __float128 p2[], size_t len_p2, __float128 pdest[])
+    void inline polymult(edouble p1[], size_t len_p1, edouble p2[], size_t len_p2, edouble pdest[])
     {
         size_t i, j;
         for(i = 0; i < len_p1+len_p2-1; i++)
@@ -30,10 +30,10 @@
     * This function returns the logarithm of the integral. The sign will be stored
     * in sign.
     */
-    double log_polyintegrate(__float128 p[], size_t len, int l1, int l2, int m, int *sign)
+    double log_polyintegrate(edouble p[], size_t len, int l1, int l2, int m, int *sign)
     {
         size_t i;
-        __float128 value = 0;
+        edouble value = 0;
         double lnLambda = casimir_lnLambda(l1, l2, m);
         double lnfac_max = lnfac(len-1);
 
@@ -49,7 +49,7 @@
         return lnLambda+lnfac_max+logq(fabsq(value));
     }
 
-    void polym(__float128 p[], int m, __float128 xi)
+    void polym(edouble p[], int m, edouble xi)
     {
         size_t k;
 
@@ -60,7 +60,7 @@
             p[2*m-2-k] = binom(m-1,k)*pow(2*xi, k);
     }
 
-    void polyplm(__float128 pl1[], __float128 pl2[], int l1, int l2, int m, __float128 xi)
+    void polyplm(edouble pl1[], edouble pl2[], int l1, int l2, int m, edouble xi)
     {
         int k;
         double log2xi = log(2*xi);
@@ -72,7 +72,7 @@
             pl2[k] = expq(lngamma(1+k+m+l2)-lngamma(1+l2-k-m)-lngamma(1+k)-lngamma(1+k+m)-k*log2xi);
     }
 
-    void polydplm(__float128 pl1[], __float128 pl2[], int l1, int l2, int m, __float128 xi)
+    void polydplm(edouble pl1[], edouble pl2[], int l1, int l2, int m, edouble xi)
     {
         int k;
         double log2xi = log(2*xi);
@@ -95,7 +95,7 @@
             pl1[l1+1-m] += (l1-m+1)*expq(lngamma(2*l1+3)-lngamma(l1+2)-lngamma(l1-m+2)-(l1+1-m)*log2xi);
             for(k = 0; k <= l1-m; k++)
             {
-                __float128 common = expq(lngamma(1+k+l1+m)-lngamma(1+k+m)-lngamma(1+k)-lngamma(1+l1-k-m)-k*log2xi);
+                edouble common = expq(lngamma(1+k+l1+m)-lngamma(1+k+m)-lngamma(1+k)-lngamma(1+l1-k-m)-k*log2xi);
                 pl1[k] += common*(pow_2(m)+m*(k-l1-1)-2.0*k*l1-2*k)/(m-l1+k-1);
                 pl1[k+1] -= common*(l1+1)/xi;
             }
@@ -103,7 +103,7 @@
             pl2[l2+1-m] += (l2-m+1)*expq(lngamma(2*l2+3)-lngamma(l2+2)-lngamma(l2-m+2)-(l2+1-m)*log2xi);
             for(k = 0; k <= l2-m; k++)
             {
-                __float128 common = expq(lngamma(1+k+l2+m)-lngamma(1+k+m)-lngamma(1+k)-lngamma(1+l2-k-m)-k*log2xi);
+                edouble common = expq(lngamma(1+k+l2+m)-lngamma(1+k+m)-lngamma(1+k)-lngamma(1+l2-k-m)-k*log2xi);
                 pl2[k] += common*(pow_2(m)+m*(k-l2-1)-2.0*k*l2-2*k)/(m-l2+k-1);
                 pl2[k+1] -= common*(l2+1.)/xi;
             }
@@ -115,16 +115,16 @@
     */
     void casimir_integrate(casimir_integrals_t *cint, int l1, int l2, int m, double xi)
     {
-        __float128 pdpl1m[l1-m+2];
-        __float128 pdpl2m[l2-m+2];
+        edouble pdpl1m[l1-m+2];
+        edouble pdpl2m[l2-m+2];
 
         polydplm(pdpl1m,pdpl2m,l1,l2,m,xi);
 
         if(m == 0)
         {
-            __float128 pm[3];
-            __float128 interim[l1+2];
-            __float128 result[l1+l2+1];
+            edouble pm[3];
+            edouble interim[l1+2];
+            edouble result[l1+l2+1];
 
             cint->logA = cint->logC = cint->logD = -INFINITY;
             cint->signA = cint->signC = cint->signD = 0;
@@ -139,40 +139,40 @@
         }
         else
         {
-            __float128 logprefactor = -xi+logq(xi)-2*m*logq(xi)-m*logq(4);
-            __float128 pm[2*m-1];
-            __float128 ppl1m[l1-m+1];
-            __float128 ppl2m[l2-m+1];
+            edouble logprefactor = -xi+logq(xi)-2*m*logq(xi)-m*logq(4);
+            edouble pm[2*m-1];
+            edouble ppl1m[l1-m+1];
+            edouble ppl2m[l2-m+1];
 
-            __float128 pmppl1m[(sizeof(pm)+sizeof(ppl1m))/sizeof(__float128)-1];
-            __float128 pmpdpl1m[(sizeof(pm)+sizeof(pdpl1m))/sizeof(__float128)-1];
+            edouble pmppl1m[(sizeof(pm)+sizeof(ppl1m))/sizeof(edouble)-1];
+            edouble pmpdpl1m[(sizeof(pm)+sizeof(pdpl1m))/sizeof(edouble)-1];
 
-            __float128 pmppl1mppl2m[(sizeof(pmppl1m)+sizeof(ppl2m))/sizeof(__float128)-1];
-            __float128 pmpdpl1mpdpl2m[(sizeof(pmpdpl1m)+sizeof(pdpl2m))/sizeof(__float128)-1];
-            __float128 pmppl1mpdpl2m[(sizeof(pmppl1m)+sizeof(pdpl2m))/sizeof(__float128)-1];
-            __float128 pmpdpl1mppl2m[(sizeof(pmpdpl1m)+sizeof(ppl2m))/sizeof(__float128)-1];
+            edouble pmppl1mppl2m[(sizeof(pmppl1m)+sizeof(ppl2m))/sizeof(edouble)-1];
+            edouble pmpdpl1mpdpl2m[(sizeof(pmpdpl1m)+sizeof(pdpl2m))/sizeof(edouble)-1];
+            edouble pmppl1mpdpl2m[(sizeof(pmppl1m)+sizeof(pdpl2m))/sizeof(edouble)-1];
+            edouble pmpdpl1mppl2m[(sizeof(pmpdpl1m)+sizeof(ppl2m))/sizeof(edouble)-1];
 
             polym(pm, m,xi);
             polyplm(ppl1m,ppl2m,l1,l2,m,xi);
 
-            polymult(pm, sizeof(pm)/sizeof(__float128), ppl1m, sizeof(ppl1m)/sizeof(__float128), pmppl1m);
-            polymult(pm, sizeof(pm)/sizeof(__float128), pdpl1m, sizeof(pdpl1m)/sizeof(__float128), pmpdpl1m);
+            polymult(pm, sizeof(pm)/sizeof(edouble), ppl1m, sizeof(ppl1m)/sizeof(edouble), pmppl1m);
+            polymult(pm, sizeof(pm)/sizeof(edouble), pdpl1m, sizeof(pdpl1m)/sizeof(edouble), pmpdpl1m);
 
-            polymult(pmppl1m, sizeof(pmppl1m)/sizeof(__float128), ppl2m, sizeof(ppl2m)/sizeof(__float128), pmppl1mppl2m);
-            polymult(pmppl1m, sizeof(pmppl1m)/sizeof(__float128), pdpl2m, sizeof(pdpl2m)/sizeof(__float128), pmppl1mpdpl2m);
-            polymult(pmpdpl1m, sizeof(pmpdpl1m)/sizeof(__float128), ppl2m, sizeof(ppl2m)/sizeof(__float128), pmpdpl1mppl2m);
-            polymult(pmpdpl1m, sizeof(pmpdpl1m)/sizeof(__float128), pdpl2m, sizeof(pdpl2m)/sizeof(__float128), pmpdpl1mpdpl2m);
+            polymult(pmppl1m, sizeof(pmppl1m)/sizeof(edouble), ppl2m, sizeof(ppl2m)/sizeof(edouble), pmppl1mppl2m);
+            polymult(pmppl1m, sizeof(pmppl1m)/sizeof(edouble), pdpl2m, sizeof(pdpl2m)/sizeof(edouble), pmppl1mpdpl2m);
+            polymult(pmpdpl1m, sizeof(pmpdpl1m)/sizeof(edouble), ppl2m, sizeof(ppl2m)/sizeof(edouble), pmpdpl1mppl2m);
+            polymult(pmpdpl1m, sizeof(pmpdpl1m)/sizeof(edouble), pdpl2m, sizeof(pdpl2m)/sizeof(edouble), pmpdpl1mpdpl2m);
 
-            cint->logA = 2*logq(m)+logprefactor+log_polyintegrate(pmppl1mppl2m, sizeof(pmppl1mppl2m)/sizeof(__float128), l1,l2,m,&cint->signA);
+            cint->logA = 2*logq(m)+logprefactor+log_polyintegrate(pmppl1mppl2m, sizeof(pmppl1mppl2m)/sizeof(edouble), l1,l2,m,&cint->signA);
             cint->signA *= pow(-1,l2);
 
-            cint->logB = logprefactor+log_polyintegrate(pmpdpl1mpdpl2m, sizeof(pmpdpl1mpdpl2m)/sizeof(__float128), l1,l2,m,&cint->signB);
+            cint->logB = logprefactor+log_polyintegrate(pmpdpl1mpdpl2m, sizeof(pmpdpl1mpdpl2m)/sizeof(edouble), l1,l2,m,&cint->signB);
             cint->signB *= pow(-1,l2+1);
             
-            cint->logC = logq(m)+logprefactor+log_polyintegrate(pmppl1mpdpl2m, sizeof(pmppl1mpdpl2m)/sizeof(__float128), l1,l2,m,&cint->signC);
+            cint->logC = logq(m)+logprefactor+log_polyintegrate(pmppl1mpdpl2m, sizeof(pmppl1mpdpl2m)/sizeof(edouble), l1,l2,m,&cint->signC);
             cint->signC *= pow(-1,l2+1);
             
-            cint->logD = logq(m)+logprefactor+log_polyintegrate(pmpdpl1mppl2m, sizeof(pmpdpl1mppl2m)/sizeof(__float128), l1,l2,m,&cint->signD);
+            cint->logD = logq(m)+logprefactor+log_polyintegrate(pmpdpl1mppl2m, sizeof(pmpdpl1mppl2m)/sizeof(edouble), l1,l2,m,&cint->signD);
             cint->signD *= pow(-1,l2);
         }
     }

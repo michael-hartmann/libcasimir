@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <math.h>
 
-#include "quad.h"
+#include "edouble.h"
 #include "sfunc.h"
 
 double inline logadd_s(const double a, const int sign_a, const double b, const int sign_b, int *sign)
@@ -90,7 +90,7 @@ double inline binom(int n, int k)
 void bessel_lnInuKnu(int nu, const double x, double *lnInu_p, double *lnKnu_p)
 {
     int l;
-    __float128 lnKnu = 1, lnKnup = 1+1./x;
+    edouble lnKnu = 1, lnKnup = 1+1./x;
 
     // calculate Knu, Knup
     {
@@ -105,7 +105,7 @@ void bessel_lnInuKnu(int nu, const double x, double *lnInu_p, double *lnKnu_p)
         {
             for(l = 2; l <= nu+1; l++)
             {
-                __float128 Kn = (2*l-1)*lnKnup/x + lnKnu;
+                edouble Kn = (2*l-1)*lnKnup/x + lnKnu;
                 lnKnu  = lnKnup;
                 lnKnup = Kn;
             }
@@ -137,10 +137,10 @@ void bessel_lnInuKnu(int nu, const double x, double *lnInu_p, double *lnKnu_p)
     {
         #define an(n,nu,x) (2*(nu+0.5+n)/x)
 
-        __float128 nom   = an(2,nu,x)+1/an(1,nu,x);
-        __float128 denom = an(2,nu,x);
-        __float128 ratio = (an(1,nu,x)*nom)/denom;
-        __float128 ratio_last = 0;
+        edouble nom   = an(2,nu,x)+1/an(1,nu,x);
+        edouble denom = an(2,nu,x);
+        edouble ratio = (an(1,nu,x)*nom)/denom;
+        edouble ratio_last = 0;
 
         l = 3;
         while(1)

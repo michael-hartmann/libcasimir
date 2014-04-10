@@ -1,21 +1,33 @@
 .PHONY: casimir casimir_tests casimir_hiT casimir_logdetD
 all: casimir
 
+EXTENDED_DOUBLE = 1
+
 CC = gcc
 SOURCES = sfunc.c integration.c libcasimir.c matrix.c
 CFLAGS += -Werror -Wall -Wmissing-prototypes -Wstrict-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -fshort-enums -fno-common
 #CFLAGS += -DNDEBUG
-#CFLAGS += -DMATRIX_QUAD
-#CFLAGS += -DINTEGRATION_QUAD
-LDFLAGS += -lm
+CFLAGS += -DMATRIX_QUAD
+CFLAGS += -DINTEGRATION_QUAD
 ifeq ($(CC),gcc)
     OPTIMIZATION = -O3
-    LDFLAGS += -lquadmath
 endif
 ifeq ($(CC),icc)
     OPTIMIZATION = -fast
-    LDFLAGS += -Qoption,c,--extended_float_type
 endif
+
+ifdef EXTENDED_DOUBLE
+    CFLAGS += -DEXTENDED_DOUBLE
+else
+    ifeq ($(CC),gcc)
+        LDFLAGS += -lquadmath
+    endif
+    ifeq ($(CC),icc)
+        LDFLAGS += -Qoption,c,--extended_float_type
+    endif
+endif
+
+LDFLAGS += -lm
 
 
 casimir:

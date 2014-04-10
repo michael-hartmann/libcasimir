@@ -11,6 +11,7 @@
 #include "casimir.h"
 #include "libcasimir.h"
 #include "sfunc.h"
+#include "edouble.h"
 
 #define PRECISION 1e-10
 
@@ -84,7 +85,7 @@ Further options:\n\
         Show this help\n\
 \n\
 \n\
-Compiled %s, %s\n", PRECISION, __DATE__, __TIME__);
+Compiled %s, %s with %s, MATRIX_QUAD %d, INTEGRATION_QUAD %d\n", PRECISION, __DATE__, __TIME__, CASIMIR_ARITHMETICS, MATRIX_QUAD, INTEGRATION_QUAD);
 }
 
 double iv(double list[4], int i)
