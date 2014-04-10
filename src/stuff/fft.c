@@ -78,7 +78,7 @@ int fft_init(fft_t *self, int n)
     int log2n = fft_log_2(n);
 
     /* check if n is power of 2 */
-    if(n != pow(2,log2n))
+    if(n != 1 << log2n)
     {
         /* if it fails, at least set pointer to null, so we don't overwrite
          * other memory when the user doesn't check this return value */
@@ -132,8 +132,8 @@ int fft_polymult(log_t p1[], log_t p2[], int len)
 
     for(i = 0; i < len; i++)
     {
-        p1_im[i].value = log(0); p1_im[i].sign = +1;
-        p2_im[i].value = log(0); p2_im[i].sign = +1;
+        p1_im[i].value = -INFINITY; p1_im[i].sign = +1;
+        p2_im[i].value = -INFINITY; p2_im[i].sign = +1;
     }
 
     fft(&self, p1, p1_im);
@@ -254,7 +254,6 @@ static void _fft(fft_t *self, int dir, log_t *A_re, log_t *A_im)
 void ifft(fft_t *self, log_t *A_re, log_t *A_im)
 {
     _fft(self, -1, A_re, A_im);
-
 }
 
 void fft(fft_t *self, log_t *A_re, log_t *A_im) 
@@ -265,27 +264,20 @@ void fft(fft_t *self, log_t *A_re, log_t *A_im)
 #if 0
 int main(int argc, char *argv[])
 {
-    int n = 8;
+    int n = 4;
     int i;
     log_t p1[n], p2[n];
+
+    p1[0].value = log(1); p1[0].sign = +1;
+    p1[1].value = log(2); p1[1].sign = +1;
+    p1[2].value = log(3); p1[2].sign = +1;
+    p1[3].value = log(0); p1[3].sign = +1;
+
+    p2[0].value = log(1); p2[0].sign = +1;
+    p2[1].value = log(1); p2[1].sign = +1;
+    p2[2].value = -INFINITY; p2[2].sign = +1;
+    p2[3].value = -INFINITY; p2[3].sign = +1;
     
-    for(i = 0; i < n; i++)
-    {
-        p1[i].sign = 1;
-        p2[i].sign = 1;
-
-        if(i > 1)
-        {
-            p1[i].value = log(0);
-            p2[i].value = log(0);
-        }
-        else
-        {
-            p1[i].value = log(i+1);
-            p2[i].value = log(i+2);
-        }
-    }
-
     fft_polymult(p1, p2, n);
     
     printf("\n\n");
