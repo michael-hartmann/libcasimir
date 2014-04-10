@@ -14,13 +14,19 @@
     */
     void inline polymult(edouble p1[], size_t len_p1, edouble p2[], size_t len_p2, edouble pdest[])
     {
-        size_t i, j;
-        for(i = 0; i < len_p1+len_p2-1; i++)
-            pdest[i] = 0;
+        size_t power,i;
 
-        for(i = 0; i < len_p1; i++)
-            for(j = 0; j < len_p2; j++)
-                pdest[i+j] += p1[i]*p2[j];
+        for(power = 0; power < len_p1+len_p2-1; power++)
+        {
+            const int min = power-len_p2+1;
+
+            pdest[power] = 0;
+            for(i = MAX(0,min); i <= MIN(power,len_p1-1); i++)
+            {
+                const size_t j = power - i;
+                pdest[power] += p1[i]*p2[j];
+            }
+        }
     }
 
     /* Integrate the function f(x)*exp(-x) from 0 to inf
