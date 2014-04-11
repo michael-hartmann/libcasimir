@@ -85,7 +85,8 @@ Further options:\n\
         Show this help\n\
 \n\
 \n\
-Compiled %s, %s with %s, MATRIX_QUAD %d, INTEGRATION_QUAD %d\n", PRECISION, __DATE__, __TIME__, CASIMIR_ARITHMETICS, MATRIX_QUAD, INTEGRATION_QUAD);
+Compiled %s, %s\n\
+%s\n", PRECISION, __DATE__, __TIME__, casimir_compile_info());
 }
 
 double iv(double list[4], int i)
@@ -250,6 +251,7 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
+    printf("# %s\n", casimir_compile_info());
     printf("# precision=%g\n", precision);
     printf("# lfac=%g\n", lfac);
     if(lQ[2] == 1)
