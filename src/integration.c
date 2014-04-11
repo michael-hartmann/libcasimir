@@ -22,10 +22,7 @@
 
             pdest[power] = 0;
             for(i = MAX(0,min); i <= MIN(power,len_p1-1); i++)
-            {
-                const size_t j = power - i;
-                pdest[power] += p1[i]*p2[j];
-            }
+                pdest[power] += p1[i]*p2[power-i];
         }
     }
 
