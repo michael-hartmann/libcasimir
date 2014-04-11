@@ -13,6 +13,15 @@
 
 #define EPS_PRECISION 1e-16
 
+char CASIMIR_COMPILE_INFO[255];
+
+//#define CASIMIR_COMPILE_INFO "Compiler " ## COMPILER ## " using " ## CASIMIR_ARITHMETICS ## " and " ## CASIMIR_MATRIX ## " matrix elements and " ## CASIMIR_INTEGRATION " integration"
+const char *casimir_compile_info(void)
+{
+    snprintf(CASIMIR_COMPILE_INFO, sizeof(CASIMIR_COMPILE_INFO)/sizeof(char), "Compiler %s, using %s and %s matrix elements and %s integration", COMPILER, CASIMIR_ARITHMETICS, CASIMIR_MATRIX, CASIMIR_INTEGRATION);
+    return CASIMIR_COMPILE_INFO;
+}
+
 /* casimir_lnLambda 
  * This function returns the logarithm of the Λ prefactor for given l1,l2,m.
  *

@@ -1,6 +1,8 @@
 #ifndef __LIBCASIMIR_H
 #define __LIBCASIMIR_H
 
+const char *casimir_compile_info(void);
+
 typedef struct
 {
     double RbyScriptL; // R/(R+L)
