@@ -247,7 +247,7 @@ double casimir_lnb(int l, const double arg, int *sign)
     *sign = pow(-1, l+1);
 
     ret = M_LOGPI-M_LN2+lnInu-lnKnu;
-    
+
     assert(!isnan(ret));
     assert(!isinf(ret));
 
@@ -349,27 +349,38 @@ static pthread_t *_start_thread(casimir_thread_t *r)
     return t;
 }
 
-static int _join_threads(casimir_t *self, double values[])
+static int _join_threads(casimir_t *self, double values[], int *ncalc)
 {
-    int i, joined = 0;
+    int i, joined = 0, running = 0;
     casimir_thread_t *r;
     pthread_t **threads = self->threads;
 
     for(i = 0; i < self->cores; i++)
     {
-        if(pthread_tryjoin_np(*threads[i], (void *)&r) == 0)
+        if(threads[i] != NULL)
         {
-            joined++;
-        
-            values[r->n] = r->value;
-            free(r);
-            free(threads[i]);
-            threads[i] = NULL;
-        
-            if(self->verbose)
-                fprintf(stderr, "# n=%d, value=%.15g\n", r->n, values[r->n]);
+            running++;
+
+            if(pthread_tryjoin_np(*threads[i], (void *)&r) == 0)
+            {
+                joined++;
+
+                if(r->n > *ncalc)
+                    *ncalc = r->n;
+
+                values[r->n] = r->value;
+                free(r);
+                free(threads[i]);
+                threads[i] = NULL;
+
+                if(self->verbose)
+                    fprintf(stderr, "# n=%d, value=%.15g\n", r->n, values[r->n]);
+            }
         }
     }
+
+    if(running == 0)
+        return -1;
 
     return joined;
 }
@@ -430,6 +441,7 @@ double casimir_F(casimir_t *self, int *nmax)
     const double precision = self->precision;
     double *values = NULL;
     size_t len = 0;
+    int ncalc = 0;
     const int cores = self->cores;
     pthread_t **threads = self->threads;
 
@@ -475,11 +487,13 @@ double casimir_F(casimir_t *self, int *nmax)
                     r->value = 0;
                     r->nmax  = 0;
 
+                    ncalc = MAX(ncalc,r->n);
+
                     threads[i] = _start_thread(r);
                 }
             }
 
-            if(_join_threads(self, values) == 0)
+            if(_join_threads(self, values, &ncalc) == 0)
                 usleep(CASIMIR_IDLE);
         }
         else
@@ -489,23 +503,18 @@ double casimir_F(casimir_t *self, int *nmax)
             if(self->verbose)
                 fprintf(stderr, "# n=%d, value=%.15g\n", n, values[n]);
 
+            ncalc = n;
             n++;
         }
 
         if(values[0] != 0)
         {
-            int nhi = 0;
-            for(i = 0; i < len; i++)
+            if(fabs(values[ncalc]/(2*values[0])) < precision)
             {
-                if(values[i] == 0)
-                {
-                    nhi = i-1;
-                    break;
-                }
-            }
+                if(cores > 1)
+                    while(_join_threads(self, values, &ncalc) != -1)
+                        usleep(CASIMIR_IDLE);
 
-            if(fabs(values[nhi]/(2*values[0])) < precision)
-            {
                 sum_n = _sum(values, len);
                 /* get out of here */
                 if(nmax != NULL)
@@ -528,7 +537,7 @@ double casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logde
 
     min = MAX(m,1);
     max = self->lmax;
-    
+
     dim = (max-min+1);
 
     #ifdef MATRIX_QUAD
@@ -642,9 +651,9 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
 
     min = MAX(m,1);
     max = self->lmax;
-    
+
     dim = (max-min+1);
-    
+
     if(n == 0)
         return casimir_logdetD0(self, m, NULL, NULL);
 
@@ -654,7 +663,7 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
         matrix_t *M = matrix_alloc(2*dim);
         matrix_char_t *M_signs = matrix_char_alloc(2*dim);
     #endif
-    
+
     /* M_EE, -M_EM
        M_ME,  M_MM */
     for(l1 = min; l1 <= max; l1++)
