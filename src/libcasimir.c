@@ -1,15 +1,15 @@
 #define _GNU_SOURCE
 
-#include <stdlib.h>
-#include <math.h>
 #include <assert.h>
+#include <math.h>
 #include <pthread.h>
 #include <unistd.h>
 
-#include "matrix.h"
-#include "sfunc.h"
 #include "integration.h"
 #include "libcasimir.h"
+#include "matrix.h"
+#include "sfunc.h"
+#include "utils.h"
 
 #define FACTOR_LMAX 5
 #define HBARC 3.161526510740123e-26
@@ -19,7 +19,6 @@
 
 char CASIMIR_COMPILE_INFO[255];
 
-//#define CASIMIR_COMPILE_INFO "Compiler " ## COMPILER ## " using " ## CASIMIR_ARITHMETICS ## " and " ## CASIMIR_MATRIX ## " matrix elements and " ## CASIMIR_INTEGRATION " integration"
 const char *casimir_compile_info(void)
 {
     snprintf(CASIMIR_COMPILE_INFO, sizeof(CASIMIR_COMPILE_INFO)/sizeof(char), "Compiler %s, using %s and %s matrix elements and %s integration", COMPILER, CASIMIR_ARITHMETICS, CASIMIR_MATRIX, CASIMIR_INTEGRATION);
@@ -127,7 +126,7 @@ int casimir_set_cores(casimir_t *self, int cores)
         return 0;
 
     self->cores = cores;
-    self->threads = realloc(self->threads, cores*sizeof(pthread_t));
+    self->threads = xrealloc(self->threads, cores*sizeof(pthread_t));
 
     return 1;
 }
@@ -164,7 +163,7 @@ void casimir_free(casimir_t *self)
 {
     if(self->threads != NULL)
     {
-        free(self->threads);
+        xfree(self->threads);
         self->threads = NULL;
     }
 }
@@ -281,16 +280,10 @@ int casimir_mie_cache_alloc(casimir_t *self, casimir_mie_cache_t *cache, int lma
         return 0;
     }
 
-    cache->al      = (double *)realloc(cache->al,      (lmax+1)*sizeof(double));
-    cache->bl      = (double *)realloc(cache->bl,      (lmax+1)*sizeof(double));
-    cache->al_sign =    (int *)realloc(cache->al_sign, (lmax+1)*sizeof(int));
-    cache->bl_sign =    (int *)realloc(cache->bl_sign, (lmax+1)*sizeof(int));
-
-    if(cache->al == NULL || cache->bl == NULL || cache->al_sign == NULL || cache->bl_sign == NULL)
-    {
-        fprintf(stderr, "# Out of memory.\n");
-        exit(1);
-    }
+    cache->al      = (double *)xrealloc(cache->al,      (lmax+1)*sizeof(double));
+    cache->bl      = (double *)xrealloc(cache->bl,      (lmax+1)*sizeof(double));
+    cache->al_sign =    (int *)xrealloc(cache->al_sign, (lmax+1)*sizeof(int));
+    cache->bl_sign =    (int *)xrealloc(cache->bl_sign, (lmax+1)*sizeof(int));
 
     cache->al[0] = cache->bl[0] = 0;
     for(l = MAX(1,cache->lmax); l <= lmax; l++)
@@ -309,13 +302,13 @@ int casimir_mie_cache_alloc(casimir_t *self, casimir_mie_cache_t *cache, int lma
 void casimir_mie_cache_free(casimir_mie_cache_t *cache)
 {
     if(cache->al != NULL)
-        free(cache->al);
+        xfree(cache->al);
     if(cache->bl != NULL)
-        free(cache->bl);
+        xfree(cache->bl);
     if(cache->al_sign != NULL)
-        free(cache->al_sign);
+        xfree(cache->al_sign);
     if(cache->bl_sign != NULL)
-        free(cache->bl_sign);
+        xfree(cache->bl_sign);
 
     cache->al = cache->bl = NULL;
 }
@@ -342,8 +335,7 @@ static void *_thread_f(void *p)
 
 static pthread_t *_start_thread(casimir_thread_t *r)
 {
-    pthread_t *t = malloc(sizeof(pthread_t));
-    assert(t != NULL);
+    pthread_t *t = xmalloc(sizeof(pthread_t));
     pthread_create(t, NULL, _thread_f, (void *)r);
 
     return t;
@@ -369,8 +361,8 @@ static int _join_threads(casimir_t *self, double values[], int *ncalc)
                     *ncalc = r->n;
 
                 values[r->n] = r->value;
-                free(r);
-                free(threads[i]);
+                xfree(r);
+                xfree(threads[i]);
                 threads[i] = NULL;
 
                 if(self->verbose)
@@ -462,8 +454,7 @@ double casimir_F(casimir_t *self, int *nmax)
         {
             const int delta = MAX(512, cores);
 
-            values = (double *)realloc(values, (len+delta)*sizeof(double));
-            assert(values != NULL);
+            values = (double *)xrealloc(values, (len+delta)*sizeof(double));
 
             for(i = len; i < len+delta; i++)
                 values[i] = 0;
@@ -479,8 +470,7 @@ double casimir_F(casimir_t *self, int *nmax)
             {
                 if(threads[i] == NULL)
                 {
-                    r = (casimir_thread_t *)malloc(sizeof(casimir_thread_t));
-                    assert(r != NULL);
+                    r = (casimir_thread_t *)xmalloc(sizeof(casimir_thread_t));
 
                     r->self  = self;
                     r->n     = n++;
@@ -519,7 +509,7 @@ double casimir_F(casimir_t *self, int *nmax)
                     *nmax = n;
 
                 if(values != NULL)
-                    free(values);
+                    xfree(values);
 
                 return self->T/M_PI*sum_n;
             }

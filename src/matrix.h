@@ -3,7 +3,9 @@
 
 #include <stdio.h>
 #include <math.h>
+
 #include "edouble.h"
+#include "utils.h"
 
 #define FLOAT_RADIX       2.0
 #define FLOAT_RADIX_SQ    (FLOAT_RADIX * FLOAT_RADIX)
@@ -26,12 +28,12 @@ MATRIX_TYPEDEF(matrix_edouble_t, edouble);
 #define MATRIX_ALLOC(FUNCTION_PREFIX, MATRIX_TYPE, TYPE) \
     MATRIX_TYPE *FUNCTION_PREFIX ## _alloc(size_t size)  \
     { \
-        MATRIX_TYPE *matrix = malloc(sizeof(MATRIX_TYPE)); \
+        MATRIX_TYPE *matrix = xmalloc(sizeof(MATRIX_TYPE)); \
         if(matrix == NULL) \
             return NULL; \
  \
         matrix->size = size; \
-        matrix->M = malloc(size*size*sizeof(TYPE)); \
+        matrix->M = xmalloc(size*size*sizeof(TYPE)); \
         if(matrix->M == NULL) \
         { \
             FUNCTION_PREFIX ## _free(matrix); \
@@ -48,10 +50,10 @@ MATRIX_TYPEDEF(matrix_edouble_t, edouble);
     { \
         if(m->M != NULL) \
         { \
-            free(m->M); \
+            xfree(m->M); \
             m->M = NULL; \
         } \
-        free(m); \
+        xfree(m); \
     }
 
 #define MATRIX_FREE_HEADER(FUNCTION_PREFIX, MATRIX_TYPE) void FUNCTION_PREFIX ## _free(MATRIX_TYPE *m)
@@ -299,9 +301,9 @@ MATRIX_TYPEDEF(matrix_edouble_t, edouble);
         TYPE *list_row; \
         TYPE *list_column; \
 \
-        D           = (TYPE *)malloc(N*sizeof(TYPE)); \
-        list_row    = (TYPE *)malloc(N*sizeof(TYPE)); \
-        list_column = (TYPE *)malloc(N*sizeof(TYPE)); \
+        D           = (TYPE *)xmalloc(N*sizeof(TYPE)); \
+        list_row    = (TYPE *)xmalloc(N*sizeof(TYPE)); \
+        list_column = (TYPE *)xmalloc(N*sizeof(TYPE)); \
  \
         /* initialize D to the identity matrix */ \
         for(i = 0; i < N; i++) \
@@ -383,9 +385,9 @@ MATRIX_TYPEDEF(matrix_edouble_t, edouble);
             } \
         } \
 \
-        free(D); \
-        free(list_column); \
-        free(list_row); \
+        xfree(D); \
+        xfree(list_column); \
+        xfree(list_row); \
     }
 
 #define MATRIX_LOG_BALANCE_HEADER(FUNCTION_PREFIX, MATRIX_TYPE) void FUNCTION_PREFIX ## _log_balance(MATRIX_TYPE *A)
