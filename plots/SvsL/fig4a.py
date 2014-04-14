@@ -14,8 +14,9 @@ deltaT = 4
 Lstart = 0.2e-6
 Lstop  = 11e-6
 N      = 50
-prec   = 1e-9
-lfac   = 6
+prec   = 1e-8
+lfac   = 5.8
+cores  = 4
 
 for R in listR:
     for L in logspace(log(Lstart),log(Lstop),N,base=e):
@@ -24,9 +25,9 @@ for R in listR:
         T1 = 2*pi*kb*ScriptL/hbarc*(T-deltaT)
         T2 = 2*pi*kb*ScriptL/hbarc*(T+deltaT)
 
-        ret = PerfectReflectors(Q=Q, T=T1, lfac=lfac, prec=prec)
+        ret = PerfectReflectors(Q=Q, T=T1, lfac=lfac, prec=prec, cores=cores)
         F1 = ret[2]
-        ret = PerfectReflectors(Q=Q, T=T2, lfac=lfac, prec=prec)
+        ret = PerfectReflectors(Q=Q, T=T2, lfac=lfac, prec=prec, cores=cores)
         F2 = ret[2]
 
         S = -(F1-F2)/(T1-T2) *2*pi*kb
