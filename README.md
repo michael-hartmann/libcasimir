@@ -47,21 +47,27 @@ Programs
 ========
 
  * casimir
+
    Calculate the free energy F(T, L/R) in scaled quantities.
 
  * casimir_hiT
+
    Calculate the free energy F(T->oo, L/R) for very high temperaturs.
 
  * casimir_logdetD
+
   Calculate log(det(D)) for given T, L/R, n and m
 
  * casimir_tests
+
    Run a unit test.
 
  * pfa.py
+
    Implementation of the PFA (proximity force approximation)
 
  * Casimir.py
+
    Python wrapper for casimir
 
 
