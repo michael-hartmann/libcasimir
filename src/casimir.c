@@ -12,6 +12,7 @@
 #include "edouble.h"
 
 #define PRECISION 1e-10
+#define DEFAULT_LFAC 5
 
 /* This function counts how many times the character c in string str appears */
 int count(const char *str, char c)
@@ -42,33 +43,47 @@ const char *indexn(const char *str, char c, int n)
 void usage(FILE *stream)
 {
     fprintf(stream, "Usage: casimir [OPTIONS]\n\
-This program will calculate the free Casimir energy for the plane-sphere \n\
-geometry. \n\
+This program will calculate the free Casimir energy F(T,R/L) for the\n\
+plane-sphere geometry for given R/L and temperature T. The output is in scaled\n\
+unities.\n\
 \n\
 Mandatory options:\n\
-    -Q Radius of sphere divided by distance between center of sphere and plate; 0 < R/(R+L) < 1\n\
-    -T Temperature\n\
+    -Q FRACTION\n\
+        Radius of sphere divided by distance between center of sphere and\n\
+        plate; 0 < R/(R+L) < 1\n\
+        If you want to calculate several points, you can pass start and stop\n\
+        value and the amount of points to be calculated.\n\
+        Examples:\n\
+            $ ./casimir -T 1 -Q 0.5,0.9,5\n\
+            This will calculate five free energies for Q=0.5,...,0,9 in linear\n\
+            scale.\n\
+            $ ./casimir -T 1 -Q 0.5,0.9,5,log\n\
+            This will calculate five free energies for Q=0.5,...,0,9, but using\n\
+            a logarithmic scale.\n\
+\n\
+    -T TEMPERATURE\n\
+        Temperature in scaled unities. You may use the same syntax as for -Q.\n\
 \n\
 Further options:\n\
     -l, --lscale\n\
-        Specify parameter lscale. The vector space has to be truncated at some\n\
-        value lmax. This program will use lmax=(R/L*lscale) (default: 3)\n\
+        Specify parameter lscale. The vector space has to be truncated for\n\
+        some value lmax. This program will use lmax=(R/L*lscale) (default: %d)\n\
 \n\
-    -L\n\
-        Set lmax to given value. When -L is used, -l will be ignored\n\
+    -L LMAX\n\
+        Set lmax to the value LMAx. When -L is specified, -l will be ignored\n\
 \n\
-    -c, --cores\n\
-        Use amount of cores\n\
+    -c, --cores CORES\n\
+        Use CORES at the same time (default: 1)\n\
 \n\
     -p, --precision\n\
-        Set precision to given value. Default: %g\n\
+        Set precision to given value. (default: %g)\n\
 \n\
     --buffering\n\
         Enable buffering. By default buffering for stderr and stdout is\n\
         disabled.\n\
 \n\
     -v, --verbose\n\
-        Be more verbose.\n\
+        Be more verbose. This will output additional information.\n\
 \n\
     -q, --quiet\n\
         The progress is printed to stderr unless this flag is set.\n\
@@ -78,7 +93,7 @@ Further options:\n\
 \n\
 \n\
 Compiled %s, %s\n\
-%s\n", PRECISION, __DATE__, __TIME__, casimir_compile_info());
+%s\n", DEFAULT_LFAC, PRECISION, __DATE__, __TIME__, casimir_compile_info());
 }
 
 double iv(double list[4], int i)
@@ -137,7 +152,7 @@ int main(int argc, char *argv[])
     double precision = PRECISION;
     double lT[4] = { 0,0,0,SCALE_LIN };
     double lQ[4] = { 0,0,0,SCALE_LIN };
-    double lfac = 5;
+    double lfac = DEFAULT_LFAC;
     int i, iT, iQ;
     int cores = 1;
     int lmax = 0;
