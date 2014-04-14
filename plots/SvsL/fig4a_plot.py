@@ -2,12 +2,18 @@
 
 from __future__ import division
 from pyx import *
+from sys import argv
 
 text.set(mode="latex")
 
 data = {}
 
-f = open("output")
+if len(argv) > 1:
+    filename = argv[1]
+else:
+    filename = "output"
+
+f = open(filename)
 for line in f:
     line = line.strip()
     if len(line) == 0 or line[0] == '#':
@@ -35,4 +41,4 @@ attrs = [color.gradient.RedBlue, style.linestyle.solid]
 g.plot(d, [graph.style.line(attrs)])
 g.finish()
 g.stroke(g.ygridpath(0), [style.linestyle.dashed])
-g.writePDFfile("fig4a.pdf")
+g.writePDFfile(filename + ".pdf")
