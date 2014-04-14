@@ -1,6 +1,10 @@
+#define _GNU_SOURCE
+
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>
+#include <pthread.h>
+#include <unistd.h>
 
 #include "matrix.h"
 #include "sfunc.h"
@@ -111,8 +115,21 @@ int casimir_init(casimir_t *self, double RbyScriptL, double T)
     self->RbyScriptL = RbyScriptL;
     self->precision  = EPS_PRECISION;
     self->verbose    = 0;
+    self->cores      = 1;
+    self->threads    = NULL;
 
     return 0;
+}
+
+int casimir_set_cores(casimir_t *self, int cores)
+{
+    if(cores < 1)
+        return 0;
+
+    self->cores = cores;
+    self->threads = realloc(self->threads, cores*sizeof(pthread_t));
+
+    return 1;
 }
 
 /*
@@ -145,6 +162,11 @@ void casimir_set_precision(casimir_t *self, double precision)
  */
 void casimir_free(casimir_t *self)
 {
+    if(self->threads != NULL)
+    {
+        free(self->threads);
+        self->threads = NULL;
+    }
 }
 
 
@@ -298,6 +320,104 @@ void casimir_mie_cache_free(casimir_mie_cache_t *cache)
     cache->al = cache->bl = NULL;
 }
 
+static double _sum(double values[], size_t len)
+{
+    int i;
+    double sum = 0;
+
+    for(i = len-1; i > 0; i--)
+        sum += values[i];
+
+    sum += values[0]/2;
+
+    return sum;
+}
+
+static void *_thread_f(void *p)
+{
+    casimir_thread_t *r = (casimir_thread_t *)p;
+    r->value = casimir_F_n(r->self, r->n, &r->nmax);
+    return r;
+}
+
+static pthread_t *_start_thread(casimir_thread_t *r)
+{
+    pthread_t *t = malloc(sizeof(pthread_t));
+    assert(t != NULL);
+    pthread_create(t, NULL, _thread_f, (void *)r);
+
+    return t;
+}
+
+static int _join_threads(casimir_t *self, double values[])
+{
+    int i, joined = 0;
+    casimir_thread_t *r;
+    pthread_t **threads = self->threads;
+
+    for(i = 0; i < self->cores; i++)
+    {
+        if(pthread_tryjoin_np(*threads[i], (void *)&r) == 0)
+        {
+            joined++;
+        
+            values[r->n] = r->value;
+            free(r);
+            free(threads[i]);
+            threads[i] = NULL;
+        
+            if(self->verbose)
+                fprintf(stderr, "# n=%d, value=%.15g\n", r->n, values[r->n]);
+        }
+    }
+
+    return joined;
+}
+
+double casimir_F_n(casimir_t *self, const int n, int *mmax)
+{
+    double precision = self->precision;
+    double TRbyScriptL = self->T*self->RbyScriptL;
+    casimir_mie_cache_t cache;
+    double sum_n = 0;
+    int m;
+    const int lmax = self->lmax;
+    double values[lmax+1];
+
+    for(m = 0; m <= lmax; m++)
+        values[m] = 0;
+
+    casimir_mie_cache_init(&cache, n*TRbyScriptL);
+    casimir_mie_cache_alloc(self, &cache, self->lmax);
+
+    for(m = 0; m <= self->lmax; m++)
+    {
+        values[m] = casimir_logdetD(self,n,m,&cache);
+
+        if(self->verbose)
+            fprintf(stderr, "# n=%d, m=%d, value=%.15g\n", n, m, values[m]);
+
+        /* If F is !=0 and value/F < 1e-16, then F+value = F. The addition
+         * has no effect.
+         * As for larger m value will be even smaller, we can skip the
+         * summation here. 
+         */
+        sum_n = _sum(values, lmax+1);
+        if(values[0] != 0 && fabs(values[m]/sum_n) < precision)
+            break;
+    }
+
+    casimir_mie_cache_free(&cache);
+
+    if(self->verbose)
+        fprintf(stderr, "# n=%d, value=%.15g\n", n, sum_n);
+
+    if(mmax != NULL)
+        *mmax = m;
+
+    return sum_n;
+}
+
 /*
  * Calculate free energy.
 
@@ -305,11 +425,17 @@ void casimir_mie_cache_free(casimir_mie_cache_t *cache)
  */
 double casimir_F(casimir_t *self, int *nmax)
 {
-    int n = 0;
-    double F = 0;
-    double F0 = 0;
-    double precision = self->precision;
-    double TRbyScriptL = self->T*self->RbyScriptL;
+    int i, n = 0;
+    double sum_n = 0;
+    const double precision = self->precision;
+    double *values = NULL;
+    size_t len = 0;
+    const int cores = self->cores;
+    pthread_t **threads = self->threads;
+
+    if(cores > 1)
+        for(i = 0; i < cores; i++)
+            threads[i] = NULL;
 
     /* So, here we sum up all m and n that contribute to F.
      * So, what do we do here?
@@ -320,62 +446,77 @@ double casimir_F(casimir_t *self, int *nmax)
      */
     while(1)
     {
-        casimir_mie_cache_t cache;
-        int m;
-
-        casimir_mie_cache_init(&cache, n*TRbyScriptL);
-        casimir_mie_cache_alloc(self, &cache, self->lmax);
-
-        double sum_n  = 0;
-        double sum_n0 = 0;
-        for(m = 0; m <= self->lmax; m++)
+        if(n >= len)
         {
-            double value = casimir_logdetD(self,n,m,&cache);
-            if(sum_n0 == 0)
-                sum_n0 = value;
+            const int delta = MAX(512, cores);
 
-            if(self->verbose)
-                fprintf(stderr, "# n=%d, m=%d, value=%.15g\n", n, m, value);
+            values = (double *)realloc(values, (len+delta)*sizeof(double));
+            assert(values != NULL);
 
+            for(i = len; i < len+delta; i++)
+                values[i] = 0;
+
+            len += delta;
+        }
+
+        if(cores > 1)
+        {
+            casimir_thread_t *r;
+
+            for(i = 0; i < cores; i++)
             {
-                double contribution = value;
+                if(threads[i] == NULL)
+                {
+                    r = (casimir_thread_t *)malloc(sizeof(casimir_thread_t));
+                    assert(r != NULL);
 
-                if(m == 0)
-                    contribution /= 2;
-                if(n == 0)
-                    contribution /= 2;
+                    r->self  = self;
+                    r->n     = n++;
+                    r->value = 0;
+                    r->nmax  = 0;
 
-                sum_n += contribution;
+                    threads[i] = _start_thread(r);
+                }
             }
 
-            /* If F is !=0 and value/F < 1e-16, then F+value = F. The addition
-             * has no effect.
-             * As for larger m value will be even smaller, we can skip the
-             * summation here. 
-             */
-            if(fabs(value/sum_n0) < precision)
-                break;
+            if(_join_threads(self, values) == 0)
+                usleep(CASIMIR_IDLE);
         }
-
-        F += sum_n;
-
-        if(F0 == 0)
-            F0 = sum_n;
-
-        if(self->verbose)
-            fprintf(stderr, "# n=%d, value=%.15g\n", n, sum_n);
-
-        casimir_mie_cache_free(&cache);
-
-        if(fabs(sum_n/F0) < precision)
+        else
         {
-            /* get out of here */
-            if(nmax != NULL)
-                *nmax = n;
-            return self->T/M_PI*F;
+            values[n] = casimir_F_n(self, n, NULL);
+
+            if(self->verbose)
+                fprintf(stderr, "# n=%d, value=%.15g\n", n, values[n]);
+
+            n++;
         }
 
-        n++;
+        if(values[0] != 0)
+        {
+            int nhi = 0;
+            for(i = 0; i < len; i++)
+            {
+                if(values[i] == 0)
+                {
+                    nhi = i-1;
+                    break;
+                }
+            }
+
+            if(fabs(values[nhi]/(2*values[0])) < precision)
+            {
+                sum_n = _sum(values, len);
+                /* get out of here */
+                if(nmax != NULL)
+                    *nmax = n;
+
+                if(values != NULL)
+                    free(values);
+
+                return self->T/M_PI*sum_n;
+            }
+        }
     }
 }
 

@@ -1,6 +1,10 @@
 #ifndef __LIBCASIMIR_H
 #define __LIBCASIMIR_H
 
+#include <pthread.h>
+
+#define CASIMIR_IDLE 1000
+
 const char *casimir_compile_info(void);
 
 typedef struct
@@ -9,8 +13,17 @@ typedef struct
     double T;
     int lmax;
     int verbose;
+    int cores;
     double precision;
+    pthread_t **threads;
 } casimir_t;
+
+typedef struct
+{
+    casimir_t *self;
+    int n, nmax;
+    double value;
+} casimir_thread_t;
 
 typedef struct
 {
@@ -50,6 +63,7 @@ void casimir_lna0_lnb0(int l, double *a0, int *sign_a0, double *b0, int *sign_b0
 int casimir_init(casimir_t *self, double RbyScriptL, double T);
 
 double casimir_get_lmax(casimir_t *self);
+int  casimir_set_cores(casimir_t *self, int cores);
 void casimir_set_lmax(casimir_t *self, int lmax);
 void casimir_set_limits(casimir_t *self, int limits);
 void casimir_set_precision(casimir_t *self, double precision);
@@ -59,6 +73,7 @@ void casimir_free(casimir_t *self);
 double casimir_lna(int l, const double arg, int *sign);
 double casimir_lnb(int l, const double arg, int *sign);
 
+double casimir_F_n(casimir_t *self, const int n, int *mmax);
 double casimir_F(casimir_t *self, int *nmax);
 
 void casimir_mie_cache_init(casimir_mie_cache_t *cache, double arg);
