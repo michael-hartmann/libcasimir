@@ -6,37 +6,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/time.h>
 #include <time.h>
 #include <unistd.h>
 
 #include "casimir_hiT.h"
 #include "libcasimir.h"
+#include "utils.h"
 
 #define IDLE 1000 // in µs
 #define LSCALE 7.0
 #define PRECISION 5e-9
 #define VERBOSE 1
-
-static void *xmalloc(size_t size)
-{
-    void *p = malloc(size);
-    if(p == NULL)
-    {
-        fprintf(stderr, "Out of memory: malloc failed.\n");
-        exit(2);
-    }
-    return p;
-}
-
-/* This function returns the seconds since 1st Jan 1970 in µs precision */
-double now(void)
-{
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-
-    return tv.tv_sec + tv.tv_usec*1e-6;
-}
 
 double sumF(double *values, int lmax)
 {
@@ -246,7 +226,7 @@ int main(int argc, char *argv[])
                 fprintf(stderr, "# m=%d, value=%.15g, logdet_EE=%.15g, logdet_MM=%.15g, time=%g\n", r->m, r->value, r->logdet_EE, r->logdet_MM, r->time);
                 if(r->value/sumF(values, lmax) < precision)
                     bye = 1;
-                free(r);
+                xfree(r);
                 threads[i] = NULL;
             }
         }
@@ -267,18 +247,18 @@ int main(int argc, char *argv[])
             values[r->m] = r->value;
             EE[r->m]     = r->logdet_EE;
             fprintf(stderr, "# m=%d, value=%.15g, logdet_EE=%.15g, logdet_MM=%.15g, time=%g\n", r->m, r->value, r->logdet_EE, r->logdet_MM, r->time);
-            free(r);
+            xfree(r);
             threads[i] = NULL;
         }
     }
     
-    free(threads);
+    xfree(threads);
 
     printf("# L/R, value_perf, value_Drude, time\n");
     printf("%.15g, %.15g, %.15g, %.15g\n", LbyR, sumF(values, lmax), sumF(EE, lmax), now()-start_time);
 
-    free(values);
-    free(EE);
+    xfree(values);
+    xfree(EE);
 
     return 0;
 }

@@ -1,24 +1,11 @@
-#include <ctype.h>
 #include <getopt.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <sys/time.h>
-#include <time.h>
-#include <unistd.h>
 
-#include "sfunc.h"
 #include "libcasimir.h"
-
-/* This function returns the seconds since 1st Jan 1970 in µs precision */
-static double now(void)
-{
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-
-    return tv.tv_sec + tv.tv_usec*1e-6;
-}
+#include "sfunc.h"
+#include "utils.h"
 
 /* print usage */
 static void usage(FILE *stream)

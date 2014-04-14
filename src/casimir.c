@@ -4,8 +4,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/time.h>
-#include <time.h>
 #include <unistd.h>
 
 #include "casimir.h"
@@ -38,15 +36,6 @@ const char *indexn(const char *str, char c, int n)
             return str;
 
     return NULL;
-}
-
-/* This function returns the seconds since 1st Jan 1970 in µs precision */
-double now(void)
-{
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-
-    return tv.tv_sec + tv.tv_usec*1e-6;
 }
 
 /* print usage */
