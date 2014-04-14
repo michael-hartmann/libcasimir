@@ -55,7 +55,7 @@ casimir_logdetD:
 	$(CC) $(OPTIMIZATION) $(SOURCES) $(CFLAGS) casimir_logdetD.c $(LDFLAGS) -o casimir_logdetD
 
 casimir_hiT:
-	$(CC) $(OPTIMIZATION) $(SOURCES) $(CFLAGS) casimir_hiT.c $(LDFLAGS) -pthread -o casimir_hiT
+	$(CC) $(OPTIMIZATION) $(SOURCES) $(CFLAGS) casimir_hiT.c $(LDFLAGS) -o casimir_hiT
 
 casimir_tests:
 	$(CC) $(OPTIMIZATION) $(SOURCES) $(CFLAGS) unittest.c tests.c $(LDFLAGS) -o casimir_tests
