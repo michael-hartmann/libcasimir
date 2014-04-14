@@ -68,6 +68,9 @@ Further options:\n\
     -L\n\
         Set lmax to given value. When -L is used, -l will be ignored\n\
 \n\
+    -c, --cores\n\
+        Use amount of cores\n\
+\n\
     -p, --precision\n\
         Set precision to given value. Default: %g\n\
 \n\
@@ -147,6 +150,7 @@ int main(int argc, char *argv[])
     double lQ[4] = { 0,0,0,SCALE_LIN };
     double lfac = 5;
     int i, iT, iQ;
+    int cores = 1;
     int lmax = 0;
     int buffering_flag = 0, quiet_flag = 0, verbose_flag = 0;
 
@@ -165,6 +169,7 @@ int main(int argc, char *argv[])
           { "buffering", no_argument,       &buffering_flag, 1 },
           { "help",      no_argument,       0, 'h' },
           { "lscale",    required_argument, 0, 'l' },
+          { "cores",     required_argument, 0, 'c' },
           { "precision", required_argument, 0, 'p' },
           { 0, 0, 0, 0 }
         };
@@ -172,7 +177,7 @@ int main(int argc, char *argv[])
         /* getopt_long stores the option index here. */
         int option_index = 0;
       
-        c = getopt_long (argc, argv, "Q:T:s:a:l:L:p:vqh", long_options, &option_index);
+        c = getopt_long (argc, argv, "Q:T:c:s:a:l:L:p:vqh", long_options, &option_index);
       
         /* Detect the end of the options. */
         if (c == -1)
@@ -194,6 +199,9 @@ int main(int argc, char *argv[])
               lmax = atoi(optarg);
           case 'q':
               quiet_flag = 1;
+              break;
+          case 'c':
+              cores = atoi(optarg);
               break;
           case 'v':
               verbose_flag = 1;
@@ -254,6 +262,7 @@ int main(int argc, char *argv[])
     printf("# %s\n", casimir_compile_info());
     printf("# precision=%g\n", precision);
     printf("# lfac=%g\n", lfac);
+    printf("# cores=%d\n", cores);
     if(lQ[2] == 1)
         printf("# L=%g\n", lQ[0]);
     else
@@ -279,6 +288,7 @@ int main(int argc, char *argv[])
             T = iv(lT, iT);
 
             casimir_init(&casimir, Q, T);
+            casimir_set_cores(&casimir, cores);
             casimir_set_precision(&casimir, precision);
             casimir_set_verbose(&casimir, verbose_flag);
 

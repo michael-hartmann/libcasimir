@@ -45,7 +45,7 @@ else
     endif
 endif
 
-LDFLAGS += -lm
+LDFLAGS += -lm -pthread
 
 
 casimir:
