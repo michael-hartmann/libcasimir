@@ -487,8 +487,6 @@ double casimir_F(casimir_t *self, int *nmax)
                     r->value = 0;
                     r->nmax  = 0;
 
-                    ncalc = MAX(ncalc,r->n);
-
                     threads[i] = _start_thread(r);
                 }
             }
