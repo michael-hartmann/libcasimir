@@ -9,6 +9,39 @@
 
 #include "tests.h"
 
+int test_casimirF()
+{
+    unittest_t test;
+    casimir_t casimir;
+    double F;
+
+    unittest_init(&test, "casimirF", "Compare free energies");
+
+    casimir_init(&casimir, 0.85, 2.7);
+    casimir_set_precision(&casimir, 1e-14);
+    casimir_set_lmax(&casimir, 30);
+    F = casimir_F(&casimir, NULL);
+    AssertAlmostEqual(&test, F, -1.34361893570375);
+    casimir_free(&casimir);
+
+    casimir_init(&casimir, 0.7, 1);
+    casimir_set_precision(&casimir, 1e-14);
+    casimir_set_lmax(&casimir, 15);
+    F = casimir_F(&casimir, NULL);
+    AssertAlmostEqual(&test, F, -0.220709222562969);
+    casimir_free(&casimir);
+
+    casimir_init(&casimir, 0.85, 2.7);
+    casimir_set_precision(&casimir, 1e-14);
+    casimir_set_cores(&casimir, 10);
+    casimir_set_lmax(&casimir, 30);
+    F = casimir_F(&casimir, NULL);
+    AssertAlmostEqual(&test, F, -1.34361893570375);
+    casimir_free(&casimir);
+
+    return test_results(&test, stderr);
+}
+
 int test_logdet()
 {
     unittest_t test;
@@ -389,6 +422,7 @@ int main(int argc, char *argv[])
     test_givens();
     test_logadd();
     test_logdet();
+    test_casimirF();
     
     return 0;
 }

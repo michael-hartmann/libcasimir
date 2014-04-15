@@ -1,6 +1,7 @@
 #ifndef __TESTS_H
 #define __TESTS_H
 
+int test_casimirF(void);
 int test_logdet(void);
 int test_Lambda(void);
 int test_Xi(void);
