@@ -18,15 +18,25 @@ def integrand(x, LbyR, T):
         if n == 0:
             value /= 2
         sum += value
-        if value/sum < 1e-12:
+        if value/sum < 1e-13:
             return sum/(x**2*LbyR)
         n += 1 
 
 
 def pfa(LbyR, T):
-    I = quad(integrand, 1, 1+1/LbyR, args=(LbyR, T))
-    #print I
-    return -T/(4*pi)*I[0]
+    if isinf(T) and T > 0:
+        return -1.2020569031595942/4/(LbyR+LbyR**2)
+    if T > 0:
+        I = quad(integrand, 1, 1+1/LbyR, args=(LbyR, T))
+        #print I
+        return -T/(4*pi)*I[0]
+    elif T == 0:
+        # T = 0
+        return -pi**3/720*(1+2*LbyR)/(LbyR**2+LbyR**3)
+        #return -pi**3/720*(1/LbyR + 1/LbyR**2 - 1/(1+LbyR))
+    else:
+        raise BaseException("invalid value for T")
+
 
 if __name__ == "__main__":
     from sys import argv, exit
