@@ -13,7 +13,7 @@
 
 #define FACTOR_LMAX 5
 #define HBARC 3.161526510740123e-26
-#define KB   1.3806488e-23
+#define KB    1.3806488e-23
 
 #define EPS_PRECISION 1e-16
 
@@ -313,6 +313,10 @@ void casimir_mie_cache_free(casimir_mie_cache_t *cache)
     cache->al = cache->bl = NULL;
 }
 
+/* Sum len numbers in value.
+   The idea is: To avoid a loss of significance, we sum beginning with smallest
+   number and add up in increasing order
+*/
 static double _sum(double values[], size_t len)
 {
     int i;
@@ -487,9 +491,6 @@ double casimir_F(casimir_t *self, int *nmax)
         else
         {
             values[n] = casimir_F_n(self, n, NULL);
-
-            if(self->verbose)
-                fprintf(stderr, "# n=%d, value=%.15g\n", n, values[n]);
 
             ncalc = n;
             n++;
