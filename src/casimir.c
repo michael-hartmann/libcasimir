@@ -87,6 +87,9 @@ Further options:\n\
 \n\
     -x, --extrapolate\n\
         Achieve better results by extrapolating the contributions F_n.\n\
+        This feature is experimental! Use it on your own risk! This feature might\n\
+        cause your computer to explode or even worse: It may cause wrong results!\n\
+        Don't blame me, I have warned you!\n\
 \n\
     -q, --quiet\n\
         The progress is printed to stderr unless this flag is set.\n\
