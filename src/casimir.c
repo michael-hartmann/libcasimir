@@ -265,19 +265,22 @@ int main(int argc, char *argv[])
 
     printf("# %s\n", casimir_compile_info());
     printf("# precision=%g\n", precision);
-    printf("# lfac=%g\n", lfac);
+    if(lmax > 0)
+        printf("# lmax=%d\n", lmax);
+    else
+        printf("# lfac=%g\n", lfac);
     printf("# cores=%d\n", cores);
     if(lQ[2] == 1)
-        printf("# L=%g\n", lQ[0]);
+        printf("# Q=%g\n", lQ[0]);
     else
-        printf("# L=%g...%g (%d)\n", lQ[0],lQ[1],(int)lQ[2]);
+        printf("# Q=%g...%g (%d)\n", lQ[0],lQ[1],(int)lQ[2]);
     if(lT[2] == 1)
         printf("# T=%g\n", lT[0]);
     else
         printf("# T=%g...%g (%d)\n", lT[0],lT[1],(int)lT[2]);
 
     printf("#\n");
-    printf("# R/(L+R), T, F, lmax, nmax, time\n");
+    printf("# Q=R/(L+R), T, F, lmax, nmax, time\n");
 
     i = 0;
     for(iQ = 0; iQ < lQ[2]; iQ++)
