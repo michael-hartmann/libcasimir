@@ -85,6 +85,9 @@ Further options:\n\
     -v, --verbose\n\
         Be more verbose. This will output additional information.\n\
 \n\
+    -x, --extrapolate\n\
+        Achieve better results by extrapolating the contributions F_n.\n\
+\n\
     -q, --quiet\n\
         The progress is printed to stderr unless this flag is set.\n\
 \n\
@@ -156,7 +159,7 @@ int main(int argc, char *argv[])
     int i, iT, iQ;
     int cores = 1;
     int lmax = 0;
-    int buffering_flag = 0, quiet_flag = 0, verbose_flag = 0;
+    int buffering_flag = 0, quiet_flag = 0, verbose_flag = 0, extrapolate_flag = 0;
 
     printf("# %s", argv[0]);
     for(i = 1; i < argc; i++)
@@ -181,7 +184,7 @@ int main(int argc, char *argv[])
         /* getopt_long stores the option index here. */
         int option_index = 0;
       
-        c = getopt_long (argc, argv, "Q:T:c:s:a:l:L:p:vqh", long_options, &option_index);
+        c = getopt_long (argc, argv, "Q:T:c:s:a:l:L:p:xvqh", long_options, &option_index);
       
         /* Detect the end of the options. */
         if (c == -1)
@@ -201,6 +204,8 @@ int main(int argc, char *argv[])
               break;
           case 'L':
               lmax = atoi(optarg);
+          case 'x':
+              extrapolate_flag = 1;
           case 'q':
               quiet_flag = 1;
               break;
@@ -278,6 +283,7 @@ int main(int argc, char *argv[])
         printf("# T=%g\n", lT[0]);
     else
         printf("# T=%g...%g (%d)\n", lT[0],lT[1],(int)lT[2]);
+    printf("# extrapolate=%s\n", extrapolate_flag ? "yes" : "no");
 
     printf("#\n");
     printf("# Q=R/(L+R), T, F, lmax, nmax, time\n");
@@ -298,6 +304,7 @@ int main(int argc, char *argv[])
             casimir_set_cores(&casimir, cores);
             casimir_set_precision(&casimir, precision);
             casimir_set_verbose(&casimir, verbose_flag);
+            casimir_set_extrapolate(&casimir, extrapolate_flag);
 
             if(lmax > 0)
                 casimir_set_lmax(&casimir, lmax);
