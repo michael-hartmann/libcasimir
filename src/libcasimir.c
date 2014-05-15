@@ -510,10 +510,20 @@ double casimir_F(casimir_t *self, int *nmax)
                     while(_join_threads(self, values, &ncalc) != -1)
                         usleep(CASIMIR_IDLE);
 
-                sum_n = _sum(values, len);
+                sum_n = _sum(values, n);
+                if(self->extrapolate && n > 20)
+                {
+                    double r1 = values[n-1]/values[n-2];
+                    double r2 = values[n-2]/values[n-3];
+                    double r3 = values[n-3]/values[n-4];
+                    double r4 = values[n-4]/values[n-5];
+                    double r5 = values[n-5]/values[n-6];
+                    double r  = (r1+r2+r3+r4+r5)/5;
+                    sum_n += values[n-1]/(1-r);
+                }
                 /* get out of here */
                 if(nmax != NULL)
-                    *nmax = n;
+                    *nmax = n-1; // we calculated n term from n=0,...,nmax=n-1
 
                 if(values != NULL)
                     xfree(values);
