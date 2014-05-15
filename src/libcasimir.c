@@ -110,14 +110,20 @@ int casimir_init(casimir_t *self, double RbyScriptL, double T)
 
     self->lmax = (int)ceil(RbyScriptL*FACTOR_LMAX);
 
-    self->T          = T;
-    self->RbyScriptL = RbyScriptL;
-    self->precision  = EPS_PRECISION;
-    self->verbose    = 0;
-    self->cores      = 1;
-    self->threads    = NULL;
+    self->T           = T;
+    self->RbyScriptL  = RbyScriptL;
+    self->precision   = EPS_PRECISION;
+    self->extrapolate = 0;
+    self->verbose     = 0;
+    self->cores       = 1;
+    self->threads     = NULL;
 
     return 0;
+}
+
+void casimir_set_extrapolate(casimir_t *self, int extrapolate)
+{
+    self->extrapolate = extrapolate;
 }
 
 int casimir_set_cores(casimir_t *self, int cores)
