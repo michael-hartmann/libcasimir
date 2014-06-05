@@ -282,32 +282,39 @@ int test_Lambda(void)
     unittest_t test;
     unittest_init(&test, "Lambda", "Test Lambda function for various parameters");
 
-    AssertAlmostEqual(&test, casimir_lnLambda(50,50,0),   -3.921875301871158);
-    AssertAlmostEqual(&test, casimir_lnLambda(50,50,1),   -11.76572394002363);
-    AssertAlmostEqual(&test, casimir_lnLambda(50,50,50),  -367.6612508574347);
-    AssertAlmostEqual(&test, casimir_lnLambda(50,20,10),  -72.40153130583653);
-    AssertAlmostEqual(&test, casimir_lnLambda(5,7,3),     -12.77235621226475);
-    AssertAlmostEqual(&test, casimir_lnLambda(16,6,4),    -20.7139882421892);
-    AssertAlmostEqual(&test, casimir_lnLambda(100,6,4),   -28.88322376001037);
-    AssertAlmostEqual(&test, casimir_lnLambda(100,100,0), -4.61013297533022);
-    AssertAlmostEqual(&test, casimir_lnLambda(100,100,50), -461.1524718729809);
-    AssertAlmostEqual(&test, casimir_lnLambda(100,201,10), -104.0968227550132);
-    AssertAlmostEqual(&test, casimir_lnLambda(200,200,0), -5.300808027860489);
-    AssertAlmostEqual(&test, casimir_lnLambda(200,100,70), -690.4926643211061);
-    AssertAlmostEqual(&test, casimir_lnLambda(500,500,0), -6.215606600751781);
-    AssertAlmostEqual(&test, casimir_lnLambda(1000,1000,0), -6.908254904273569);
-    AssertAlmostEqual(&test, casimir_lnLambda(1000,1000,1), -20.72476496257093);
-    AssertAlmostEqual(&test, casimir_lnLambda(1000,1000,2), -34.54127302286429);
-    AssertAlmostEqual(&test, casimir_lnLambda(1000,1000,3), -48.35777708713769);
-    AssertAlmostEqual(&test, casimir_lnLambda(1000,1000,10), -145.0730258071027);
-    AssertAlmostEqual(&test, casimir_lnLambda(1000,1000,20), -283.2357984094714);
-    AssertAlmostEqual(&test, casimir_lnLambda(1000,1000,50), -697.6921182236243);
-    AssertAlmostEqual(&test, casimir_lnLambda(1000,1000,100), -1388.225291090218);
-    AssertAlmostEqual(&test, casimir_lnLambda(1000,1000,499), -6856.454154873699);
-    AssertAlmostEqual(&test, casimir_lnLambda(1000,1000,500), -6869.983981361874);
-    AssertAlmostEqual(&test, casimir_lnLambda(1000,1000,501), -6883.51247629193);
-    AssertAlmostEqual(&test, casimir_lnLambda(1000,1000,999), -13205.83170295854);
-    AssertAlmostEqual(&test, casimir_lnLambda(1000,1000,1000), -13213.43260541808);
+    AssertAlmostEqual(&test, casimir_lnLambda(1,1,0,NULL), 0.40546510810816);
+    AssertAlmostEqual(&test, casimir_lnLambda(1,1,1,NULL), -0.28768207245178);
+    AssertAlmostEqual(&test, casimir_lnLambda(2,1,1,NULL), -1.130881549236895);
+    AssertAlmostEqual(&test, casimir_lnLambda(4,5,3,NULL), -10.11921344416614);
+    AssertAlmostEqual(&test, casimir_lnLambda(100,1,0,NULL), -1.755760343331055);
+    AssertAlmostEqual(&test, casimir_lnLambda(100,1,1,NULL), -6.712479285025704);
+    AssertAlmostEqual(&test, casimir_lnLambda(100,33,17,NULL), -140.5615114663231);
+    AssertAlmostEqual(&test, casimir_lnLambda(50,50,0,NULL),   -3.921875301871158+0.6931471805599453);
+    AssertAlmostEqual(&test, casimir_lnLambda(50,50,1,NULL),   -11.76572394002363+0.6931471805599453);
+    AssertAlmostEqual(&test, casimir_lnLambda(50,50,50,NULL),  -367.6612508574347+0.6931471805599453);
+    AssertAlmostEqual(&test, casimir_lnLambda(50,20,10,NULL),  -72.40153130583653+0.6931471805599453);
+    AssertAlmostEqual(&test, casimir_lnLambda(5,7,3,NULL),     -12.77235621226475+0.6931471805599453);
+    AssertAlmostEqual(&test, casimir_lnLambda(16,6,4,NULL),    -20.7139882421892+0.6931471805599453);
+    AssertAlmostEqual(&test, casimir_lnLambda(100,6,4,NULL),   -28.88322376001037+0.6931471805599453);
+    AssertAlmostEqual(&test, casimir_lnLambda(100,100,0,NULL), -4.61013297533022+0.6931471805599453);
+    AssertAlmostEqual(&test, casimir_lnLambda(100,100,50,NULL), -461.1524718729809+0.6931471805599453);
+    AssertAlmostEqual(&test, casimir_lnLambda(100,201,10,NULL), -104.0968227550132+0.6931471805599453);
+    AssertAlmostEqual(&test, casimir_lnLambda(200,200,0,NULL), -5.300808027860489+0.6931471805599453);
+    AssertAlmostEqual(&test, casimir_lnLambda(200,100,70,NULL), -690.4926643211061+0.6931471805599453);
+    AssertAlmostEqual(&test, casimir_lnLambda(500,500,0,NULL), -6.215606600751781+0.6931471805599453);
+    AssertAlmostEqual(&test, casimir_lnLambda(1000,1000,0,NULL), -6.908254904273569+0.6931471805599453);
+    AssertAlmostEqual(&test, casimir_lnLambda(1000,1000,1,NULL), -20.72476496257093+0.6931471805599453);
+    AssertAlmostEqual(&test, casimir_lnLambda(1000,1000,2,NULL), -34.54127302286429+0.6931471805599453);
+    AssertAlmostEqual(&test, casimir_lnLambda(1000,1000,3,NULL), -48.35777708713769+0.6931471805599453);
+    AssertAlmostEqual(&test, casimir_lnLambda(1000,1000,10,NULL), -145.0730258071027+0.6931471805599453);
+    AssertAlmostEqual(&test, casimir_lnLambda(1000,1000,20,NULL), -283.2357984094714+0.6931471805599453);
+    AssertAlmostEqual(&test, casimir_lnLambda(1000,1000,50,NULL), -697.6921182236243+0.6931471805599453);
+    AssertAlmostEqual(&test, casimir_lnLambda(1000,1000,100,NULL), -1388.225291090218+0.6931471805599453);
+    AssertAlmostEqual(&test, casimir_lnLambda(1000,1000,499,NULL), -6856.454154873699+0.6931471805599453);
+    AssertAlmostEqual(&test, casimir_lnLambda(1000,1000,500,NULL), -6869.983981361874+0.6931471805599453);
+    AssertAlmostEqual(&test, casimir_lnLambda(1000,1000,501,NULL), -6883.51247629193+0.6931471805599453);
+    AssertAlmostEqual(&test, casimir_lnLambda(1000,1000,999,NULL), -13205.83170295854+0.6931471805599453);
+    AssertAlmostEqual(&test, casimir_lnLambda(1000,1000,1000,NULL), -13213.43260541808+0.6931471805599453);
 
     return test_results(&test, stderr);
 }
@@ -318,12 +325,34 @@ int test_Xi(void)
     unittest_t test;
     unittest_init(&test, "Xi", "Test Xi function for various parameters");
 
+    AssertAlmostEqual(&test, casimir_lnXi(1,1,0,&sign), -3.060270794691562);
+    AssertEqual(&test, sign, -1);
+
+    AssertAlmostEqual(&test, casimir_lnXi(1,1,1,&sign), -3.753417975251507);
+    AssertEqual(&test, sign, -1);
+
+    AssertAlmostEqual(&test, casimir_lnXi(3,2,1,&sign), -1.817138914330164);
+    AssertEqual(&test, sign, +1);
+
     AssertAlmostEqual(&test, casimir_lnXi(4,3,2,&sign), -0.1101206735572);
     AssertEqual(&test, sign, -1);
+
     AssertAlmostEqual(&test, casimir_lnXi(4,2,2,&sign), -2.394730234408415);
     AssertEqual(&test, sign, +1);
+
+    AssertAlmostEqual(&test, casimir_lnXi(11,1,0,&sign), 2.60283664295575);
+    AssertAlmostEqual(&test, casimir_lnXi(11,7,0,&sign), 19.22557931884024);
+    AssertAlmostEqual(&test, casimir_lnXi(11,7,5,&sign), 16.28731202862324);
+    AssertAlmostEqual(&test, casimir_lnXi(201,7,5,&sign), 623.3839523251071);
+
+    AssertAlmostEqual(&test, casimir_lnXi(100,10,0,&sign), 269.8159771440838);
+    AssertAlmostEqual(&test, casimir_lnXi(100,10,1,&sign), 269.7633468887551);
+    AssertAlmostEqual(&test, casimir_lnXi(100,10,10,&sign), 263.2542489687728);
+
     AssertAlmostEqual(&test, casimir_lnXi(100,100,100,&sign), 587.0039751538028);
     AssertAlmostEqual(&test, casimir_lnXi(100,100,50,&sign),  696.7380895450116);
+    AssertAlmostEqual(&test, casimir_lnXi(100,100,0,&sign),  722.7572112350813);
+    AssertAlmostEqual(&test, casimir_lnXi(100,100,1,&sign),  722.747260904228);
     AssertAlmostEqual(&test, casimir_lnXi(17,14,10,&sign),    45.8135805997528);
 
     return test_results(&test, stderr);
@@ -375,38 +404,43 @@ int test_integration(void)
     unittest_t test;
     unittest_init(&test, "Integration", "Test integration for various parameters");
 
-    casimir_integrate(&cint, 4, 4, 0, 0.01);
-    AssertAlmostEqual(&test, cint.logB, 56.28387814539346);
+    casimir_integrate(&cint, 3, 2, 1, 2);
+    AssertAlmostEqual(&test, cint.logA, -4.094372316589062);
+    AssertAlmostEqual(&test, cint.logB, -1.970116759119433);
+    AssertAlmostEqual(&test, cint.logC, -3.298725852652321);
 
-    casimir_integrate(&cint, 4, 4, 1, 0.01);
-    AssertAlmostEqual(&test, cint.signA*exp(cint.logA), +2.4806179125126554e17);
-    AssertAlmostEqual(&test, cint.signB*exp(cint.logB), -2.2226323455151368e24);
-    AssertAlmostEqual(&test, cint.signC*exp(cint.logC), -6.9457269656680333e20);
-    AssertAlmostEqual(&test, cint.signD*exp(cint.logD), +6.9457269656680333e20);
+    casimir_integrate(&cint, 4, 4, 0, 0.005);
+    AssertAlmostEqual(&test, cint.logB, 56.28387814539346+0.6931471805599453);
 
-    casimir_integrate(&cint, 40, 40, 1, 0.5);
-    AssertAlmostEqual(&test, cint.signA*exp(cint.logA), +1.5754477603435539e159);
-    AssertAlmostEqual(&test, cint.signB*exp(cint.logB), -6.3723632215476122e166);
-    AssertAlmostEqual(&test, cint.signC*exp(cint.logC), -9.9568222699306801e162);
-    AssertAlmostEqual(&test, cint.signD*exp(cint.logD), +9.9568222699306801e162);
+    casimir_integrate(&cint, 4, 4, 1, 0.005);
+    AssertAlmostEqual(&test, cint.signA*exp(cint.logA), +2.4806179125126554e17*-2);
+    AssertAlmostEqual(&test, cint.signB*exp(cint.logB), -2.2226323455151368e24*-2);
+    AssertAlmostEqual(&test, cint.signC*exp(cint.logC), -6.9457269656680333e20*-2);
+    AssertAlmostEqual(&test, cint.signD*exp(cint.logD), +6.9457269656680333e20*-2);
 
-    casimir_integrate(&cint, 40, 40, 40, 2);
-    AssertAlmostEqual(&test, cint.signA*exp(cint.logA), +6.4140686579381969e91);
-    AssertAlmostEqual(&test, cint.signB*exp(cint.logB), -1.0147301906459434e95);
-    AssertAlmostEqual(&test, cint.signC*exp(cint.logC), -2.5352219594503741e93);
-    AssertAlmostEqual(&test, cint.signD*exp(cint.logD), +2.5352219594503736e93);
+    casimir_integrate(&cint, 40, 40, 1, 0.25);
+    AssertAlmostEqual(&test, cint.signA*exp(cint.logA), +1.5754477603435539e159*-2);
+    AssertAlmostEqual(&test, cint.signB*exp(cint.logB), -6.3723632215476122e166*-2);
+    AssertAlmostEqual(&test, cint.signC*exp(cint.logC), -9.9568222699306801e162*-2);
+    AssertAlmostEqual(&test, cint.signD*exp(cint.logD), +9.9568222699306801e162*-2);
 
-    casimir_integrate(&cint, 7, 4, 3, 17);
-    AssertAlmostEqual(&test, cint.signA*exp(cint.logA), +4.8180365200137397e-9);
-    AssertAlmostEqual(&test, cint.signB*exp(cint.logB), -1.3731640166794149e-8);
-    AssertAlmostEqual(&test, cint.signC*exp(cint.logC), -6.7659079909128738e-9);
-    AssertAlmostEqual(&test, cint.signD*exp(cint.logD), +9.44463292099617e-9);
+    casimir_integrate(&cint, 40, 40, 40, 1);
+    AssertAlmostEqual(&test, cint.signA*exp(cint.logA), +6.4140686579381969e91*-2);
+    AssertAlmostEqual(&test, cint.signB*exp(cint.logB), -1.0147301906459434e95*-2);
+    AssertAlmostEqual(&test, cint.signC*exp(cint.logC), -2.5352219594503741e93*-2);
+    AssertAlmostEqual(&test, cint.signD*exp(cint.logD), +2.5352219594503736e93*-2);
 
-    casimir_integrate(&cint, 40, 40, 0, 5);
-    AssertAlmostEqual(&test, cint.signB*exp(cint.logB), -6.0455421304871757e85);
+    casimir_integrate(&cint, 7, 4, 3, 8.5);
+    AssertAlmostEqual(&test, cint.signA*exp(cint.logA), +4.8180365200137397e-9*-2);
+    AssertAlmostEqual(&test, cint.signB*exp(cint.logB), -1.3731640166794149e-8*-2);
+    AssertAlmostEqual(&test, cint.signC*exp(cint.logC), -6.7659079909128738e-9*-2);
+    AssertAlmostEqual(&test, cint.signD*exp(cint.logD), +9.44463292099617e-9*-2);
 
-    casimir_integrate(&cint, 100, 41, 0, 5);
-    AssertAlmostEqual(&test, cint.signB*exp(cint.logB), 8.8689390374540308e185);
+    casimir_integrate(&cint, 40, 40, 0, 2.5);
+    AssertAlmostEqual(&test, cint.signB*exp(cint.logB), -6.0455421304871757e85*-2);
+
+    casimir_integrate(&cint, 100, 41, 0, 2.5);
+    AssertAlmostEqual(&test, cint.signB*exp(cint.logB), 8.8689390374540308e185*-2);
 
     return test_results(&test, stderr);
 }
