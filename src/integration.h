@@ -3,7 +3,7 @@
 
     #include "libcasimir.h"
 
-    void casimir_integrate(casimir_integrals_t *cint, int l1, int l2, int m, double xi);
+    void casimir_integrate(casimir_integrals_t *cint, int l1, int l2, int m, double nT);
 
     #ifdef INTEGRATION_QUAD
         #include "edouble.h"

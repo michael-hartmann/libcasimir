@@ -36,8 +36,9 @@
     double log_polyintegrate(edouble p[], size_t len, int l1, int l2, int m, int *sign)
     {
         size_t i;
+        int sign_lnLambda;
         edouble value = 0;
-        double lnLambda = casimir_lnLambda(l1, l2, m);
+        double lnLambda = casimir_lnLambda(l1, l2, m, &sign_lnLambda);
         double lnfac_max = lnfac(len-1);
 
         assert(!isnan(lnLambda));
@@ -48,7 +49,7 @@
 
         assert(!isnan(value));
         assert(!isinf(value));
-        *sign = (double)copysignq(1, value);
+        *sign = (double)copysignq(1, value) * sign_lnLambda;
         return lnLambda+lnfac_max+logq(fabsq(value));
     }
 
@@ -116,8 +117,9 @@
     /*
     * Returns the integrals A,B,C,D for l1,l2,m,xi and p=TE,TM
     */
-    void casimir_integrate(casimir_integrals_t *cint, int l1, int l2, int m, double xi)
+    void casimir_integrate(casimir_integrals_t *cint, int l1, int l2, int m, double nT)
     {
+        double xi = 2*nT;
         edouble pdpl1m[l1-m+2];
         edouble pdpl2m[l2-m+2];
 
@@ -250,13 +252,15 @@
     {
         size_t i;
         double value;
-        double lnLambda = casimir_lnLambda(l1, l2, m);
+        int sign_lnLambda;
+        double lnLambda = casimir_lnLambda(l1, l2, m, &sign_lnLambda);
 
         value = p[0].value;
         *sign = p[0].sign;
         for(i = 1; i < len; i++)
             value = logadd_s(value, *sign, lnfac(i)+p[i].value, p[i].sign, sign);
 
+        *sign *= sign_lnLambda;
         return lnLambda+value;
     }
 
@@ -359,8 +363,9 @@
     /*
      * Returns the integrals A,B,C,D for l1,l2,m,xi and p=TE,TM
      */
-    void casimir_integrate(casimir_integrals_t *cint, int l1, int l2, int m, double xi)
+    void casimir_integrate(casimir_integrals_t *cint, int l1, int l2, int m, double nT)
     {
+        double xi = 2*nT;
         log_t pdpl1m[l1-m+2];
         log_t pdpl2m[l2-m+2];
 
