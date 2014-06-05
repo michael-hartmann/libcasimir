@@ -1,0 +1,46 @@
+/* [wxMaxima batch file version 1] [ DO NOT EDIT BY HAND! ]*/
+/* [ Created with wxMaxima version 12.04.0 ] */
+
+/* [wxMaxima: input   start ] */
+Plm(l,m,x) := assoc_legendre_p(l,m,x);
+dPlm(l,m,x) := ((l-m+1)*Plm(l+1,m,x)-(l+1)*x*Plm(l,m,x))/(x^2-1);
+Nlm(l,m) := sqrt((2*l+1)/2 * (l-m)!/(l+m)!);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+assume(n>0);
+assume(T>0);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+Lambda(l1,l2,m) := -2*Nlm(l1,m)*Nlm(l2,m)/sqrt(l1*(l1+1)*l2*(l2+1));
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+Xi(l1,l2,m) := ratsimp(Lambda(l1,l2,m)*(-1)**(l2+1)*(2*l1)!*(2*l2)!*(l1+l2)!/(4^(2*l1+l2+1)*(l1-1)!*(l2-1)!*(l1-m)!*(l2-m)!));
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+kappa: sqrt(n^2*T^2+k^2);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+integrandA(l1,l2,m) := m^2*n*T/(k*kappa)*exp(-2*kappa)*Plm(l1,m,kappa/(n*T))*Plm(l2,m,-kappa/(n*T));
+integrandB(l1,l2,m) := 1/(n*T)^3*k^3/kappa*exp(-2*kappa)*dPlm(l1,m,kappa/(n*T))*dPlm(l2,m,-kappa/(n*T));
+integrandC(l1,l2,m) := -m/(n*T)*k/kappa*exp(-2*kappa)*Plm(l1,m,kappa/(n*T))*dPlm(l2,m,kappa/(n*T));
+integrandD(l1,l2,m) := -m/(n*T)*k/kappa*exp(-2*kappa)*dPlm(l1,m,kappa/(n*T))*Plm(l2,m,kappa/(n*T));
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+A(l1,l2,m) := Lambda(l1,l2,m)*integrate(ratsimp(integrandA(l1,l2,m)), k, 0, inf);
+B(l1,l2,m) := Lambda(l1,l2,m)*integrate(ratsimp(integrandB(l1,l2,m)), k, 0, inf);
+C(l1,l2,m) := Lambda(l1,l2,m)*integrate(ratsimp(integrandC(l1,l2,m)), k, 0, inf);
+D(l1,l2,m) := Lambda(l1,l2,m)*integrate(ratsimp(integrandD(l1,l2,m)), k, 0, inf);
+/* [wxMaxima: input   end   ] */
+
+/* [wxMaxima: input   start ] */
+ratsimp(B(9,9,0));
+/* [wxMaxima: input   end   ] */
+
+/* Maxima can't load/batch files which end with a comment! */
+"Created with wxMaxima"$
