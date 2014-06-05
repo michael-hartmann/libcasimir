@@ -51,7 +51,7 @@ typedef struct
     int signA, signB, signC, signD;
 } casimir_integrals_t;
 
-double casimir_lnLambda(int l1, int l2, int m);
+double casimir_lnLambda(int l1, int l2, int m, int *sign);
 double casimir_lnXi(int l1, int l2, int m, int *sign);
 
 double casimir_F_SI_to_scaled(double F_SI, double ScriptL_SI);

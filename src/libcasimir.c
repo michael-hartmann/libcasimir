@@ -33,14 +33,16 @@ const char *casimir_compile_info(void)
  * (l1-m)!*(l2-m)!/(l1+m)!/(l2+m) 
  * don't overflow.
  *
- * Lambda(l1,l2,m) = N_{l1,m}*N_{l2,m} / sqrt(4*l1*(l1+1)*l2*(l2+1))
+ * Lambda(l1,l2,m) = -2*N_{l1,m}*N_{l2,m} / sqrt(l1*(l1+1)*l2*(l2+1))
  *
  * Restrictions: l1,l2,m integers, l1,l2>=1, l1,l2 >= m
  * Symmetries: Λ(l1,l2,m) = Λ(l2,l1,m)
  */
-double inline casimir_lnLambda(int l1, int l2, int m)
+double inline casimir_lnLambda(int l1, int l2, int m, int *sign)
 {
-    return (log(2.*l1+1)+log(2*l2+1)-log(4)-log(l1)-log(l1+1)-log(l2)-log(l2+1)+lnfac(l1-m)+lnfac(l2-m)-lnfac(l1+m)-lnfac(l2+m))/2.0;
+    if(sign != NULL)
+        *sign = -1;
+    return M_LN2 + (log(2.*l1+1)+log(2*l2+1)-log(4)-log(l1)-log(l1+1)-log(l2)-log(l2+1)+lnfac(l1-m)+lnfac(l2-m)-lnfac(l1+m)-lnfac(l2+m))/2.0;
 }
 
 
@@ -86,7 +88,7 @@ double casimir_lnXi(int l1, int l2, int m, int *sign)
 {
     *sign = pow(-1, l2);
     return (log(2*l1+1)+log(2*l2+1)-lnfac(l1-m)-lnfac(l2-m)-lnfac(l1+m)-lnfac(l2+m)-log(l1)-log(l1+1)-log(l2)-log(l2+1))/2.0 \
-           +lnfac(2*l1)+lnfac(2*l2)+lnfac(l1+l2)-log(4)*(2*l1+l2+1)-lnfac(l1-1)-lnfac(l2-1);
+           +lnfac(2*l1)+lnfac(2*l2)+lnfac(l1+l2)-M_LOG4*(2*l1+l2+1)-lnfac(l1-1)-lnfac(l2-1);
 }
 
 
@@ -200,7 +202,7 @@ double casimir_lna(int l, const double arg, int *sign)
     double prefactor;
     double lnfrac = log(arg)-log(l);
 
-    /* we could do both calculation together. but it doesn't cost much time -
+    /* we could do both calculations together. but it doesn't cost much time -
      * so why bother? 
      */
     bessel_lnInuKnu(l-1, arg, &lnIlm, &lnKlm);
@@ -519,7 +521,7 @@ double casimir_F(casimir_t *self, int *nmax)
                     double r4 = values[n-4]/values[n-5];
                     double r5 = values[n-5]/values[n-6];
                     double r  = (r1+r2+r3+r4+r5)/5;
-                    sum_n += values[n-1]/(1-r);
+                    sum_n += values[n-1]*r/(1-r);
                 }
                 /* get out of here */
                 if(nmax != NULL)
@@ -700,7 +702,7 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
                 lnbl2 -= (l2-l1)*lognTRbyScriptL;
             }
 
-            casimir_integrate(&cint, l1, l2, m, 2*n*self->T);
+            casimir_integrate(&cint, l1, l2, m, n*self->T);
 
             assert(!isnan(cint.logA));
             assert(!isnan(cint.logB));
@@ -718,21 +720,21 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
             /* M_EE */
             #ifdef MATRIX_QUAD
                 /* EE */
-                matrix_set(M, i,j, (l1 == l2 ? 1 : 0) + 2*al1_sign*( cint.signB*expq(lnal1+cint.logB) - cint.signA*expq(lnal1+cint.logA) ));
-                matrix_set(M, j,i, (l1 == l2 ? 1 : 0) + 2*pow(-1, l1+l2)*al2_sign*( cint.signB*expq(lnal2+cint.logB) - cint.signA*expq(lnal2+cint.logA) ));
+                matrix_set(M, i,j, (l1 == l2 ? 1 : 0) - al1_sign*( cint.signB*expq(lnal1+cint.logB) - cint.signA*expq(lnal1+cint.logA) ));
+                matrix_set(M, j,i, (l1 == l2 ? 1 : 0) - pow(-1, l1+l2)*al2_sign*( cint.signB*expq(lnal2+cint.logB) - cint.signA*expq(lnal2+cint.logA) ));
 
                 /* MM */
-                matrix_set(M, i+dim,j+dim, (l1 == l2 ? 1 : 0) + 2*bl1_sign*( cint.signA*expq(lnbl1+cint.logA) - cint.signB*expq(lnbl1+cint.logB) ));
-                matrix_set(M, j+dim,i+dim, (l1 == l2 ? 1 : 0) + 2*pow(-1, l1+l2)*bl2_sign*( cint.signA*expq(lnbl2+cint.logA) - cint.signB*expq(lnbl2+cint.logB) ));
+                matrix_set(M, i+dim,j+dim, (l1 == l2 ? 1 : 0) - bl1_sign*( cint.signA*expq(lnbl1+cint.logA) - cint.signB*expq(lnbl1+cint.logB) ));
+                matrix_set(M, j+dim,i+dim, (l1 == l2 ? 1 : 0) - pow(-1, l1+l2)*bl2_sign*( cint.signA*expq(lnbl2+cint.logA) - cint.signB*expq(lnbl2+cint.logB) ));
             #else
-                double D_EE1 = M_LN2 + logadd_s(lnal1+cint.logB, cint.signB, lnal1+cint.logA, -cint.signA, &sign);
+                double D_EE1 = logadd_s(lnal1+cint.logB, -cint.signB, lnal1+cint.logA, +cint.signA, &sign);
                 int sign_EE1 = sign*al1_sign;
-                double D_EE2 = M_LN2 + logadd_s(lnal2+cint.logB, cint.signB, lnal2+cint.logA, -cint.signA, &sign);
+                double D_EE2 = logadd_s(lnal2+cint.logB, -cint.signB, lnal2+cint.logA, +cint.signA, &sign);
                 int sign_EE2 = sign*al2_sign*pow(-1, l1+l2);
 
-                double D_MM1 = M_LN2 + logadd_s(lnbl1+cint.logA, cint.signA, lnbl1+cint.logB, -cint.signB, &sign);
+                double D_MM1 = logadd_s(lnbl1+cint.logA, -cint.signA, lnbl1+cint.logB, +cint.signB, &sign);
                 int sign_MM1 = sign*bl1_sign;
-                double D_MM2 = M_LN2 + logadd_s(lnbl2+cint.logA, cint.signA, lnbl2+cint.logB, -cint.signB, &sign);
+                double D_MM2 = logadd_s(lnbl2+cint.logA, -cint.signA, lnbl2+cint.logB, +cint.signB, &sign);
                 int sign_MM2 = sign*bl2_sign*pow(-1, l1+l2);
 
                 if(l1 == l2)
@@ -767,13 +769,13 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
             {
                 /* M_EM */
                 #ifdef MATRIX_QUAD
-                    matrix_set(M, dim+i,j, 2*al1_sign*( cint.signD*expq(lnal1+cint.logD) - cint.signC*expq(lnal1+cint.logC) ));
-                    matrix_set(M, dim+j,i, 2*al2_sign*pow(-1, l1+l2+1)*( cint.signC*expq(lnal2+cint.logC) - cint.signD*expq(lnal2+cint.logD) ));
+                    matrix_set(M, dim+i,j, -al1_sign*( cint.signD*expq(lnal1+cint.logD) - cint.signC*expq(lnal1+cint.logC) ));
+                    matrix_set(M, dim+j,i, -al2_sign*pow(-1, l1+l2+1)*( cint.signC*expq(lnal2+cint.logC) - cint.signD*expq(lnal2+cint.logD) ));
                 #else
-                    double D_EM1 = M_LN2 + logadd_s(lnal1+cint.logD, cint.signD, lnal1+cint.logC, -cint.signC, &sign);
-                    int sign_EM1 = sign*al1_sign;
-                    double D_EM2 = M_LN2 + logadd_s(lnal2+cint.logC, cint.signC, lnal2+cint.logD, -cint.signD, &sign);
-                    int sign_EM2 = sign*al2_sign*pow(-1, l1+l2+1);
+                    double D_EM1 = logadd_s(lnal1+cint.logD, cint.signD, lnal1+cint.logC, -cint.signC, &sign);
+                    int sign_EM1 = -sign*al1_sign;
+                    double D_EM2 = logadd_s(lnal2+cint.logC, cint.signC, lnal2+cint.logD, -cint.signD, &sign);
+                    int sign_EM2 = -sign*al2_sign*pow(-1, l1+l2+1);
 
                     assert(!isnan(D_EM1)); assert(!isinf(D_EM1));
                     assert(!isnan(D_EM2)); assert(!isinf(D_EM2));
@@ -788,13 +790,13 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
 
                 /* M_ME */
                 #ifdef MATRIX_QUAD
-                    matrix_set(M, i,dim+j, 2*bl1_sign*( cint.signC*expq(lnbl1+cint.logC) - cint.signD*expq(lnbl1+cint.logD) ));
-                    matrix_set(M, j,dim+i, 2*bl2_sign*pow(-1, l1+l2+1)*( cint.signD*expq(lnbl2+cint.logD) - cint.signC*expq(lnbl2+cint.logC) ));
+                    matrix_set(M, i,dim+j, -bl1_sign*( cint.signC*expq(lnbl1+cint.logC) - cint.signD*expq(lnbl1+cint.logD) ));
+                    matrix_set(M, j,dim+i, -bl2_sign*pow(-1, l1+l2+1)*( cint.signD*expq(lnbl2+cint.logD) - cint.signC*expq(lnbl2+cint.logC) ));
                 #else
-                    double D_ME1 = M_LN2 + logadd_s(lnbl1+cint.logC, cint.signC, lnbl1+cint.logD, -cint.signD, &sign);
-                    int sign_ME1 = sign*bl1_sign;
-                    double D_ME2 = M_LN2 + logadd_s(lnbl2+cint.logD, cint.signD, lnbl2+cint.logC, -cint.signC, &sign);
-                    int sign_ME2 = sign*bl2_sign*pow(-1, l1+l2+1);
+                    double D_ME1 = logadd_s(lnbl1+cint.logC, cint.signC, lnbl1+cint.logD, -cint.signD, &sign);
+                    int sign_ME1 = -sign*bl1_sign;
+                    double D_ME2 = logadd_s(lnbl2+cint.logD, cint.signD, lnbl2+cint.logC, -cint.signC, &sign);
+                    int sign_ME2 = -sign*bl2_sign*pow(-1, l1+l2+1);
 
                     assert(!isnan(D_ME1)); assert(!isinf(D_ME1));
                     assert(!isnan(D_ME2)); assert(!isinf(D_ME2));
