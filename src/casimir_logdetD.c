@@ -158,7 +158,6 @@ int main(int argc, char *argv[])
     printf("# m = %d\n", m);
     printf("# lmax = %d\n", lmax);
     printf("#\n");
-    printf("# R/(L+R), T, F, lmax, nmax, time\n");
 
     {
         casimir_t casimir;
