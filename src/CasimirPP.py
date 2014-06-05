@@ -36,9 +36,9 @@ class CasimirPP:
         xi1 = 2*pi*self.kb*T/self.hbar
         while True:
             xin = xi1*n
-            value, err = quad(self.integrand, xin*z/self.c, np.inf, (z,xin))
+            value, err = quad(self.integrand, xin*z/self.c, np.inf, (z,xin), epsrel=1e-15)
             terms.append(value)
-            if terms[n]/terms[0] < 1e-12:
+            if terms[n]/terms[0] < 1e-15:
                 terms[0] /= 2
                 terms.sort()
                 terms.reverse()
