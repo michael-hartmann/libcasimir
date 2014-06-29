@@ -21,7 +21,7 @@ char CASIMIR_COMPILE_INFO[255];
 
 const char *casimir_compile_info(void)
 {
-    snprintf(CASIMIR_COMPILE_INFO, sizeof(CASIMIR_COMPILE_INFO)/sizeof(char), "Compiler %s, using %s and %s matrix elements and %s integration", COMPILER, CASIMIR_ARITHMETICS, CASIMIR_MATRIX, CASIMIR_INTEGRATION);
+    snprintf(CASIMIR_COMPILE_INFO, sizeof(CASIMIR_COMPILE_INFO)/sizeof(char), "Compiler %s, using %s", COMPILER, CASIMIR_ARITHMETICS);
     return CASIMIR_COMPILE_INFO;
 }
 
@@ -547,15 +547,8 @@ double casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logde
 
     dim = (max-min+1);
 
-    #ifdef MATRIX_QUAD
-        matrix_edouble_t *EE = matrix_edouble_alloc(dim);
-        matrix_edouble_t *MM = matrix_edouble_alloc(dim);
-    #else
-        matrix_char_t *EE_signs = matrix_char_alloc(dim);
-        matrix_char_t *MM_signs = matrix_char_alloc(dim);
-        matrix_t *EE       = matrix_alloc(dim);
-        matrix_t *MM       = matrix_alloc(dim);
-    #endif
+    matrix_edouble_t *EE = matrix_edouble_alloc(dim);
+    matrix_edouble_t *MM = matrix_edouble_alloc(dim);
 
     /* calculate the logarithm of the matrix elements of D */
     for(l1 = min; l1 <= max; l1++)
@@ -568,74 +561,20 @@ double casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logde
             double lnXiRL = casimir_lnXi(l1,l2,m,&sign_xi)+(2*l1+1)*lnRbyScriptL;
             casimir_lna0_lnb0(l1, &lna0, &sign_a0, &lnb0, &sign_b0);
 
-            #ifdef MATRIX_QUAD
-                matrix_set(EE, i,j, (l1 == l2 ? 1 : 0) - sign_xi*sign_a0*expq(lna0+lnXiRL));
-                matrix_set(MM, i,j, (l1 == l2 ? 1 : 0) - sign_xi*sign_a0*expq(lnb0+lnXiRL));
-            #else
-                double D_EE, D_MM;
-                int sign_EE, sign_MM;
-
-                /* -M_EE */
-                D_EE    = lna0+lnXiRL;
-                sign_EE = -(sign_xi*sign_a0);
-
-                /* -M_MM */
-                D_MM    = lnb0+lnXiRL;
-                sign_MM = +(sign_xi*sign_b0);
-
-                /* if l1 == l2: D_EE = 1-M_EE and D_MM = 1-M_MM */
-                if(l1 == l2)
-                {
-                    D_EE = logadd_s(0, +1, D_EE, sign_EE, &sign_EE);
-                    D_MM = logadd_s(0, +1, D_MM, sign_MM, &sign_MM);
-                }
-
-                matrix_set(EE_signs, i,j, sign_EE);
-                matrix_set(EE, i, j, D_EE);
-
-                matrix_set(MM_signs, i,j, sign_MM);
-                matrix_set(MM, i, j, D_MM);
-            #endif
+            matrix_set(EE, i,j, (l1 == l2 ? 1 : 0) - sign_xi*sign_a0*expq(lna0+lnXiRL));
+            matrix_set(MM, i,j, (l1 == l2 ? 1 : 0) - sign_xi*sign_a0*expq(lnb0+lnXiRL));
         }
 
-    #ifdef MATRIX_QUAD
-        /* balance the matrix */
-        matrix_edouble_balance(EE);
-        matrix_edouble_balance(MM);
+    /* balance the matrix */
+    matrix_edouble_balance(EE);
+    matrix_edouble_balance(MM);
 
-        value_EE = matrix_edouble_logdet(EE);
-        value_MM = matrix_edouble_logdet(MM);
+    value_EE = matrix_edouble_logdet(EE);
+    value_MM = matrix_edouble_logdet(MM);
 
-        /* free space for matrices */
-        matrix_edouble_free(EE);
-        matrix_edouble_free(MM);
-    #else
-        /* balance the matrix */
-        matrix_log_balance(EE);
-        matrix_log_balance(MM);
-
-        /* multiply the correct signs */
-        for(l1 = 0; l1 < dim; l1++)
-            for(l2 = 0; l2 < dim; l2++)
-            {
-                matrix_set(EE, l1,l2, matrix_get(EE_signs, l1,l2)*exp(matrix_get(EE,l1,l2)));
-                matrix_set(MM, l1,l2, matrix_get(MM_signs, l1,l2)*exp(matrix_get(MM,l1,l2)));
-            }
-
-        /* free space for sign matrices */
-        matrix_char_free(EE_signs);
-        matrix_char_free(MM_signs);
-
-        /* now EE and MM contain the "normal" matrix elements, so we can simply
-         * calculate the determinant of EE and MM 
-         */
-        value_EE = matrix_logdet(EE);
-        value_MM = matrix_logdet(MM);
-
-        /* free space for matrices */
-        matrix_free(EE);
-        matrix_free(MM);
-    #endif
+    /* free space for matrices */
+    matrix_edouble_free(EE);
+    matrix_edouble_free(MM);
 
     if(logdet_EE != NULL)
         *logdet_EE = value_EE;
@@ -664,12 +603,7 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
     if(n == 0)
         return casimir_logdetD0(self, m, NULL, NULL);
 
-    #ifdef MATRIX_QUAD
-        matrix_edouble_t *M = matrix_edouble_alloc(2*dim);
-    #else
-        matrix_t *M = matrix_alloc(2*dim);
-        matrix_char_t *M_signs = matrix_char_alloc(2*dim);
-    #endif
+    matrix_edouble_t *M = matrix_edouble_alloc(2*dim);
 
     /* M_EE, -M_EM
        M_ME,  M_MM */
@@ -678,9 +612,6 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
         for(l2 = min; l2 <= l1; l2++)
         {
             const int i = l1-min, j = l2-min;
-            #ifndef MATRIX_QUAD
-                int sign;
-            #endif
             casimir_integrals_t cint;
             double lnal1 = cache->al[l1];
             double lnbl1 = cache->bl[l1];
@@ -717,96 +648,25 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
                 assert(!isinf(cint.logD));
             }
 
-            /* M_EE */
-            #ifdef MATRIX_QUAD
-                /* EE */
-                matrix_set(M, i,j, (l1 == l2 ? 1 : 0) - al1_sign*( cint.signB*expq(lnal1+cint.logB) - cint.signA*expq(lnal1+cint.logA) ));
-                matrix_set(M, j,i, (l1 == l2 ? 1 : 0) - pow(-1, l1+l2)*al2_sign*( cint.signB*expq(lnal2+cint.logB) - cint.signA*expq(lnal2+cint.logA) ));
+            /* EE */
+            matrix_set(M, i,j, (l1 == l2 ? 1 : 0) - al1_sign*( cint.signB*expq(lnal1+cint.logB) - cint.signA*expq(lnal1+cint.logA) ));
+            matrix_set(M, j,i, (l1 == l2 ? 1 : 0) - pow(-1, l1+l2)*al2_sign*( cint.signB*expq(lnal2+cint.logB) - cint.signA*expq(lnal2+cint.logA) ));
 
-                /* MM */
-                matrix_set(M, i+dim,j+dim, (l1 == l2 ? 1 : 0) - bl1_sign*( cint.signA*expq(lnbl1+cint.logA) - cint.signB*expq(lnbl1+cint.logB) ));
-                matrix_set(M, j+dim,i+dim, (l1 == l2 ? 1 : 0) - pow(-1, l1+l2)*bl2_sign*( cint.signA*expq(lnbl2+cint.logA) - cint.signB*expq(lnbl2+cint.logB) ));
-            #else
-                double D_EE1 = logadd_s(lnal1+cint.logB, -cint.signB, lnal1+cint.logA, +cint.signA, &sign);
-                int sign_EE1 = sign*al1_sign;
-                double D_EE2 = logadd_s(lnal2+cint.logB, -cint.signB, lnal2+cint.logA, +cint.signA, &sign);
-                int sign_EE2 = sign*al2_sign*pow(-1, l1+l2);
-
-                double D_MM1 = logadd_s(lnbl1+cint.logA, -cint.signA, lnbl1+cint.logB, +cint.signB, &sign);
-                int sign_MM1 = sign*bl1_sign;
-                double D_MM2 = logadd_s(lnbl2+cint.logA, -cint.signA, lnbl2+cint.logB, +cint.signB, &sign);
-                int sign_MM2 = sign*bl2_sign*pow(-1, l1+l2);
-
-                if(l1 == l2)
-                {
-                    D_EE1 = logadd_s(0, +1, D_EE1, sign_EE1, &sign_EE1);
-                    D_EE2 = logadd_s(0, +1, D_EE2, sign_EE2, &sign_EE2);
-
-                    D_MM1 = logadd_s(0, +1, D_MM1, sign_MM1, &sign_MM1);
-                    D_MM2 = logadd_s(0, +1, D_MM2, sign_MM2, &sign_MM2);
-                }
-
-                assert(!isnan(D_EE1)); assert(!isinf(D_EE1));
-                assert(!isnan(D_EE2)); assert(!isinf(D_EE2));
-                assert(!isnan(D_MM1)); assert(!isinf(D_MM1));
-                assert(!isnan(D_MM2)); assert(!isinf(D_MM2));
-
-                matrix_set(M_signs, i,j, sign_EE1);
-                matrix_set(M, i,j, D_EE1); /* M_EE */
-
-                matrix_set(M_signs, j,i, sign_EE2);
-                matrix_set(M, j,i, D_EE2);
-
-                matrix_set(M_signs, i+dim,j+dim, sign_MM1);
-                matrix_set(M, i+dim,j+dim, D_MM1); /* M_EE */
-
-                matrix_set(M_signs, j+dim,i+dim, sign_MM2);
-                matrix_set(M, j+dim,i+dim, D_MM2);
-            #endif
+            /* MM */
+            matrix_set(M, i+dim,j+dim, (l1 == l2 ? 1 : 0) - bl1_sign*( cint.signA*expq(lnbl1+cint.logA) - cint.signB*expq(lnbl1+cint.logB) ));
+            matrix_set(M, j+dim,i+dim, (l1 == l2 ? 1 : 0) - pow(-1, l1+l2)*bl2_sign*( cint.signA*expq(lnbl2+cint.logA) - cint.signB*expq(lnbl2+cint.logB) ));
 
 
             if(m != 0)
             {
                 /* M_EM */
-                #ifdef MATRIX_QUAD
-                    matrix_set(M, dim+i,j, -al1_sign*( cint.signD*expq(lnal1+cint.logD) - cint.signC*expq(lnal1+cint.logC) ));
-                    matrix_set(M, dim+j,i, -al2_sign*pow(-1, l1+l2+1)*( cint.signC*expq(lnal2+cint.logC) - cint.signD*expq(lnal2+cint.logD) ));
-                #else
-                    double D_EM1 = logadd_s(lnal1+cint.logD, cint.signD, lnal1+cint.logC, -cint.signC, &sign);
-                    int sign_EM1 = -sign*al1_sign;
-                    double D_EM2 = logadd_s(lnal2+cint.logC, cint.signC, lnal2+cint.logD, -cint.signD, &sign);
-                    int sign_EM2 = -sign*al2_sign*pow(-1, l1+l2+1);
-
-                    assert(!isnan(D_EM1)); assert(!isinf(D_EM1));
-                    assert(!isnan(D_EM2)); assert(!isinf(D_EM2));
-
-                    matrix_set(M_signs, dim+i,j, sign_EM1);
-                    matrix_set(M, dim+i, j, D_EM1); /* M_EM */
-
-                    matrix_set(M_signs, dim+j,i, sign_EM2);
-                    matrix_set(M, dim+j, i, D_EM2); /* M_EM */
-                #endif
+                matrix_set(M, dim+i,j, -al1_sign*( cint.signD*expq(lnal1+cint.logD) - cint.signC*expq(lnal1+cint.logC) ));
+                matrix_set(M, dim+j,i, -al2_sign*pow(-1, l1+l2+1)*( cint.signC*expq(lnal2+cint.logC) - cint.signD*expq(lnal2+cint.logD) ));
 
 
                 /* M_ME */
-                #ifdef MATRIX_QUAD
-                    matrix_set(M, i,dim+j, -bl1_sign*( cint.signC*expq(lnbl1+cint.logC) - cint.signD*expq(lnbl1+cint.logD) ));
-                    matrix_set(M, j,dim+i, -bl2_sign*pow(-1, l1+l2+1)*( cint.signD*expq(lnbl2+cint.logD) - cint.signC*expq(lnbl2+cint.logC) ));
-                #else
-                    double D_ME1 = logadd_s(lnbl1+cint.logC, cint.signC, lnbl1+cint.logD, -cint.signD, &sign);
-                    int sign_ME1 = -sign*bl1_sign;
-                    double D_ME2 = logadd_s(lnbl2+cint.logD, cint.signD, lnbl2+cint.logC, -cint.signC, &sign);
-                    int sign_ME2 = -sign*bl2_sign*pow(-1, l1+l2+1);
-
-                    assert(!isnan(D_ME1)); assert(!isinf(D_ME1));
-                    assert(!isnan(D_ME2)); assert(!isinf(D_ME2));
-
-                    matrix_set(M_signs, i,dim+j, sign_ME1);
-                    matrix_set(M, i, dim+j, D_ME1); /* - M_ME */
-
-                    matrix_set(M_signs, j,dim+i, sign_ME2);
-                    matrix_set(M, j, dim+i, D_ME2); /* - M_ME */
-                #endif
+                matrix_set(M, i,dim+j, -bl1_sign*( cint.signC*expq(lnbl1+cint.logC) - cint.signD*expq(lnbl1+cint.logD) ));
+                matrix_set(M, j,dim+i, -bl2_sign*pow(-1, l1+l2+1)*( cint.signD*expq(lnbl2+cint.logD) - cint.signC*expq(lnbl2+cint.logC) ));
             }
         }
     }
@@ -814,13 +674,8 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
     if(m == 0)
     {
         size_t i,j;
-        #ifdef MATRIX_QUAD
-            matrix_edouble_t *EE = matrix_edouble_alloc(dim);
-            matrix_edouble_t *MM = matrix_edouble_alloc(dim);
-        #else
-            matrix_t *EE = matrix_alloc(dim);
-            matrix_t *MM = matrix_alloc(dim);
-        #endif
+        matrix_edouble_t *EE = matrix_edouble_alloc(dim);
+        matrix_edouble_t *MM = matrix_edouble_alloc(dim);
 
         for(i = 0; i < dim; i++)
             for(j = 0; j < dim; j++)
@@ -829,60 +684,21 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
                 matrix_set(MM, i,j, matrix_get(M, dim+i,dim+j));
             }
 
-        #ifdef MATRIX_QUAD
-            matrix_edouble_balance(MM);
-            matrix_edouble_balance(EE);
+        matrix_edouble_balance(MM);
+        matrix_edouble_balance(EE);
 
-            logdet = matrix_edouble_logdet(EE)+matrix_edouble_logdet(MM);
+        logdet = matrix_edouble_logdet(EE)+matrix_edouble_logdet(MM);
 
-            matrix_edouble_free(EE);
-            matrix_edouble_free(MM);
-        #else
-            matrix_log_balance(EE);
-            matrix_log_balance(MM);
-
-            for(l1 = 0; l1 < dim; l1++)
-                for(l2 = 0; l2 < dim; l2++)
-                {
-                    matrix_set(EE, l1,l2, matrix_get(M_signs, l1,l2)        *exp(matrix_get(EE,l1,l2)));
-                    matrix_set(MM, l1,l2, matrix_get(M_signs, l1+dim,l2+dim)*exp(matrix_get(MM,l1,l2)));
-                }
-
-            /* free space for sign matrices */
-            matrix_char_free(M_signs);
-
-            /* calculate log det */
-            logdet = matrix_logdet(EE)+matrix_logdet(MM);
-
-            matrix_free(EE);
-            matrix_free(MM);
-        #endif
+        matrix_edouble_free(EE);
+        matrix_edouble_free(MM);
     }
     else
     {
-        #ifdef MATRIX_QUAD
-            matrix_edouble_balance(M);
-            logdet = matrix_edouble_logdet(M);
-        #else
-            matrix_log_balance(M);
-
-            for(l1 = 0; l1 < 2*dim; l1++)
-                for(l2 = 0; l2 < 2*dim; l2++)
-                    matrix_set(M, l1,l2, matrix_get(M_signs, l1,l2)*exp(matrix_get(M,l1,l2)));
-
-            /* free space for sign matrices */
-            matrix_char_free(M_signs);
-
-            /* calculate log det */
-            logdet = matrix_logdet(M);
-        #endif
+        matrix_edouble_balance(M);
+        logdet = matrix_edouble_logdet(M);
     }
 
-    #ifdef MATRIX_QUAD
-        matrix_edouble_free(M);
-    #else
-        matrix_free(M);
-    #endif
+    matrix_edouble_free(M);
 
     assert(!isinf(logdet));
     return logdet;

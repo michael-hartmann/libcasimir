@@ -130,24 +130,22 @@ int test_logadd()
 
 int test_givens()
 {
-    matrix_t *M;
+    matrix_edouble_t *M;
     unittest_t test;
     unittest_init(&test, "QR decomposition", "Test QR decomposition using givens rotation");
 
     {
-        M = matrix_alloc(2);
-        matrix_set(M, 0,0, log(20));
-        matrix_set(M, 0,1, log(2)+3000*log(10));
-        matrix_set(M, 1,0, log(1)-3001*log(10));
-        matrix_set(M, 1,1, log(1));
+        M = matrix_edouble_alloc(2);
+        matrix_set(M, 0,0, 20e100);
+        matrix_set(M, 0,1, 2);
+        matrix_set(M, 1,0, 1);
+        matrix_set(M, 1,1, 1e-100);
 
-        matrix_log_balance(M);
+        matrix_edouble_balance(M);
 
-        matrix_exp(M);
+        AssertAlmostEqual(&test, matrix_edouble_logdet(M), log(18));
 
-        AssertAlmostEqual(&test, matrix_logdet(M), log(19.8));
-
-        matrix_free(M);
+        matrix_edouble_free(M);
     }
 
     return test_results(&test, stderr);

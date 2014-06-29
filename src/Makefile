@@ -17,14 +17,6 @@ CFLAGS += -Werror -Wall -Wmissing-prototypes -Wstrict-prototypes -Wshadow -Wpoin
 # of errors the program won't abort.
 #CFLAGS += -DNDEBUG
 
-# Use simple arithmetics. This will mean, that the matrix elements are stored
-# as plain matrix elements.  Otherwise, only the log or the matrix elements is
-# stored.
-CFLAGS += -DMATRIX_QUAD
-
-# Use simple arithmetics to calculate the integrals.
-CFLAGS += -DINTEGRATION_QUAD
-
 # use optimization
 ifeq ($(CC),gcc)
     OPTIMIZATION = -O3

@@ -67,16 +67,4 @@
     #define COMPILER "unknown"
 #endif
 
-#ifdef MATRIX_QUAD
-    #define CASIMIR_MATRIX "plain"
-#else
-    #define CASIMIR_MATRIX "log"
-#endif
-
-#ifdef INTEGRATION_QUAD
-    #define CASIMIR_INTEGRATION "plain"
-#else
-    #define CASIMIR_INTEGRATION "log"
-#endif
-
 #endif
