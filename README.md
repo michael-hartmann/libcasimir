@@ -3,6 +3,8 @@ Casimir
 
 Casimir Effect in the plane-sphere geometry with perfect reflectors.
 
+There is also a website available: http://speicherleck.de/michael/casimir.html
+
 
 Description
 ===========
@@ -82,5 +84,5 @@ Bibliography
 ===========
 
 [1] Michael Hartmann, "Negative Casimir entropies in the plane-sphere geometry", see thesis.pdf
-[2] Antoine Canaguier-Durand et al., "Thermal Casimir Effect in the
-plane-sphere geometry", Phys. Rev. A 82 (1 2010)
+
+[2] Antoine Canaguier-Durand et al., "Thermal Casimir Effect in the plane-sphere geometry", Phys. Rev. A 82 (1 2010)
