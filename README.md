@@ -1,20 +1,21 @@
 Casimir
 =======
 
-Casimir Effect in the plane-sphere geometry with perfect spheres
+Casimir Effect in the plane-sphere geometry with perfect reflectors.
 
 
 Description
 ===========
 
 The progams in src/ implement the numerics for the Casimir effect in the
-plane-sphere geometry with perfect spheres using a scattering approach [1]. We
-use the same approach, but use slightly different formulas for the matrix
+plane-sphere geometry with perfect spheres using a scattering approach [1,2].
+We use the same approach, but derive slightly different formulas for the matrix
 element of the round-trip operator that don't need Wigned-d-symbols.
 
-A sphere of radius R is separated by a distance of L from an infinite plane.
-The sphere and the plane are perfect reflectors. The programs calculate the
-free energy F(T,R/L) in scaled quantities.
+A sphere of radius R is separated by a distance of L from a plane. The plane is
+infinite in the xy-direction and both plane and sphere are assumed to be
+perfect reflectors. The programs calculate the free energy F(T,R/L) in scaled
+quantities.
 
 This code is part of my master thesis. It costed much time and much work to
 write a working and a fast implementation. So, if you find this piece of code
@@ -80,5 +81,6 @@ this program for publications, please consider to cite my work.
 Bibliography
 ===========
 
-[1] Antoine Canaguier-Durand et al., "Thermal Casimir Effect in the
+[1] Michael Hartmann, "Negative Casimir entropies in the plane-sphere geometry", see thesis.pdf
+[2] Antoine Canaguier-Durand et al., "Thermal Casimir Effect in the
 plane-sphere geometry", Phys. Rev. A 82 (1 2010)
