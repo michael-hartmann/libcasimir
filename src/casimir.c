@@ -10,34 +10,11 @@
 #include "libcasimir.h"
 #include "sfunc.h"
 #include "edouble.h"
+#include "utils.h"
 
 #define PRECISION 1e-10
 #define DEFAULT_LFAC 5
 
-/* This function counts how many times the character c in string str appears */
-int count(const char *str, char c)
-{
-    int i = 0;
-    while(*str++ != '\0')
-        if(*str == c)
-            i++;
-
-    return i;
-}
-
-/* This function returns a pointer to the n-th occurrence of the character c in
- * the string s. If the character c occures less than n times, NULL is
- * returned. 
- */
-const char *indexn(const char *str, char c, int n)
-{
-    int i = 0;
-    while(*str++ != '\0')
-        if(*str == c && ++i == n)
-            return str;
-
-    return NULL;
-}
 
 /* print usage */
 void usage(FILE *stream)
@@ -115,7 +92,7 @@ double iv(double list[4], int i)
 
 void parse_range(char param, const char *_optarg, double list[])
 {
-    int elems = count(_optarg, ',');
+    int elems = cinstr(_optarg, ',');
     list[3] = SCALE_LIN;
 
     switch(elems)
@@ -246,6 +223,7 @@ int main(int argc, char *argv[])
         setvbuf(stderr, NULL, _IONBF, 0);
     }
 
+    /* check command line arguments */
     if(lfac <= 0)
     {
         fprintf(stderr, "--lfac must be positive\n\n");
@@ -271,7 +249,13 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
+    /* print information to stdout */
     printf("# %s\n", casimir_compile_info());
+    printf("# command line: ");
+    for(i = 0; i < argc; i++)
+        printf("%s ", argv[i]);
+    printf("\n");
+
     printf("# precision=%g\n", precision);
     if(lmax > 0)
         printf("# lmax=%d\n", lmax);
@@ -312,7 +296,7 @@ int main(int argc, char *argv[])
             if(lmax > 0)
                 casimir_set_lmax(&casimir, lmax);
             else
-                casimir_set_lmax(&casimir, MAX((int)ceil(Q/(1-Q)*lfac), 5));
+                casimir_set_lmax(&casimir, MAX((int)ceil(Q/(1-Q)*lfac), DEFAULT_LFAC));
 
             F = casimir_F(&casimir, &nmax);
             casimir_free(&casimir);

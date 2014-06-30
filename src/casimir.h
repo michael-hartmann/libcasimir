@@ -5,8 +5,6 @@
     #define SCALE_LOG 1
 
     /* prototypes */
-    int count(const char *str, char c);
-    const char *indexn(const char *str, char c, int n);
     double now(void);
     void usage(FILE *stream);
     double iv(double list[4], int i);
