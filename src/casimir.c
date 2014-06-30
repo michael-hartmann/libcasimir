@@ -63,7 +63,7 @@ Further options:\n\
     -v, --verbose\n\
         Be more verbose. This will output additional information.\n\
 \n\
-    -X, --extrapolate\n\
+    --extrapolate\n\
         Achieve better results by extrapolating the contributions F_n.\n\
         This feature is experimental! Use it on your own risk! This feature might\n\
         cause your computer to explode or even worse: It may cause wrong results!\n\
@@ -109,7 +109,8 @@ void parse_range(const char param, const char *_optarg, double list[])
             list[1] = atof(indexn(_optarg, ',', 1)+1);
             list[2] = atoi(indexn(_optarg, ',', 2)+1);
 
-            if(list[0] < 0 || list[1] < 0 || list[2] < 0)
+            /* N must be positive */
+            if(list[2] <= 0)
             {
                 fprintf(stderr, "error parsing parameter -%c\n\n", param);
                 usage(stderr);
@@ -118,11 +119,7 @@ void parse_range(const char param, const char *_optarg, double list[])
 
             /* ensure that start < stop */
             if(list[0] > list[1])
-            {
-                double temp = list[0];
-                list[0] = list[1];
-                list[1] = temp;
-            }
+                swap(&list[0], &list[1]);
             break;
 
         default:
@@ -136,9 +133,9 @@ void parse_range(const char param, const char *_optarg, double list[])
 int main(int argc, char *argv[])
 {
     double precision = DEFAULT_PRECISION;
-    double lT[4] = { 0,0,0,SCALE_LIN }; /* start, stop, N, lin/log */
-    double lLbyR[4] = { 0,0,0,SCALE_LIN }; /* start, stop, N, lin/log */
-    double lfac = DEFAULT_LFAC;
+    double lfac      = DEFAULT_LFAC;
+    double lT[4]     = { 0,0,0,SCALE_LIN }; /* start, stop, N, lin/log */
+    double lLbyR[4]  = { 0,0,0,SCALE_LIN }; /* start, stop, N, lin/log */
     int i, iT, iLbyR;
     int cores = 1;
     int lmax = 0;
@@ -185,9 +182,6 @@ int main(int argc, char *argv[])
                 break;
             case 'L':
                 lmax = atoi(optarg);
-                break;
-            case 'X':
-                extrapolate_flag = 1;
                 break;
             case 'q':
                 quiet_flag = 1;

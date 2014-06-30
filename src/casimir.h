@@ -5,7 +5,6 @@
     #define SCALE_LOG 1
 
     /* prototypes */
-    double now(void);
     void usage(FILE *stream);
     void parse_range(const char param, const char *_optarg, double list[]);
 
