@@ -107,10 +107,11 @@ double casimir_lnXi(int l1, int l2, int m, int *sign)
  */
 int casimir_init(casimir_t *self, double RbyScriptL, double T)
 {
+    double LbyR = 1./RbyScriptL - 1;
     if(RbyScriptL < 0 || RbyScriptL >= 1 || T < 0)
-        return -1;
+        return 0;
 
-    self->lmax = (int)ceil(RbyScriptL*FACTOR_LMAX);
+    self->lmax = (int)ceil(FACTOR_LMAX/LbyR);
 
     self->T           = T;
     self->RbyScriptL  = RbyScriptL;
@@ -120,7 +121,7 @@ int casimir_init(casimir_t *self, double RbyScriptL, double T)
     self->cores       = 1;
     self->threads     = NULL;
 
-    return 0;
+    return 1;
 }
 
 int casimir_get_extrapolate(casimir_t *self)
@@ -155,7 +156,7 @@ int casimir_set_cores(casimir_t *self, int cores)
  */
 int casimir_set_lmax(casimir_t *self, int lmax)
 {
-    if(lmax > 0)
+    if(lmax <= 0)
         return 0;
 
     self->lmax = lmax;
