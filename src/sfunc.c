@@ -188,3 +188,19 @@ int round2up(int x)
     else
         return 1 << (i-1);
 }
+
+double linspace(double start, double stop, int N, int i)
+{
+    if(start == stop)
+        return start;
+
+    return start+(stop-start)*i/(N-1);
+}
+
+double logspace(double start, double stop, int N, int i)
+{
+    if(start == stop)
+        return start;
+
+    return start*pow(pow(stop/start, 1./(N-1)), i);
+}

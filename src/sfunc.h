@@ -30,4 +30,7 @@ void bessel_lnInuKnu(const int nu, const double x, double *lnInu, double *lnKnu)
 
 int round2up(int x);
 
+double linspace(double start, double stop, int N, int i);
+double logspace(double start, double stop, int N, int i);
+
 #endif
