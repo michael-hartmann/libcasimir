@@ -3,7 +3,12 @@
 
 #include <pthread.h>
 
+#define HBARC 3.161526510740123e-26
+#define KB    1.3806488e-23
+
+#define CASIMIR_DEFAULT_PRECISION 1e-12
 #define CASIMIR_IDLE 1000
+#define CASIMIR_FACTOR_LMAX 5
 
 const char *casimir_compile_info(void);
 

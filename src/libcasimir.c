@@ -11,11 +11,6 @@
 #include "sfunc.h"
 #include "utils.h"
 
-#define FACTOR_LMAX 5
-#define HBARC 3.161526510740123e-26
-#define KB    1.3806488e-23
-
-#define EPS_PRECISION 1e-16
 
 char CASIMIR_COMPILE_INFO[255];
 
@@ -71,7 +66,8 @@ double casimir_T_SI_to_scaled(double T_SI, double ScriptL_SI)
 }
 
 /*
- * Convert the temperature T in units of 2pi*kb*ScriptL/(hbar*c) to Kelvin */
+ * Convert the temperature T in units of 2pi*kb*ScriptL/(hbar*c) to Kelvin
+ */
 double casimir_T_scaled_to_SI(double T, double ScriptL_SI)
 {
     return HBARC/(2*M_PI*KB*ScriptL_SI)*T;
@@ -111,11 +107,11 @@ int casimir_init(casimir_t *self, double RbyScriptL, double T)
     if(RbyScriptL < 0 || RbyScriptL >= 1 || T < 0)
         return 0;
 
-    self->lmax = (int)ceil(FACTOR_LMAX/LbyR);
+    self->lmax = (int)ceil(CASIMIR_FACTOR_LMAX/LbyR);
 
     self->T           = T;
     self->RbyScriptL  = RbyScriptL;
-    self->precision   = EPS_PRECISION;
+    self->precision   = CASIMIR_DEFAULT_PRECISION;
     self->extrapolate = 0;
     self->verbose     = 0;
     self->cores       = 1;
@@ -664,19 +660,6 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
 
             casimir_integrate(&cint, l1, l2, m, n*self->T);
 
-            assert(!isnan(cint.logA));
-            assert(!isnan(cint.logB));
-            assert(!isnan(cint.logC));
-            assert(!isnan(cint.logD));
-
-            assert(!isinf(cint.logB));
-            if(m != 0)
-            {
-                assert(!isinf(cint.logA));
-                assert(!isinf(cint.logC));
-                assert(!isinf(cint.logD));
-            }
-
             /* EE */
             matrix_set(M, i,j, (l1 == l2 ? 1 : 0) - al1_sign*( cint.signB*expq(lnal1+cint.logB) - cint.signA*expq(lnal1+cint.logA) ));
             matrix_set(M, j,i, (l1 == l2 ? 1 : 0) - pow(-1, l1+l2)*al2_sign*( cint.signB*expq(lnal2+cint.logB) - cint.signA*expq(lnal2+cint.logA) ));
@@ -684,7 +667,6 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
             /* MM */
             matrix_set(M, i+dim,j+dim, (l1 == l2 ? 1 : 0) - bl1_sign*( cint.signA*expq(lnbl1+cint.logA) - cint.signB*expq(lnbl1+cint.logB) ));
             matrix_set(M, j+dim,i+dim, (l1 == l2 ? 1 : 0) - pow(-1, l1+l2)*bl2_sign*( cint.signA*expq(lnbl2+cint.logA) - cint.signB*expq(lnbl2+cint.logB) ));
-
 
             if(m != 0)
             {
