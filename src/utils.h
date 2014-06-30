@@ -13,4 +13,6 @@ void xfree(void *p);
 int cinstr(const char *str, char c);
 const char *indexn(const char *str, char c, int n);
 
+void swap(double *a, double *b);
+
 #endif

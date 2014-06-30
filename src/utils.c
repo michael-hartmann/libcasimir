@@ -80,3 +80,10 @@ const char *indexn(const char *str, char c, int n)
 
     return NULL;
 }
+
+void swap(double *a, double *b)
+{
+    double t = *a;
+    *a = *b;
+    *b = t;
+}
