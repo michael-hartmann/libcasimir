@@ -7,7 +7,6 @@
     /* prototypes */
     double now(void);
     void usage(FILE *stream);
-    double iv(double list[4], int i);
-    void parse_range(char param, const char *_optarg, double list[]);
+    void parse_range(const char param, const char *_optarg, double list[]);
 
 #endif

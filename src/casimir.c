@@ -7,12 +7,13 @@
 #include <unistd.h>
 
 #include "casimir.h"
+#include "edouble.h"
 #include "libcasimir.h"
 #include "sfunc.h"
-#include "edouble.h"
 #include "utils.h"
 
-#define PRECISION 1e-10
+/* default values for precision and lfac */
+#define DEFAULT_PRECISION 1e-10
 #define DEFAULT_LFAC 5
 
 
@@ -20,26 +21,26 @@
 void usage(FILE *stream)
 {
     fprintf(stream, "Usage: casimir [OPTIONS]\n\
-This program will calculate the free Casimir energy F(T,R/L) for the\n\
-plane-sphere geometry for given R/L and temperature T. The output is in scaled\n\
+This program will calculate the free Casimir energy F(T,L/R) for the\n\
+plane-sphere geometry for given L/R and temperature T. The output is in scaled\n\
 unities.\n\
 \n\
 Mandatory options:\n\
-    -Q FRACTION\n\
-        Radius of sphere divided by distance between center of sphere and\n\
-        plate; 0 < R/(R+L) < 1\n\
-        If you want to calculate several points, you can pass start and stop\n\
+    -x, --LbyR FRACTION\n\
+        Separation L between sphere and plane divided by radius of of sphere,\n\
+        where L/R > 0.\n\
+        If you want to calculate several points, you may pass start and stop\n\
         value and the amount of points to be calculated.\n\
         Examples:\n\
-            $ ./casimir -T 1 -Q 0.5,0.9,5\n\
+            $ ./casimir -T 1 -x 0.5,0.9,5\n\
             This will calculate five free energies for Q=0.5,...,0,9 in linear\n\
             scale.\n\
-            $ ./casimir -T 1 -Q 0.5,0.9,5,log\n\
+            $ ./casimir -T 1 -x 0.5,0.9,5,log\n\
             This will calculate five free energies for Q=0.5,...,0,9, but using\n\
             a logarithmic scale.\n\
 \n\
     -T TEMPERATURE\n\
-        Temperature in scaled unities. You may use the same syntax as for -Q.\n\
+        Temperature in scaled units. You may use the same syntax as for -Q.\n\
 \n\
 Further options:\n\
     -l, --lscale\n\
@@ -62,7 +63,7 @@ Further options:\n\
     -v, --verbose\n\
         Be more verbose. This will output additional information.\n\
 \n\
-    -x, --extrapolate\n\
+    -X, --extrapolate\n\
         Achieve better results by extrapolating the contributions F_n.\n\
         This feature is experimental! Use it on your own risk! This feature might\n\
         cause your computer to explode or even worse: It may cause wrong results!\n\
@@ -76,35 +77,34 @@ Further options:\n\
 \n\
 \n\
 Compiled %s, %s\n\
-%s\n", DEFAULT_LFAC, PRECISION, __DATE__, __TIME__, casimir_compile_info());
+%s\n", DEFAULT_LFAC, DEFAULT_PRECISION, __DATE__, __TIME__, casimir_compile_info());
 }
 
-double iv(double list[4], int i)
+/* parse a range given for LbyR or T from the command line.
+ * Examples:
+ * 1) "value"            => list = { value, value, 1, SCALE_LIN }
+ * 2) "start,stop,N"     => list = { start, stop, N, SCALE_LIN }
+ * 3) "start,stop,N,log" => list = { start, stop, N, SCALE_LOG }
+ */
+void parse_range(const char param, const char *_optarg, double list[])
 {
-    if(list[2] == 1)
-        return list[0];
-
-    if(list[3] == SCALE_LIN)
-        return list[0]+(list[1]-list[0])*i/(list[2]-1);
-    else
-        return list[0]*pow(pow(list[1]/list[0], 1/(list[2]-1)), i);
-}
-
-void parse_range(char param, const char *_optarg, double list[])
-{
-    int elems = cinstr(_optarg, ',');
+    int elems = cinstr(_optarg, ','); /* commas in _optarg */
     list[3] = SCALE_LIN;
 
     switch(elems)
     {
         case 0:
+            /* no comma => example 1) */
             list[0] = list[1] = atof(_optarg);
             list[2] = 1;
             break;
         case 3:
+            /* 3 commas => example 3) */
             if(strncasecmp(indexn(_optarg, ',', 3)+1, "log", 3) == 0)
                 list[3] = SCALE_LOG;
+            /* here no break! */
         case 2:
+            /* 2 commas => example 2) */
             list[0] = atof(_optarg);
             list[1] = atof(indexn(_optarg, ',', 1)+1);
             list[2] = atoi(indexn(_optarg, ',', 2)+1);
@@ -116,6 +116,7 @@ void parse_range(char param, const char *_optarg, double list[])
                 exit(1);
             }
 
+            /* ensure that start < stop */
             if(list[0] > list[1])
             {
                 double temp = list[0];
@@ -123,6 +124,7 @@ void parse_range(char param, const char *_optarg, double list[])
                 list[1] = temp;
             }
             break;
+
         default:
             fprintf(stderr, "Can't parse range %s.\n\n", _optarg);
             usage(stderr);
@@ -130,87 +132,88 @@ void parse_range(char param, const char *_optarg, double list[])
     }
 }
 
+
 int main(int argc, char *argv[])
 {
-    double precision = PRECISION;
-    double lT[4] = { 0,0,0,SCALE_LIN };
-    double lQ[4] = { 0,0,0,SCALE_LIN };
+    double precision = DEFAULT_PRECISION;
+    double lT[4] = { 0,0,0,SCALE_LIN }; /* start, stop, N, lin/log */
+    double lLbyR[4] = { 0,0,0,SCALE_LIN }; /* start, stop, N, lin/log */
     double lfac = DEFAULT_LFAC;
-    int i, iT, iQ;
+    int i, iT, iLbyR;
     int cores = 1;
     int lmax = 0;
     int buffering_flag = 0, quiet_flag = 0, verbose_flag = 0, extrapolate_flag = 0;
 
-    printf("# %s", argv[0]);
-    for(i = 1; i < argc; i++)
-        printf(", %s", argv[i]);
-    printf("\n");
-
+    /* parse command line options */
     while (1)
     {
         int c;
         struct option long_options[] =
         {
-          { "verbose",   no_argument,       &verbose_flag,   1 },
-          { "quiet",     no_argument,       &quiet_flag,     1 },
-          { "buffering", no_argument,       &buffering_flag, 1 },
-          { "help",      no_argument,       0, 'h' },
-          { "lscale",    required_argument, 0, 'l' },
-          { "cores",     required_argument, 0, 'c' },
-          { "precision", required_argument, 0, 'p' },
+          { "verbose",     no_argument,       &verbose_flag,     1 },
+          { "quiet",       no_argument,       &quiet_flag,       1 },
+          { "buffering",   no_argument,       &buffering_flag,   1 },
+          { "extrapolate", no_argument,       &extrapolate_flag, 1 },
+          { "help",        no_argument,       0, 'h' },
+          { "LbyR",        required_argument, 0, 'x' },
+          { "lscale",      required_argument, 0, 'l' },
+          { "cores",       required_argument, 0, 'c' },
+          { "precision",   required_argument, 0, 'p' },
           { 0, 0, 0, 0 }
         };
 
         /* getopt_long stores the option index here. */
         int option_index = 0;
       
-        c = getopt_long (argc, argv, "Q:T:c:s:a:l:L:p:xvqh", long_options, &option_index);
+        c = getopt_long (argc, argv, "x:T:c:s:a:l:L:p:Xvqh", long_options, &option_index);
       
         /* Detect the end of the options. */
         if (c == -1)
-          break;
+            break;
       
         switch (c)
         {
-          case 0:
-            /* If this option set a flag, do nothing else now. */
-            if (long_options[option_index].flag != 0)
-              break;
-          case 'Q':
-              parse_range('Q', optarg, lQ);
-              break;
-          case 'T':
-              parse_range('T', optarg, lT);
-              break;
-          case 'L':
-              lmax = atoi(optarg);
-          case 'x':
-              extrapolate_flag = 1;
-          case 'q':
-              quiet_flag = 1;
-              break;
-          case 'c':
-              cores = atoi(optarg);
-              break;
-          case 'v':
-              verbose_flag = 1;
-              break;
-          case 'l':
-              lfac = atof(optarg);
-              break;
-          case 'p':
-              precision = atof(optarg);
-              break;
-          case 'h':
-              usage(stdout);
-              exit(0);
+            case 0:
+                /* If this option set a flag, do nothing else now. */
+                if (long_options[option_index].flag != 0)
+                    break;
+            case 'x':
+                parse_range('x', optarg, lLbyR);
+                break;
+            case 'T':
+                parse_range('T', optarg, lT);
+                break;
+            case 'L':
+                lmax = atoi(optarg);
+                break;
+            case 'X':
+                extrapolate_flag = 1;
+                break;
+            case 'q':
+                quiet_flag = 1;
+                break;
+            case 'c':
+                cores = atoi(optarg);
+                break;
+            case 'v':
+                verbose_flag = 1;
+                break;
+            case 'l':
+                lfac = atof(optarg);
+                break;
+            case 'p':
+                precision = atof(optarg);
+                break;
+            case 'h':
+                usage(stdout);
+                exit(0);
       
-          case '?':
-            /* getopt_long already printed an error message. */
-            break;
+            case '?':
+                /* getopt_long already printed an error message. */
+                break;
       
-          default:
-            abort();
+            default:
+                abort();
         }
     }
 
@@ -224,69 +227,81 @@ int main(int argc, char *argv[])
     }
 
     /* check command line arguments */
-    if(lfac <= 0)
     {
-        fprintf(stderr, "--lfac must be positive\n\n");
-        usage(stderr);
-        exit(1);
-    }
-    if(precision <= 0)
-    {
-        fprintf(stderr, "--precision must be positive\n\n");
-        usage(stderr);
-        exit(1);
-    }
-    if(lQ[0] <= 0 || lQ[0] >= 1 || lQ[1] <= 0 || lQ[1] >= 1)
-    {
-        fprintf(stderr, "-Q must be in 0 < Q < 1\n\n");
-        usage(stderr);
-        exit(1);
-    }
-    if(lT[0] <= 0)
-    {
-        fprintf(stderr, "positive value for -T required\n\n");
-        usage(stderr);
-        exit(1);
+        if(lfac <= 0)
+        {
+            fprintf(stderr, "--lfac must be positive\n\n");
+            usage(stderr);
+            exit(1);
+        }
+        if(precision <= 0)
+        {
+            fprintf(stderr, "--precision must be positive\n\n");
+            usage(stderr);
+            exit(1);
+        }
+        if(lLbyR[0] <= 0 || lLbyR[1] <= 0)
+        {
+            fprintf(stderr, "-x must be positive; LbyR > 0\n\n");
+            usage(stderr);
+            exit(1);
+        }
+        if(lT[0] <= 0)
+        {
+            fprintf(stderr, "positive value for -T required\n\n");
+            usage(stderr);
+            exit(1);
+        }
     }
 
     /* print information to stdout */
-    printf("# %s\n", casimir_compile_info());
-    printf("# command line: ");
-    for(i = 0; i < argc; i++)
-        printf("%s ", argv[i]);
-    printf("\n");
+    {
+        /* print command line */
+        printf("# %s", argv[0]);
+        for(i = 1; i < argc; i++)
+            printf(", %s", argv[i]);
+        printf("\n");
 
-    printf("# precision=%g\n", precision);
-    if(lmax > 0)
-        printf("# lmax=%d\n", lmax);
-    else
-        printf("# lfac=%g\n", lfac);
-    printf("# cores=%d\n", cores);
-    if(lQ[2] == 1)
-        printf("# Q=%g\n", lQ[0]);
-    else
-        printf("# Q=%g...%g (%d)\n", lQ[0],lQ[1],(int)lQ[2]);
-    if(lT[2] == 1)
-        printf("# T=%g\n", lT[0]);
-    else
-        printf("# T=%g...%g (%d)\n", lT[0],lT[1],(int)lT[2]);
-    printf("# extrapolate=%s\n", extrapolate_flag ? "yes" : "no");
+        printf("# precision=%g\n", precision);
+        if(lmax > 0)
+            printf("# lmax=%d\n", lmax);
+        else
+            printf("# lfac=%g\n", lfac);
+        printf("# cores=%d\n", cores);
+        if(lLbyR[2] == 1)
+            printf("# LbyR=%g\n", lLbyR[0]);
+        else
+            printf("# LbyR=%g...%g (%d)\n", lLbyR[0],lLbyR[1],(int)lLbyR[2]);
+        if(lT[2] == 1)
+            printf("# T=%g\n", lT[0]);
+        else
+            printf("# T=%g...%g (%d)\n", lT[0],lT[1],(int)lT[2]);
+        printf("# extrapolate=%s\n", extrapolate_flag ? "yes" : "no");
 
-    printf("#\n");
-    printf("# Q=R/(L+R), T, F, lmax, nmax, time\n");
+        printf("#\n");
+        printf("# LbyR, T, F, lmax, nmax, time\n");
+    }
 
     i = 0;
-    for(iQ = 0; iQ < lQ[2]; iQ++)
+    for(iLbyR = 0; iLbyR < lLbyR[2]; iLbyR++)
         for(iT = 0; iT < lT[2]; iT++)
         {
             casimir_t casimir;
             double start_time = now();
             int nmax;
-            double F,Q,T;
+            double F,LbyR,T,Q;
 
-            Q = iv(lQ, iQ);
-            T = iv(lT, iT);
+            if(lLbyR[3] == SCALE_LIN)
+                LbyR = linspace(lLbyR[0], lLbyR[1], lLbyR[2], iLbyR);
+            else
+                LbyR = logspace(lLbyR[0], lLbyR[1], lLbyR[2], iLbyR);
 
+            if(lT[3] == SCALE_LIN)
+                T = linspace(lT[0], lT[1], lT[2], iT);
+            else
+                T = logspace(lT[0], lT[1], lT[2], iT);
+
+            Q = 1/(1+LbyR);
             casimir_init(&casimir, Q, T);
             casimir_set_cores(&casimir, cores);
             casimir_set_precision(&casimir, precision);
@@ -296,15 +311,15 @@ int main(int argc, char *argv[])
             if(lmax > 0)
                 casimir_set_lmax(&casimir, lmax);
             else
-                casimir_set_lmax(&casimir, MAX((int)ceil(Q/(1-Q)*lfac), DEFAULT_LFAC));
+                casimir_set_lmax(&casimir, MAX((int)ceil(lfac/LbyR), DEFAULT_LFAC));
 
             F = casimir_F(&casimir, &nmax);
             casimir_free(&casimir);
 
-            printf("%.15g, %.15g, %.15g, %d, %d, %g\n", Q, T, F, casimir.lmax, nmax, now()-start_time);
+            printf("%.15g, %.15g, %.15g, %d, %d, %g\n", LbyR, T, F, casimir.lmax, nmax, now()-start_time);
 
             if(!quiet_flag)
-                fprintf(stderr, "# %6.2f%%, R/(R+L)=%g, T=%g\n", ++i*100/(lQ[2]*lT[2]), Q, T);
+                fprintf(stderr, "# %6.2f%%, L/R=%g, T=%g\n", ++i*100/(lLbyR[2]*lT[2]), LbyR, T);
         }
 
     return 0;
