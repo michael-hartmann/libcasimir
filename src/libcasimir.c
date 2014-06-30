@@ -123,9 +123,20 @@ int casimir_init(casimir_t *self, double RbyScriptL, double T)
     return 0;
 }
 
-void casimir_set_extrapolate(casimir_t *self, int extrapolate)
+int casimir_get_extrapolate(casimir_t *self)
 {
-    self->extrapolate = extrapolate;
+    return self->extrapolate;
+}
+
+int casimir_set_extrapolate(casimir_t *self, int extrapolate)
+{
+    self->extrapolate = extrapolate ? 1 : 0;
+    return 1;
+}
+
+int casimir_get_cores(casimir_t *self)
+{
+    return self->cores;
 }
 
 int casimir_set_cores(casimir_t *self, int cores)
@@ -142,26 +153,43 @@ int casimir_set_cores(casimir_t *self, int cores)
 /*
  * Set maximum value for l. lmax must be positive.
  */
-void casimir_set_lmax(casimir_t *self, int lmax)
+int casimir_set_lmax(casimir_t *self, int lmax)
 {
     if(lmax > 0)
-        self->lmax = lmax;
+        return 0;
+
+    self->lmax = lmax;
+    return 1;
 }
 
-double casimir_get_lmax(casimir_t *self)
+int casimir_get_lmax(casimir_t *self)
 {
     return self->lmax;
 }
 
-void casimir_set_verbose(casimir_t *self, int verbose)
+int casimir_get_verbose(casimir_t *self)
 {
-    self->verbose = verbose ? 1 : 0;
+    return self->verbose;
 }
 
-void casimir_set_precision(casimir_t *self, double precision)
+int casimir_set_verbose(casimir_t *self, int verbose)
 {
-    if(precision > 0)
-        self->precision = precision;
+    self->verbose = verbose ? 1 : 0;
+    return 1;
+}
+
+double casimir_get_precision(casimir_t *self)
+{
+    return self->precision;
+}
+
+int casimir_set_precision(casimir_t *self, double precision)
+{
+    if(precision <= 0)
+        return 0;
+
+    self->precision = precision;
+    return 1;
 }
 
 /*
