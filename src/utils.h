@@ -10,4 +10,7 @@ void *xmalloc(size_t len);
 void *xrealloc(void *p, size_t len);
 void xfree(void *p);
 
+int cinstr(const char *str, char c);
+const char *indexn(const char *str, char c, int n);
+
 #endif

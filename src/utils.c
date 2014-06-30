@@ -56,3 +56,27 @@ double now(void)
     return tv.tv_sec + tv.tv_usec*1e-6;
 }
 
+/* This function counts how many times the character c in string str appears */
+int cinstr(const char *str, char c)
+{
+    int i = 0;
+    while(*str++ != '\0')
+        if(*str == c)
+            i++;
+
+    return i;
+}
+
+/* This function returns a pointer to the n-th occurrence of the character c in
+ * the string s. If the character c occures less than n times, NULL is
+ * returned. 
+ */
+const char *indexn(const char *str, char c, int n)
+{
+    int i = 0;
+    while(*str++ != '\0')
+        if(*str == c && ++i == n)
+            return str;
+
+    return NULL;
+}
