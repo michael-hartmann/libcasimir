@@ -41,6 +41,17 @@ double inline casimir_lnLambda(int l1, int l2, int m, int *sign)
 }
 
 
+/* casimir_lnepsilon
+ *
+ * Return epsilon for the imaginary frequency xi for Drude parameters omegap
+ * and gamma
+ */
+double casimir_lnepsilon(double xi, double omegap, double gamma_)
+{
+    return log1p( 2*log(omegap) - log(xi)-log(xi+gamma_));
+}
+
+
 /*
  * Convert the Free Energy F in SI units to Free Energy F in units of Script/(hbar*c)
  */
@@ -220,18 +231,19 @@ void casimir_lna0_lnb0(int l, double *a0, int *sign_a0, double *b0, int *sign_b0
     *a0 = *b0+log1p(1.0/l);
 }
 
-double casimir_lna(int l, const double arg, int *sign)
+double casimir_lna_perf(casimir_t *self, const int l, const int n, int *sign)
 {
     double nominator, denominator, frac, ret;
     double lnKlp,lnKlm,lnIlm,lnIlp;
     double prefactor;
-    double lnfrac = log(arg)-log(l);
+    double chi = n*self->T*self->RbyScriptL;
+    double lnfrac = log(chi)-log(l);
 
     /* we could do both calculations together. but it doesn't cost much time -
      * so why bother? 
      */
-    bessel_lnInuKnu(l-1, arg, &lnIlm, &lnKlm);
-    bessel_lnInuKnu(l,   arg, &lnIlp, &lnKlp);
+    bessel_lnInuKnu(l-1, chi, &lnIlm, &lnKlm);
+    bessel_lnInuKnu(l,   chi, &lnIlp, &lnKlp);
 
     prefactor = M_LOGPI-M_LN2+lnIlp-lnKlp;
     *sign = pow(-1, l+1);
@@ -266,16 +278,57 @@ double casimir_lna(int l, const double arg, int *sign)
     return ret;
 }
 
+void casimir_lnab(casimir_t *self, const int n, const int l, double *lna, double *lnb, int *sign_a, int *sign_b)
+{
+    int sign_sla, sign_slb, sign_slc, sign_sld;
+    double eps, ln_n2, ln_sla, ln_slb, ln_slc, ln_sld;
+    double lnIl, lnKl, lnIlm, lnKlm, lnIl_nchi, lnKl_nchi, lnIlm_nchi, lnKlm_nchi;
+    double xi = n*self->T;
+    double chi = xi*self->RbyScriptL;
+    double ln_chi = log(chi);
+    double omegap = self->omegap_sphere;
+    double gamma_ = self->gamma_sphere;
+    int sign_a_num, sign_a_denom, sign_b_num, sign_b_denom;
+
+    if(isinf(omegap))
+    {
+        *lna = casimir_lna_perf(self, l, n, sign_a);
+        *lnb = casimir_lnb_perf(self, l, n, sign_b);
+        return;
+    }
+
+    ln_n2 = casimir_lnepsilon(xi, omegap, gamma_);
+    eps = exp(ln_n2/2.0);
+
+    bessel_lnInuKnu(l,   chi, &lnIl, &lnKl);
+    bessel_lnInuKnu(l-1, chi, &lnIlm, &lnKlm);
+
+    bessel_lnInuKnu(l,   n*chi, &lnIl_nchi,  &lnKl_nchi);
+    bessel_lnInuKnu(l-1, n*chi, &lnIlm_nchi, &lnKlm_nchi);
+
+    ln_sla = lnIl_nchi + logadd_s(lnIl,      +1, ln_chi+lnIlm,             -1, &sign_sla);
+    ln_slb = lnIl      + logadd_s(lnIl_nchi, +1, ln_n2/2.0+chi+lnIlm_nchi, -1, &sign_slb);
+    ln_slc = lnIl_nchi + logadd_s(lnKl,      +1, ln_chi+lnKlm,             +1, &sign_slc);
+    ln_sld = lnKl      + logadd_s(lnIl_nchi, +1, ln_n2/2.0+chi+lnIlm_nchi, -1, &sign_sld);
+
+    *lna = M_LOGPI - M_LN2 + logadd_s(ln_n2+ln_sla, +1, ln_slb, -1, &sign_a_num) - logadd_s(ln_n2+ln_slc, +1, ln_sld, -1, &sign_a_denom);
+    *lnb = M_LOGPI - M_LN2 + logadd_s(      ln_sla, +1, ln_slb, -1, &sign_b_num) - logadd_s(      ln_slc, +1, ln_sld, -1, &sign_b_denom);
+
+    *sign_a = sign_a_num*sign_a_denom;
+    *sign_b = sign_b_num*sign_b_denom;
+}
+
 /*        
- * Returns the coefficient b_l for reflection on the sphere
+ * Returns the coefficient b_l for reflection on the sphere for perfect mirrors
  *
  * Restrictions: l integer, l>=1, xi>0
  */        
-double casimir_lnb(int l, const double arg, int *sign)
+double casimir_lnb_perf(casimir_t *self, const int l, const int n, int *sign)
 {
+    double chi = n*self->T*self->RbyScriptL;
     double lnInu, lnKnu, ret;
 
-    bessel_lnInuKnu(l, arg, &lnInu, &lnKnu);
+    bessel_lnInuKnu(l, chi, &lnInu, &lnKnu);
     *sign = pow(-1, l+1);
 
     ret = M_LOGPI-M_LN2+lnInu-lnKnu;
@@ -290,12 +343,12 @@ double casimir_lnb(int l, const double arg, int *sign)
  * Initialize the mie cache.
  * This function must be called before any call to casimir_mie_cache_alloc
  */
-void casimir_mie_cache_init(casimir_mie_cache_t *cache, double arg)
+void casimir_mie_cache_init(casimir_mie_cache_t *cache, int n)
 {
     cache->al = cache->bl = NULL;
     cache->al_sign = cache->bl_sign = NULL;
     cache->lmax = 0;
-    cache->arg = arg;
+    cache->n = n;
 }
 
 /*
@@ -304,9 +357,9 @@ void casimir_mie_cache_init(casimir_mie_cache_t *cache, double arg)
 int casimir_mie_cache_alloc(casimir_t *self, casimir_mie_cache_t *cache, int lmax)
 {
     int l;
-    double arg = cache->arg;
+    double n = cache->n;
 
-    if(arg == 0)
+    if(n == 0)
     {
         cache->al = cache->bl = NULL;
         cache->al_sign = cache->bl_sign = NULL;
@@ -321,8 +374,8 @@ int casimir_mie_cache_alloc(casimir_t *self, casimir_mie_cache_t *cache, int lma
     cache->al[0] = cache->bl[0] = 0;
     for(l = MAX(1,cache->lmax); l <= lmax; l++)
     {
-        cache->al[l] = casimir_lna(l,arg, &cache->al_sign[l]);
-        cache->bl[l] = casimir_lnb(l,arg, &cache->bl_sign[l]);
+        cache->al[l] = casimir_lna_perf(self, l, n, &cache->al_sign[l]);
+        cache->bl[l] = casimir_lnb_perf(self, l, n, &cache->bl_sign[l]);
     }
     cache->lmax = lmax;
 
@@ -417,7 +470,6 @@ static int _join_threads(casimir_t *self, double values[], int *ncalc)
 double casimir_F_n(casimir_t *self, const int n, int *mmax)
 {
     double precision = self->precision;
-    double TRbyScriptL = self->T*self->RbyScriptL;
     casimir_mie_cache_t cache;
     double sum_n = 0;
     int m;
@@ -427,7 +479,7 @@ double casimir_F_n(casimir_t *self, const int n, int *mmax)
     for(m = 0; m <= lmax; m++)
         values[m] = 0;
 
-    casimir_mie_cache_init(&cache, n*TRbyScriptL);
+    casimir_mie_cache_init(&cache, n);
     casimir_mie_cache_alloc(self, &cache, self->lmax);
 
     for(m = 0; m <= self->lmax; m++)

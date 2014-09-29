@@ -22,6 +22,7 @@ typedef struct
     int cores;
     double precision;
     pthread_t **threads;
+    double omegap_sphere, gamma_sphere;
 } casimir_t;
 
 typedef struct
@@ -38,7 +39,7 @@ typedef struct
     double *bl;
     int *bl_sign;
     int lmax;
-    double arg;
+    int n;
 } casimir_mie_cache_t;
 
 typedef struct
@@ -55,6 +56,8 @@ typedef struct
     double logA,logB,logC,logD;
     int signA, signB, signC, signD;
 } casimir_integrals_t;
+
+double casimir_lnepsilon(double xi, double omegap, double gamma_);
 
 double casimir_lnLambda(int l1, int l2, int m, int *sign);
 double casimir_lnXi(int l1, int l2, int m, int *sign);
@@ -84,14 +87,14 @@ int casimir_set_verbose(casimir_t *self, int verbose);
 int casimir_get_extrapolate(casimir_t *self);
 int casimir_set_extrapolate(casimir_t *self, int extrapolate);
 
-
-double casimir_lna(int l, const double arg, int *sign);
-double casimir_lnb(int l, const double arg, int *sign);
+void casimir_lnab(casimir_t *self, const int n, const int l, double *lna, double *lnb, int *sign_a, int *sign_b);
+double casimir_lna_perf(casimir_t *self, const int l, const int n, int *sign);
+double casimir_lnb_perf(casimir_t *self, const int l, const int n, int *sign);
 
 double casimir_F_n(casimir_t *self, const int n, int *mmax);
 double casimir_F(casimir_t *self, int *nmax);
 
-void casimir_mie_cache_init(casimir_mie_cache_t *cache, double arg);
+void casimir_mie_cache_init(casimir_mie_cache_t *cache, int n);
 int casimir_mie_cache_alloc(casimir_t *self, casimir_mie_cache_t *cache, int lmax);
 void casimir_mie_cache_free(casimir_mie_cache_t *cache);
 
