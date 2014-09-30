@@ -97,7 +97,7 @@ double casimir_F_scaled_to_SI(double F, double ScriptL_SI);
 double casimir_T_SI_to_scaled(double T_SI, double ScriptL_SI);
 double casimir_T_scaled_to_SI(double T, double ScriptL_SI);
 
-void casimir_lna0_lnb0(int l, double *a0, int *sign_a0, double *b0, int *sign_b0);
+void casimir_lnab0(int l, double *a0, int *sign_a0, double *b0, int *sign_b0);
 
 int casimir_init(casimir_t *self, double RbyScriptL, double T);
 void casimir_free(casimir_t *self);

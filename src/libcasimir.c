@@ -457,7 +457,7 @@ void casimir_free(casimir_t *self)
  * @param [out] b0 coefficient \f$b_{\ell,0}^\mathrm{perf}\f$
  * @param [out] sign_b0 sign of \f$b_{\ell,0}^\mathrm{perf}\f$
  */
-void casimir_lna0_lnb0(int l, double *a0, int *sign_a0, double *b0, int *sign_b0)
+void casimir_lnab0(int l, double *a0, int *sign_a0, double *b0, int *sign_b0)
 {
     *sign_a0 = pow(-1, l);
     *sign_b0 = pow(-1, l+1);
@@ -968,7 +968,7 @@ double casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logde
             int sign_a0, sign_b0, sign_xi;
             double lna0, lnb0;
             double lnXiRL = casimir_lnXi(l1,l2,m,&sign_xi)+(2*l1+1)*lnRbyScriptL;
-            casimir_lna0_lnb0(l1, &lna0, &sign_a0, &lnb0, &sign_b0);
+            casimir_lnab0(l1, &lna0, &sign_a0, &lnb0, &sign_b0);
 
             matrix_set(EE, i,j, (l1 == l2 ? 1 : 0) - sign_xi*sign_a0*expq(lna0+lnXiRL));
             matrix_set(MM, i,j, (l1 == l2 ? 1 : 0) - sign_xi*sign_a0*expq(lnb0+lnXiRL));
