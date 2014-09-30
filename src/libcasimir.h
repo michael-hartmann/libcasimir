@@ -95,7 +95,7 @@ double casimir_F_n(casimir_t *self, const int n, int *mmax);
 double casimir_F(casimir_t *self, int *nmax);
 
 void casimir_mie_cache_init(casimir_mie_cache_t *cache, int n);
-int casimir_mie_cache_alloc(casimir_t *self, casimir_mie_cache_t *cache, int lmax);
+int casimir_mie_cache_alloc(casimir_t *self, casimir_mie_cache_t *cache);
 void casimir_mie_cache_free(casimir_mie_cache_t *cache);
 
 double casimir_logdetD0(casimir_t *self, int m, double *EE, double *MM);

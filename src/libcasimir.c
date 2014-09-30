@@ -1,6 +1,6 @@
 /**
  * @file   libcasimir.c
- * @Author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
+ * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
  * @date   October, 2014
  * @brief  library to calculate the free Casimir energy in the plane-sphere geometry
  */
@@ -20,7 +20,7 @@
 #include "utils.h"
 
 
-char CASIMIR_COMPILE_INFO[255];
+static char CASIMIR_COMPILE_INFO[255];
 
 /** @brief Return string with compile information
  *
@@ -36,6 +36,7 @@ const char *casimir_compile_info(void)
     snprintf(CASIMIR_COMPILE_INFO, sizeof(CASIMIR_COMPILE_INFO)/sizeof(char), "Compiler %s, using %s", COMPILER, CASIMIR_ARITHMETICS);
     return CASIMIR_COMPILE_INFO;
 }
+
 
 /**
  * @brief Calculate logarithm and sign of prefactor \f$\Lambda_{\ell_1 \ell_2}^{(m)}\f$
@@ -158,6 +159,7 @@ double casimir_T_scaled_to_SI(double T, double ScriptL)
     return HBARC/(2*M_PI*KB*ScriptL)*T;
 }
 
+
 /**
  * @brief Calculate logarithm and sign of prefactor \f$\Xi_{\ell_1 \ell_2}^{(m)}\f$
  *
@@ -219,12 +221,29 @@ int casimir_init(casimir_t *self, double RbyScriptL, double T)
 }
 
 
+/**
+ * @brief Get extrapolation flag
+ *
+ * Extrapolation is experimental and considered dangerous at the moment.
+ *
+ * @param [in,out] self Casimir object
+ * @retval Extrapolation flag
+ */
 int casimir_get_extrapolate(casimir_t *self)
 {
     return self->extrapolate;
 }
 
 
+/**
+ * @brief Set extrapolation flag
+ *
+ * Extrapolation is experimental and considered dangerous at the moment.
+ *
+ * @param [in,out] self Casimir object
+ * @param extrapolate extrapolation flag
+ * @retval 1
+ */
 int casimir_set_extrapolate(casimir_t *self, int extrapolate)
 {
     self->extrapolate = extrapolate ? 1 : 0;
@@ -524,7 +543,7 @@ double casimir_lnb_perf(casimir_t *self, const int l, const int n, int *sign)
 /**
  * @brief Return logarithm of Mie coefficients \f$a_\ell\f$, \f$b_\ell\f$ for Drude model
  *
- * For \f$\omega_\mathrm{P}\f = \infty$ the Mie coefficient for perfect
+ * For \f$\omega_\mathrm{P} = \infty\f$ the Mie coefficient for perfect
  * reflectors are returned (see casimir_lna_perf and casimir_lnb_perf).
  *
  * Cf. Eqs. (3.30) and (3.31).
@@ -579,9 +598,16 @@ void casimir_lnab(casimir_t *self, const int n, const int l, double *lna, double
     *sign_b = sign_b_num*sign_b_denom;
 }
 
-/*
- * Initialize the mie cache.
- * This function must be called before any call to casimir_mie_cache_alloc
+
+/**
+ * @brief Initialize Mie cache
+ *
+ * The cache stores all Mie coefficients \f$a_\ell\f$ and \f$b_\ell\f$ for the
+ * imaginary frequency \f$\xi = nT\f$. This function initialized the cache.
+ * However, no Mie coefficients will be computed and stored.
+ *
+ * @param [out] cache cache for Mie coefficients
+ * @param [in] n Matsubara term, \f$\xi=nT\f$
  */
 void casimir_mie_cache_init(casimir_mie_cache_t *cache, int n)
 {
@@ -591,13 +617,22 @@ void casimir_mie_cache_init(casimir_mie_cache_t *cache, int n)
     cache->n = n;
 }
 
-/*
- * Allocate memory for the Mie-coefficients a_l and b_l
+
+/**
+ * @brief Allocate memory for the Mie coefficients \f$a_\ell\f$ and \f$b_\ell\f$
+ *
+ * This function computes all the Mie coefficients for \f$\xi=nT\f$ and stores
+ * it in cache. Make sure you have already initialized the cache (cf.
+ * casimir_mie_cache_init).
+ *
+ * @param [in,out] self Casimir object
+ * @param [in,out] cache Mie cache
  */
-int casimir_mie_cache_alloc(casimir_t *self, casimir_mie_cache_t *cache, int lmax)
+int casimir_mie_cache_alloc(casimir_t *self, casimir_mie_cache_t *cache)
 {
     int l;
     double n = cache->n;
+    int lmax = self->lmax;
 
     if(n == 0)
     {
@@ -620,8 +655,12 @@ int casimir_mie_cache_alloc(casimir_t *self, casimir_mie_cache_t *cache, int lma
     return 1;
 }
 
-/*
- * Free memory of cache.
+/**
+ * @brief Free memory of cache.
+ *
+ * This function will free allocated memory for the cache.
+ *
+ * @param [in, out] cache Mie cache
  */
 void casimir_mie_cache_free(casimir_mie_cache_t *cache)
 {
@@ -705,6 +744,18 @@ static int _join_threads(casimir_t *self, double values[], int *ncalc)
     return joined;
 }
 
+
+/**
+ * @brief Calculate free energy for Matsubara term n
+ *
+ * This function calculates the free energy for the Matsubara term n. If mmax
+ * is not NULL, the maximum usedd value of m is stored in mmax.
+ *
+ * @param [in,out] self Casimir object
+ * @param [in] n Matsubara term, \f$\xi=nT\f$
+ * @param [out] mmax maximum number of m
+ * @retval Casimir free energy for given n
+ */
 double casimir_F_n(casimir_t *self, const int n, int *mmax)
 {
     double precision = self->precision;
@@ -718,7 +769,7 @@ double casimir_F_n(casimir_t *self, const int n, int *mmax)
         values[m] = 0;
 
     casimir_mie_cache_init(&cache, n);
-    casimir_mie_cache_alloc(self, &cache, self->lmax);
+    casimir_mie_cache_alloc(self, &cache);
 
     for(m = 0; m <= self->lmax; m++)
     {
@@ -748,10 +799,16 @@ double casimir_F_n(casimir_t *self, const int n, int *mmax)
     return sum_n;
 }
 
-/*
- * Calculate free energy.
 
- * Restrictions: nmax integer, nmax >= 0
+/**
+ * @brief Calculate free energy
+ *
+ * This function calculates the free energy. If nmax is not NULL, the highest
+ * Matsubara term used will be stored in nnmax.
+ * 
+ * @param [in,out] self Casimir object
+ * @param [out] nmax maximum number of n
+ * @retval Casimir free energy
  */
 double casimir_F(casimir_t *self, int *nmax)
 {
@@ -851,6 +908,19 @@ double casimir_F(casimir_t *self, int *nmax)
     }
 }
 
+
+/**
+ * @brief Calculate \f$\log\det \mathcal{D}(\xi=0)\f$
+ *
+ * This function calculates the logarithm of the determinant of the scattering
+ * operator D for the Matsubara term \f$n=0\f$.
+ *
+ * @param [in,out] self Casimir object
+ * @param [in] m
+ * @param [out] logdet_EE
+ * @param [out] logdet_MM
+ * @retval log det D(xi=0)
+ */
 double casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_MM)
 {
     int l1,l2,min,max,dim;
@@ -899,10 +969,24 @@ double casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logde
     return value_EE+value_MM;
 }
 
-/*
- * Calculate logarithm of determinant of D=1-M for given m,ξ
+
+/**
+ * @brief Calculate logarithm of determinant of D=1-M for given m,ξ
  *
  * Restrictions: m integer, m>=0, ξ>= 0
+ */
+
+/**
+ * @brief Calculate \f$\log\det \mathcal{D}(\xi=nT)\f$
+ *
+ * This function calculates the logarithm of the determinant of the scattering
+ * operator D for the Matsubara term \f$n\f$.
+ *
+ * @param [in,out] self Casimir object
+ * @param [in] n Matsubara term
+ * @param [in] m
+ * @param [in] cache Mie cache
+ * @retval log det D(xi=nT)
  */
 double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache)
 {

@@ -170,7 +170,7 @@ int main(int argc, char *argv[])
         casimir_set_lmax(&casimir, lmax);
 
         casimir_mie_cache_init(&cache, nTRbyScriptL);
-        casimir_mie_cache_alloc(&casimir, &cache, lmax);
+        casimir_mie_cache_alloc(&casimir, &cache);
         value = casimir_logdetD(&casimir, n, m, &cache);
         casimir_mie_cache_free(&cache);
         casimir_free(&casimir);
