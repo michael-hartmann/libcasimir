@@ -55,3 +55,6 @@ casimir_tests:
 
 clean:
 	rm -f casimir casimir_tests casimir_hiT casimir_logdetD
+
+doc:
+	doxygen doxygen.conf
