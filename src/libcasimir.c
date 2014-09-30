@@ -1,3 +1,11 @@
+/**
+ * @file   libcasimir.c
+ * @Author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
+ * @date   October, 2014
+ * @brief  library to calculate the free Casimir energy in the plane-sphere geometry
+ */
+
+
 #define _GNU_SOURCE
 
 #include <assert.h>
@@ -14,24 +22,43 @@
 
 char CASIMIR_COMPILE_INFO[255];
 
+/** @brief Return string with compile information
+ *
+ * The returned string contains information which compiler was used and which
+ * kind of arithmetics the binary uses.
+ *
+ * Do not modify this string!
+ *
+ * @retval constant string
+ */
 const char *casimir_compile_info(void)
 {
     snprintf(CASIMIR_COMPILE_INFO, sizeof(CASIMIR_COMPILE_INFO)/sizeof(char), "Compiler %s, using %s", COMPILER, CASIMIR_ARITHMETICS);
     return CASIMIR_COMPILE_INFO;
 }
 
-/* casimir_lnLambda 
- * This function returns the logarithm of the Λ prefactor for given l1,l2,m.
+/**
+ * @brief Calculate logarithm and sign of prefactor \f$\Lambda_{\ell_1 \ell_2}^{(m)}\f$
  *
- * The values are computed using the lngamma function, so that nominator
- * and denominator of the term
- * (l1-m)!*(l2-m)!/(l1+m)!/(l2+m) 
- * don't overflow.
+ * This function returns the logarithm of the prefactor for given
+ * \f$\ell_1,\ell_2,m\f$. This prefactor is defined by (cf Eq. (5.19))
+ * \f[
+ *      \Lambda_{\ell_1,\ell_2}^{(m)} = -\frac{2 N_{\ell_1,m} N_{\ell_2,m}}{\sqrt{\ell_1 (\ell_1+1) \ell_2 (\ell_2+1)}}
+ * \f]
  *
- * Lambda(l1,l2,m) = -2*N_{l1,m}*N_{l2,m} / sqrt(l1*(l1+1)*l2*(l2+1))
+ * If sign is not NULL, -1 will be stored in sign.
  *
- * Restrictions: l1,l2,m integers, l1,l2>=1, l1,l2 >= m
- * Symmetries: Λ(l1,l2,m) = Λ(l2,l1,m)
+ * The values are computed using the lngamma function in a smart way to avoid overflows.
+ *
+ * Restrictions: \f$\ell_1,\ell_2 \ge 1\f$, \f$\ell_1,\ell_2 \ge m\f$
+ *
+ * Symmetries: \f$\Lambda_{\ell_1,\ell_2}^{(m)} = \Lambda_{\ell_2,\ell_1}^{(m)}\f$
+ *
+ * @param [in]  l1
+ * @param [in]  l2
+ * @param [in]  m
+ * @param [out] sign
+ * @retval log(Lambda(l1,l2,m))
  */
 double inline casimir_lnLambda(int l1, int l2, int m, int *sign)
 {
@@ -41,10 +68,18 @@ double inline casimir_lnLambda(int l1, int l2, int m, int *sign)
 }
 
 
-/* casimir_lnepsilon
+/**
+ * @brief Calculate logarithm of \f$\epsilon(i\xi)\f$ for Drude model
  *
- * Return epsilon for the imaginary frequency xi for Drude parameters omegap
- * and gamma
+ * This function returns the logarithm of the dielectric function
+ * \f[
+ *      \epsilon(i\xi) = 1 + \frac{\omega_\mathrm{P}^2}{\xi(\xi+\gamma)}
+ * \f]
+ *
+ * @param [in]  xi     imaginary frequency (in scaled units: \f$\xi=nT\f$)
+ * @param [in]  omegap Plasma frequency
+ * @param [in]  gamma_ relaxation frequency
+ * @retval log(epsilon(xi, omegap, gamma_))
  */
 double casimir_lnepsilon(double xi, double omegap, double gamma_)
 {
@@ -52,65 +87,113 @@ double casimir_lnepsilon(double xi, double omegap, double gamma_)
 }
 
 
-/*
- * Convert the Free Energy F in SI units to Free Energy F in units of Script/(hbar*c)
- */
-double casimir_F_SI_to_scaled(double F_SI, double ScriptL_SI)
-{
-    return ScriptL_SI/(HBARC)*F_SI;
-}
-
-/*
- * Convert the Free Energie F in units of ScriptL/(hbar*c) to Free energy F in SI units
- */
-double casimir_F_scaled_to_SI(double F, double ScriptL_SI)
-{
-    return HBARC/ScriptL_SI*F;
-}
-
-/*
- * Convert the temperature T in Kelvin to temperature in units of 2pi*kb*ScriptL/(hbar*c)
- */
-double casimir_T_SI_to_scaled(double T_SI, double ScriptL_SI)
-{
-    return 2*M_PI*KB*ScriptL_SI/HBARC*T_SI;
-}
-
-/*
- * Convert the temperature T in units of 2pi*kb*ScriptL/(hbar*c) to Kelvin
- */
-double casimir_T_scaled_to_SI(double T, double ScriptL_SI)
-{
-    return HBARC/(2*M_PI*KB*ScriptL_SI)*T;
-}
-
-/* Function Xi
- * This function returns the Ξ prefactor for given l1,l2,m
+/**
+ * @brief Convert free energy in SI units to free energy in units of \f$\mathcal{L}/(\hbar c)\f$
  *
- * lgamma is used to prevent overflows - like in Λ.
+ * This function returns 
+ * \f[
+ *      \mathcal{F}_\mathrm{scaled} = \mathcal{F}_\mathrm{SI} \frac{\mathcal{L}}{\hbar c}
+ * \f]
  *
- * Restrictions: l1,l2,m integers, l1,l2>=1, l1,l2 >= m
+ * @param [in] F_SI free energy in SI units
+ * @param [in] ScriptL \f$\mathcal{L} = R+L\f$ (in units of meters)
+ * @retval free energy in scaled units
+ */
+double casimir_F_SI_to_scaled(double F_SI, double ScriptL)
+{
+    return ScriptL/(HBARC)*F_SI;
+}
+
+
+/**
+ * @brief Convert free energy in units of \f$\mathcal{L}/(\hbar c)\f$ to free energy in SI units
+ *
+ * This function returns 
+ * \f[
+ *      \mathcal{F}_\mathrm{SI} = \mathcal{F}_\mathrm{scaled} \frac{\hbar c}{\mathcal{L}}
+ * \f]
+ *
+ * @param [in] F free energy in units of \f$\mathcal{L}/(\hbar c)\f$
+ * @param [in] ScriptL \f$\mathcal{L} = R+L\f$ (in units of meters)
+ * @retval free energy in SI units
+ */
+double casimir_F_scaled_to_SI(double F, double ScriptL)
+{
+    return HBARC/ScriptL*F;
+}
+
+
+/**
+ * @brief Convert temperature in units of Kelvin to temperature in units of \f$2\pi k_B \mathcal{L}/(\hbar c)\f$
+ *
+ * This function returns 
+ * \f[
+ *      T_\mathrm{scaled} = \frac{2\pi k_b \mathcal{L}}{\hbar c} T_\mathrm{SI}
+ * \f]
+ *
+ * @param [in] T_SI temperature in units of Kelvin
+ * @param [in] ScriptL \f$\mathcal{L} = R+L\f$ (in units of meters)
+ * @retval temperature in unitss of \f$2\pi k_B \mathcal{L}/(\hbar c)\f$
+ */
+double casimir_T_SI_to_scaled(double T_SI, double ScriptL)
+{
+    return 2*M_PI*KB*ScriptL/HBARC*T_SI;
+}
+
+
+/**
+ * @brief Convert temperature in units of \f$2\pi k_B \mathcal{L}/(\hbar c)\f$ to temperature in units of Kelvin
+ *
+ * This function returns 
+ * \f[
+ *      T_\mathrm{scaled} = \frac{2\pi k_b \mathcal{L}}{\hbar c} T_\mathrm{SI}
+ * \f]
+ *
+ * @param [in] T temperature in units of \f$2\pi k_B \mathcal{L}/(\hbar c)\f$
+ * @param [in] ScriptL \f$\mathcal{L} = R+L\f$ (in units of meters)
+ * @retval temperature in units of Kelvin
+ */
+double casimir_T_scaled_to_SI(double T, double ScriptL)
+{
+    return HBARC/(2*M_PI*KB*ScriptL)*T;
+}
+
+/**
+ * @brief Calculate logarithm and sign of prefactor \f$\Xi_{\ell_1 \ell_2}^{(m)}\f$
+ *
+ * This function returns the logarithm of the prefactor for given
+ * \f$\ell_1,\ell_2,m\f$. The prefactor is defined by Eq. (5.54).
+ *
+ * If sign is not NULL, the sign of \f$\Xi_{\ell_1 \ell_2}^{(m)}\f$ is stored in
+ * sign.
+ *
+ * The values are computed using the lngamma function in a smart way to avoid overflows.
+ *
+ * Restrictions: \f$\ell_1,\ell_2 \ge 1\f$, \f$\ell_1,\ell_2 \ge m\f$
+ *
+ * @param [in]  l1
+ * @param [in]  l2
+ * @param [in]  m
+ * @param [out] sign
+ * @retval log(Xi(l1,l2,m))
  */
 double casimir_lnXi(int l1, int l2, int m, int *sign)
 {
-    *sign = pow(-1, l2);
+    if(sign != NULL)
+        *sign = pow(-1, l2);
     return (log(2*l1+1)+log(2*l2+1)-lnfac(l1-m)-lnfac(l2-m)-lnfac(l1+m)-lnfac(l2+m)-log(l1)-log(l1+1)-log(l2)-log(l2+1))/2.0 \
            +lnfac(2*l1)+lnfac(2*l2)+lnfac(l1+l2)-M_LOG4*(2*l1+l2+1)-lnfac(l1-1)-lnfac(l2-1);
 }
 
 
-/*
- * The Casimir class provides methods to calculate the free energy of the
- * Casimir effect in the plane-sphere geometry for perfect reflectors.
+/**
+ * @brief Create a new Casimir object for perfect reflectors
  *
- * The main goal is to calculate the free energy and derived quantities.
- * Create a new Casimir object.
- * 
- * RbyScriptL: ratio of radius of sphere and distance between center of sphere
- *             and plate: R/(R+L)
- * T:          Temperature
+ * Restrictions: \f$T > 0\f$, \f$0 < \mathcal{L} < 1\f$
  *
- * Restrictions: T > 0, 0 < RbyScriptL < 1
+ * @param [out] self Casimir object
+ * @param [in]  RbyScriptL \f$\frac{R}{\mathcal{L}} = \frac{R}{R+L}\f$
+ * @param [in]  T temperature in units of \f$2\pi k_B \mathcal{L}/(\hbar c)\f$
  */
 int casimir_init(casimir_t *self, double RbyScriptL, double T)
 {
@@ -131,10 +214,12 @@ int casimir_init(casimir_t *self, double RbyScriptL, double T)
     return 1;
 }
 
+
 int casimir_get_extrapolate(casimir_t *self)
 {
     return self->extrapolate;
 }
+
 
 int casimir_set_extrapolate(casimir_t *self, int extrapolate)
 {
@@ -142,11 +227,39 @@ int casimir_set_extrapolate(casimir_t *self, int extrapolate)
     return 1;
 }
 
+
+/**
+ * @brief Return numbers of used cores
+ *
+ * See casimir_set_cores.
+ *
+ * @param [in,out] self Casimir object
+ * @retval number of used cores (>=0)
+ */
 int casimir_get_cores(casimir_t *self)
 {
     return self->cores;
 }
 
+
+/**
+ * @brief Set the number of used cores
+ *
+ * This library supports multiple processor cores. However, you must specify
+ * how many cores the library should use. By default, only one core will be
+ * used. If you have a quad core computer, you might want to set the number of
+ * cores to 4.
+ *
+ * The libraray uses POSIX threads for parallelization. Threads share memory and
+ * for this reason all cores must be on the same computer.
+ *
+ * Restrictions: cores > 0
+ *
+ * @param [in,out] self Casimir object
+ * @param [in] cores number of cores that should be used
+ * @retval 1 if successful
+ * @retval 0 if cores < 1
+ */
 int casimir_set_cores(casimir_t *self, int cores)
 {
     if(cores < 1)
@@ -158,8 +271,19 @@ int casimir_set_cores(casimir_t *self, int cores)
     return 1;
 }
 
-/*
- * Set maximum value for l. lmax must be positive.
+
+/**
+ * @brief Set maximum value of l
+ *
+ * In general the round trip matrices are infinite. For a numerical evaluation
+ * the dimension has to be limited to a finite value. The accuracy of the
+ * result depends on the truncation of the vector space. For more information,
+ * cf. chapter 6.1.
+ * 
+ * @param [in,out] self Casimir object
+ * @param [in] lmax maximum number of l
+ * @retval 1 if successful
+ * @retval 0 if lmax < 1
  */
 int casimir_set_lmax(casimir_t *self, int lmax)
 {
@@ -170,27 +294,75 @@ int casimir_set_lmax(casimir_t *self, int lmax)
     return 1;
 }
 
+
+/**
+ * @brief Get maximum value of l
+ *
+ * See casimir_set_lmax.
+ *
+ * @param [in,out] self Casimir object
+ * @retval lmax maximum value of l
+ */
 int casimir_get_lmax(casimir_t *self)
 {
     return self->lmax;
 }
 
+
+/**
+ * @brief Get verbose flag
+ *
+ * Return if the verbose flag is set.
+ *
+ * @param [in,out] self Casimir object
+ * @retval 0 if verbose flag is not set
+ * @retval 1 if verbose flag is set
+ */
 int casimir_get_verbose(casimir_t *self)
 {
     return self->verbose;
 }
 
+
+/**
+ * @brief Set verbose flag
+ *
+ * Use this function to set the verbose flag. If set to 1, this will cause the
+ * library to print information to stderr. 
+ *
+ * @param [in,out] self Casimir object
+ * @param [in] verbose 1 if verbose, 0 if not verbose
+ * @retval 1
+ */
 int casimir_set_verbose(casimir_t *self, int verbose)
 {
     self->verbose = verbose ? 1 : 0;
     return 1;
 }
 
+
+/**
+ * @brief Get precision
+ *
+ * See casimir_set_precision
+ *
+ * @param [in,out] self Casimir object
+ * @retval precision
+ */
 double casimir_get_precision(casimir_t *self)
 {
     return self->precision;
 }
 
+
+/**
+ * @brief Set precision
+ *
+ * @param [in,out] self Casimir object
+ * @param [in] precision
+ * @retval 1 if successful
+ * @retval 0 if precision <= 0
+ */
 int casimir_set_precision(casimir_t *self, double precision)
 {
     if(precision <= 0)
@@ -200,8 +372,18 @@ int casimir_set_precision(casimir_t *self, double precision)
     return 1;
 }
 
+
 /*
  * Free memory for casimir object
+ */
+/**
+ * @brief Free memory for Casimir object
+ *
+ * This function will free allocated memory for the Casimir object. If you have
+ * allocated memory for the object yourself, you have, however, to free this
+ * yourself.
+ * 
+ * @param [in,out] self Casimir object
  */
 void casimir_free(casimir_t *self)
 {
@@ -213,15 +395,27 @@ void casimir_free(casimir_t *self)
 }
 
 
-/*
- * For small x<<1 a_l will scale as
- *      a_l(x) ~ a0*(x/2)^(2l+1)
+/** Return the logarithm of the prefactors \f$a_{\ell,0}^\mathrm{perf}\f$, \f$b_{\ell,0}^\mathrm{perf}\f$ and its signs
  *
- * For small x<<1 b_l will scale as
- *      b_l(x) ~ b0*(x/2)^(2l+1)
+ * For small frequencies \f$\chi = \frac{\xi R}{c} \ll 1\f$ the Mie
+ * coeffiecients scale like
+ * \f[
+ * a_{\ell}^\mathrm{perf} = a_{\ell,0}^\mathrm{perf} \left(\frac{\chi}{2}\right)^{2\ell+1} \\
+ * \f]
+ * \f[
+ * b_{\ell}^\mathrm{perf} = b_{\ell,0}^\mathrm{perf} \left(\frac{\chi}{2}\right)^{2\ell+1}
+ * \f]
+ * This function returns the logarithm of the prefactors
+ * \f$a_{\ell,0}^\mathrm{perf}\f$, \f$b_{\ell,0}^\mathrm{perf}\f$ and its
+ * signs.
  *
- * This method returns the prefactor a0, b0. The signs of a0 and b0 are stored
- * in sign_a0 and sign_b0.
+ * In scaled units: \f$\chi = nT \frac{R}{\mathcal{L}}\f$
+ *
+ * @param [in] l
+ * @param [out] a0 coefficient \f$a_{\ell,0}^\mathrm{perf}\f$
+ * @param [out] sign_a0 sign of \f$a_{\ell,0}^\mathrm{perf}\f$
+ * @param [out] b0 coefficient \f$b_{\ell,0}^\mathrm{perf}\f$
+ * @param [out] sign_b0 sign of \f$b_{\ell,0}^\mathrm{perf}\f$
  */
 void casimir_lna0_lnb0(int l, double *a0, int *sign_a0, double *b0, int *sign_b0)
 {
@@ -231,6 +425,20 @@ void casimir_lna0_lnb0(int l, double *a0, int *sign_a0, double *b0, int *sign_b0
     *a0 = *b0+log1p(1.0/l);
 }
 
+
+/**
+ * @brief Return logarithm of Mie coefficient \f$a_\ell\f$ for perfect reflectors and its sign
+ *
+ * The frequency will be determined by n: \f$\xi = nT\f$
+ *
+ * Restrictions: \f$\ell \ge 1\f$, \f$\ell \ge 0\f$
+ *
+ * @param [in,out] self Casimir object
+ * @param [in] l
+ * @param [in] n Matsubara term, \f$xi = nT\f$
+ * @param [out] sign sign of \f$a_\ell\f$
+ * @retval logarithm of Mie coefficient a_l
+ */
 double casimir_lna_perf(casimir_t *self, const int l, const int n, int *sign)
 {
     double nominator, denominator, frac, ret;
@@ -248,7 +456,7 @@ double casimir_lna_perf(casimir_t *self, const int l, const int n, int *sign)
     prefactor = M_LOGPI-M_LN2+lnIlp-lnKlp;
     *sign = pow(-1, l+1);
 
-    // nominator
+    /* numinator */
     {
         frac = exp(lnfrac+lnIlm-lnIlp);
         if(frac < 1)
@@ -261,7 +469,7 @@ double casimir_lna_perf(casimir_t *self, const int l, const int n, int *sign)
             nominator = log(fabs(1-frac));
         }
     }
-    // denominator
+    /* denominator */
     {
         frac = exp(lnfrac+lnKlm-lnKlp);
         if(frac < 1)
@@ -278,8 +486,57 @@ double casimir_lna_perf(casimir_t *self, const int l, const int n, int *sign)
     return ret;
 }
 
-void casimir_lnab(casimir_t *self, const int n, const int l, double *lna, double *lnb, int *sign_a, int *sign_b)
+
+/**
+ * @brief Return logarithm of Mie coefficient \f$b_\ell\f$ for perfect reflectors and its sign
+ *
+ * The frequency will be determined by n: \f$\xi = nT\f$
+ *
+ * Restrictions: \f$\ell \ge 1\f$, \f$\ell \ge 0\f$
+ *
+ * @param [in,out] self Casimir object
+ * @param [in] l
+ * @param [in] n Matsubara term, \f$xi = nT\f$
+ * @param [out] sign sign of \f$b_\ell\f$
+ * @retval logarithm of Mie coefficient b_l
+ */
+double casimir_lnb_perf(casimir_t *self, const int l, const int n, int *sign)
 {
+    double chi = n*self->T*self->RbyScriptL;
+    double lnInu, lnKnu, ret;
+
+    bessel_lnInuKnu(l, chi, &lnInu, &lnKnu);
+    *sign = pow(-1, l+1);
+
+    ret = M_LOGPI-M_LN2+lnInu-lnKnu;
+
+    assert(!isnan(ret));
+    assert(!isinf(ret));
+
+    return ret;
+}
+
+
+/**
+ * @brief Return logarithm of Mie coefficients \f$a_\ell\f$, \f$b_\ell\f$ for Drude model
+ *
+ * For \f$\omega_\mathrm{P}\f = \infty$ the Mie coefficient for perfect
+ * reflectors are returned (see casimir_lna_perf and casimir_lnb_perf).
+ *
+ * Cf. Eqs. (3.30) and (3.31).
+ *
+ * sign_a and sign_b must be valid pointers and must not be NULL.
+ *
+ * @param [in,out] self Casimir object
+ * @param [in] n Matsubara term, \f$\xi = nT\f$
+ * @param [in] l
+ * @param [out] lna logarithm of Mie coefficient \f$a_\ell\f$
+ * @param [out] lnb logarithm of Mie coefficient \f$b_\ell\f$
+ * @param [out] sign_a sign of Mie coefficient \f$a_\ell\f$
+ * @param [out] sign_b sign of Mie coefficient \f$b_\ell\f$
+ */
+void casimir_lnab(casimir_t *self, const int n, const int l, double *lna, double *lnb, int *sign_a, int *sign_b)
+{ 
     int sign_sla, sign_slb, sign_slc, sign_sld;
     double eps, ln_n2, ln_sla, ln_slb, ln_slc, ln_sld;
     double lnIl, lnKl, lnIlm, lnKlm, lnIl_nchi, lnKl_nchi, lnIlm_nchi, lnKlm_nchi;
@@ -316,27 +573,6 @@ void casimir_lnab(casimir_t *self, const int n, const int l, double *lna, double
 
     *sign_a = sign_a_num*sign_a_denom;
     *sign_b = sign_b_num*sign_b_denom;
-}
-
-/*        
- * Returns the coefficient b_l for reflection on the sphere for perfect mirrors
- *
- * Restrictions: l integer, l>=1, xi>0
- */        
-double casimir_lnb_perf(casimir_t *self, const int l, const int n, int *sign)
-{
-    double chi = n*self->T*self->RbyScriptL;
-    double lnInu, lnKnu, ret;
-
-    bessel_lnInuKnu(l, chi, &lnInu, &lnKnu);
-    *sign = pow(-1, l+1);
-
-    ret = M_LOGPI-M_LN2+lnInu-lnKnu;
-
-    assert(!isnan(ret));
-    assert(!isinf(ret));
-
-    return ret;
 }
 
 /*
