@@ -210,6 +210,10 @@ int casimir_init(casimir_t *self, double RbyScriptL, double T)
     self->verbose     = 0;
     self->cores       = 1;
     self->threads     = NULL;
+    
+    /* perfect reflectors */
+    self->omegap_sphere = INFINITY;
+    self->gamma_sphere  = 0;
 
     return 1;
 }
@@ -609,10 +613,8 @@ int casimir_mie_cache_alloc(casimir_t *self, casimir_mie_cache_t *cache, int lma
 
     cache->al[0] = cache->bl[0] = 0;
     for(l = MAX(1,cache->lmax); l <= lmax; l++)
-    {
-        cache->al[l] = casimir_lna_perf(self, l, n, &cache->al_sign[l]);
-        cache->bl[l] = casimir_lnb_perf(self, l, n, &cache->bl_sign[l]);
-    }
+        casimir_lnab(self, n, l, &cache->al[l], &cache->bl[l], &cache->al_sign[l], &cache->bl_sign[l]);
+
     cache->lmax = lmax;
 
     return 1;
