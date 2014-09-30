@@ -89,6 +89,11 @@ double casimir_lnepsilon(double xi, double omegap, double gamma_)
 
 
 /**
+* @name converting
+*/
+/*@{*/
+
+/**
  * @brief Convert free energy in SI units to free energy in units of \f$\mathcal{L}/(\hbar c)\f$
  *
  * This function returns 
@@ -159,6 +164,7 @@ double casimir_T_scaled_to_SI(double T, double ScriptL)
     return HBARC/(2*M_PI*KB*ScriptL)*T;
 }
 
+/*@}*/
 
 /**
  * @brief Calculate logarithm and sign of prefactor \f$\Xi_{\ell_1 \ell_2}^{(m)}\f$
@@ -187,6 +193,10 @@ double casimir_lnXi(int l1, int l2, int m, int *sign)
            +lnfac(2*l1)+lnfac(2*l2)+lnfac(l1+l2)-M_LOG4*(2*l1+l2+1)-lnfac(l1-1)-lnfac(l2-1);
 }
 
+/**
+* @name initialization and setting parameters
+*/
+/*@{*/
 
 /**
  * @brief Create a new Casimir object for perfect reflectors
@@ -417,6 +427,13 @@ void casimir_free(casimir_t *self)
     }
 }
 
+/*@}*/
+
+
+/**
+* @name Mie coefficients
+*/
+/*@{*/
 
 /** Return the logarithm of the prefactors \f$a_{\ell,0}^\mathrm{perf}\f$, \f$b_{\ell,0}^\mathrm{perf}\f$ and its signs
  *
@@ -676,6 +693,8 @@ void casimir_mie_cache_free(casimir_mie_cache_t *cache)
     cache->al = cache->bl = NULL;
 }
 
+/*@}*/
+
 /* Sum len numbers in value.
    The idea is: To avoid a loss of significance, we sum beginning with smallest
    number and add up in increasing order
@@ -744,6 +763,11 @@ static int _join_threads(casimir_t *self, double values[], int *ncalc)
     return joined;
 }
 
+
+/**
+* @name Calculate free energy
+*/
+/*@{*/
 
 /**
  * @brief Calculate free energy for Matsubara term n
@@ -1082,3 +1106,5 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
     assert(!isinf(logdet));
     return logdet;
 }
+
+/*@}*/

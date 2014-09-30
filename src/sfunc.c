@@ -5,6 +5,7 @@
 #include "edouble.h"
 #include "sfunc.h"
 
+
 double inline logadd_s(const double a, const int sign_a, const double b, const int sign_b, int *sign)
 {
     if(a == -INFINITY)
@@ -30,6 +31,16 @@ double inline logadd_s(const double a, const int sign_a, const double b, const i
     }
 }
 
+
+/**
+ * @brief Calculate \f$\log\left(\exp a + \exp b\right)\f$
+ *
+ * This function calculates \f$\log\left(\exp a + \exp b\right)\f$.
+ *
+ * @param a first summand
+ * @param b second summand
+ * @retval log(exp(a)+exp(b))
+ */
 double inline logadd(const double a, const double b)
 {
     if(a == -INFINITY)
@@ -41,6 +52,7 @@ double inline logadd(const double a, const double b)
     else
         return a + log1p(exp(b-a));
 }
+
 
 double inline logadd_m(const double list[], size_t len)
 {
@@ -58,6 +70,7 @@ double inline logadd_m(const double list[], size_t len)
 
     return max + log(sum);
 }
+
 
 double inline logadd_ms(const double list[], const char signs[], const size_t len, int *sign)
 {
@@ -77,15 +90,18 @@ double inline logadd_ms(const double list[], const char signs[], const size_t le
     return max + log(fabs(sum));
 }
 
+
 double inline lbinom(int n, int k)
 {
     return lngamma(1+n)-lngamma(1+k)-lngamma(1+n-k);
 }
 
+
 double inline binom(int n, int k)
 {
     return exp(lngamma(1+n)-lngamma(1+k)-lngamma(1+n-k));
 }
+
 
 void bessel_lnInuKnu(int nu, const double x, double *lnInu_p, double *lnKnu_p)
 {
@@ -160,6 +176,7 @@ void bessel_lnInuKnu(int nu, const double x, double *lnInu_p, double *lnKnu_p)
     }
 }
 
+
 double bessel_lnKnu(const int nu, const double x)
 {
     double Knu;
@@ -167,12 +184,14 @@ double bessel_lnKnu(const int nu, const double x)
     return Knu;
 }
 
+
 double bessel_lnInu(const int nu, const double x)
 {
     double Inu;
     bessel_lnInuKnu(nu, x, &Inu, NULL);
     return Inu;
 }
+
 
 int round2up(int x)
 {
@@ -187,6 +206,7 @@ int round2up(int x)
         return 1 << (i-1);
 }
 
+
 double linspace(double start, double stop, int N, int i)
 {
     if(start == stop)
@@ -194,6 +214,7 @@ double linspace(double start, double stop, int N, int i)
 
     return start+(stop-start)*i/(N-1);
 }
+
 
 double logspace(double start, double stop, int N, int i)
 {
