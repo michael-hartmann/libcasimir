@@ -60,3 +60,5 @@ clean:
 
 doc:
 	doxygen doxygen.conf
+
+.PHONY: clean doc
