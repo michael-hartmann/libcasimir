@@ -1,3 +1,5 @@
+*.o
+doc/
 casimir_hiT
 casimir
 tests
