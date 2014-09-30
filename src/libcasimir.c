@@ -971,12 +971,6 @@ double casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logde
 
 
 /**
- * @brief Calculate logarithm of determinant of D=1-M for given m,ξ
- *
- * Restrictions: m integer, m>=0, ξ>= 0
- */
-
-/**
  * @brief Calculate \f$\log\det \mathcal{D}(\xi=nT)\f$
  *
  * This function calculates the logarithm of the determinant of the scattering

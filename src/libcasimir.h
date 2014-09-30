@@ -12,44 +12,72 @@
 
 const char *casimir_compile_info(void);
 
+/**
+ * The Casimir object. This structure stores all essential information about
+ * temperature, geometry and the reflection properties of the mirrors.
+ *
+ * Do not modify the attributes of the structure yourself!
+ */
 typedef struct
 {
-    double RbyScriptL; // R/(R+L)
-    double T;
-    int lmax;
-    int verbose;
-    int extrapolate;
-    int cores;
-    double precision;
-    pthread_t **threads;
-    double omegap_sphere, gamma_sphere;
+    /**
+     * @name geometry and temperature
+     */
+     /*@{*/
+    double RbyScriptL; /**< \f$R/\mathcal{L}\f$, where \f$R\f$ is the radius of the sphere and \f$L\f$ is the separation of plane and sphere. */
+    double T; /**< temperature */
+    /*@}*/
+
+    /**
+     * @name reflection properties of the mirrors
+     */
+     /*@{*/
+    double omegap_sphere; /**< plasma frequency \f$\omega_\mathrm{P}\f$ of sphere */
+    double omegap_plane;  /**< plasma frequency \f$\omega_\mathrm{P}\f$ of plane */
+    double gamma_sphere;  /**< relaxation frequency \f$\gamma\f$ of sphere */
+    double gamma_plane;   /**< relaxation frequency \f$\gamma\f$ of plane */
+    /*@}*/
+
+    /**
+     * @name accuracy and numerical parameters
+     */
+     /*@{*/
+    int lmax;            /**< truncation value for vector space \f$\ell_\mathrm{max}\f$ */
+    int verbose;         /**< flag that indicates to be verbose */
+    int extrapolate;     /**< flag that indicates to use extrapolation */
+    int cores;           /**< number of thread that should be used */
+    double precision;    /**< precision */
+    pthread_t **threads; /**< list of pthread objects */
+    /*@}*/
 } casimir_t;
 
+
+/**
+ * thread object.
+ */
 typedef struct
 {
-    casimir_t *self;
-    int n, nmax;
-    double value;
+    casimir_t *self; /**< pointer to Casimir object */
+    int n;           /**< Matsubara term */
+    int nmax;        /**< maximum number of n */
+    double value;    /**< free energy for Matsubara term n*/
 } casimir_thread_t;
 
+
+
+/**
+ * Cache for Mie coefficients.
+ */
 typedef struct
 {
-    double *al;
-    int *al_sign;
-    double *bl;
-    int *bl_sign;
-    int lmax;
-    int n;
+    double *al;   /**< list of Mie coefficients \f$a_\ell\f$ (logarithms) */
+    int *al_sign; /**< list of signs of Mie coefficients \f$a_\ell\f$ */
+    double *bl;   /**< list of Mie coefficients \f$b_\ell\f$ (logarithms) */
+    int *bl_sign; /**< list of signs of Mie coefficients \f$b_\ell\f$ */
+    int lmax;     /**< truncation value for vector space \f$\ell_\mathrm{max}\f$ */
+    int n;        /**< Matsubara term */
 } casimir_mie_cache_t;
 
-typedef struct
-{
-    int l1, l2, m;
-    casimir_t *self;
-    double nT;
-    double scale;
-    double(*rp)(casimir_t *self, double x, double xi);
-} casimir_int_t;
 
 typedef struct
 {
@@ -57,6 +85,8 @@ typedef struct
     int signA, signB, signC, signD;
 } casimir_integrals_t;
 
+
+/* prototypes */
 double casimir_lnepsilon(double xi, double omegap, double gamma_);
 
 double casimir_lnLambda(int l1, int l2, int m, int *sign);
