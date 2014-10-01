@@ -413,6 +413,28 @@ int test_mie(void)
     return test_results(&test, stderr);
 }
 
+int test_mie_drude(void)
+{
+    int sign_a, sign_b;
+    double lna, lnb;
+    casimir_t casimir;
+    unittest_t test;
+    unittest_init(&test, "Mie Drude", "Test Mie functions al,bl for various parameters");
+
+    casimir_init(&casimir, 0.85, 2.7);
+    casimir_set_omegap_sphere(&casimir, 1);
+    casimir_set_gamma_sphere(&casimir, 1);
+    casimir_lnab(&casimir, 1, 3, &lna, &lnb, &sign_a, &sign_b);
+
+    /* XXX FIXME XXX MORE TESTS */
+    //AssertAlmostEqual(&test, lna, -3.4553);
+    AssertAlmostEqual(&test, lnb, -5.8688410248499200961);
+
+    casimir_free(&casimir);
+
+    return test_results(&test, stderr);
+}
+
 int test_integration(void)
 {
     casimir_integrals_t cint;
@@ -466,6 +488,7 @@ int main(int argc, char *argv[])
     test_Xi();
     test_integration();
     test_mie();
+    test_mie_drude();
     test_besselI();
     test_besselK();
     test_givens();
