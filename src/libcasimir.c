@@ -70,9 +70,9 @@ double inline casimir_lnLambda(int l1, int l2, int m, int *sign)
 
 
 /**
- * @brief Calculate logarithm of \f$\epsilon(i\xi)\f$ for Drude model
+ * @brief Calculate \f$\epsilon(i\xi)\f$ for Drude model
  *
- * This function returns the logarithm of the dielectric function
+ * This function returns the dielectric function
  * \f[
  *      \epsilon(i\xi) = 1 + \frac{\omega_\mathrm{P}^2}{\xi(\xi+\gamma)}
  * \f]
@@ -80,11 +80,11 @@ double inline casimir_lnLambda(int l1, int l2, int m, int *sign)
  * @param [in]  xi     imaginary frequency (in scaled units: \f$\xi=nT\f$)
  * @param [in]  omegap Plasma frequency
  * @param [in]  gamma_ relaxation frequency
- * @retval log(epsilon(xi, omegap, gamma_))
+ * @retval epsilon(xi, omegap, gamma_)
  */
-double casimir_lnepsilon(double xi, double omegap, double gamma_)
+double casimir_epsilon(double xi, double omegap, double gamma_)
 {
-    return log1p( 2*log(omegap) - log(xi)-log(xi+gamma_));
+    return 1+ omegap*omegap/(xi*(xi+gamma_));
 }
 
 
@@ -226,8 +226,80 @@ int casimir_init(casimir_t *self, double RbyScriptL, double T)
     /* perfect reflectors */
     self->omegap_sphere = INFINITY;
     self->gamma_sphere  = 0;
+    self->omegap_plane  = INFINITY;
+    self->gamma_plane   = 0;
 
     return 1;
+}
+
+
+/**
+ * @brief Set \f$\omega_\mathrm{P}\f$ for the sphere
+ *
+ * Set the plasma frequency for the sphere.
+ *
+ * @param [in,out] self Casimir object
+ * @param [in] omegap plasma frequency
+ * @retval 1 if successful
+ * @retval 0 if omegap < 0
+ */
+int casimir_set_omegap_sphere(casimir_t *self, double omegap)
+{
+    if(omegap > 0)
+    {
+        self->omegap_sphere = omegap;
+        return 1;
+    }
+    return 0;
+}
+
+
+/**
+ * @brief Get \f$\omega_\mathrm{P}\f$ for the sphere
+ *
+ * Get the plasma frequency for the sphere.
+ *
+ * @param [in,out] self Casimir object
+ * @retval plasma frequency
+ */
+double casimir_get_omegap_sphere(casimir_t *self)
+{
+    return self->omegap_sphere;
+}
+
+
+/**
+ * @brief Set \f$\gamma\f$ for the sphere
+ *
+ * Set the relaxation frequency for the sphere.
+ *
+ * @param [in,out] self Casimir object
+ * @param [in] gamma_ relaxation frequency
+ * @retval 1 if successful
+ * @retval 0 if gamma_ < 0
+ */
+int casimir_set_gamma_sphere(casimir_t *self, double gamma_)
+{
+    if(gamma_ > 0)
+    {
+        self->gamma_sphere = gamma_;
+        return 1;
+    }
+    return 0;
+}
+
+
+/**
+ * @brief Get \f$\gamma\f$ for the sphere
+ *
+ * Get the relaxation frequency for the sphere.
+ *
+ * @param [in,out] self Casimir object
+ * @retval relaxation frequency
+ */
+double casimir_get_gamma_sphere(casimir_t *self)
+{
+    return self->gamma_sphere;
 }
 
 
@@ -575,27 +647,30 @@ double casimir_lnb_perf(casimir_t *self, const int l, const int n, int *sign)
  * @param [out] sign_a sign of Mie coefficient \f$a_\ell\f$
  * @param [out] sign_b sign of Mie coefficient \f$b_\ell\f$
  */
-void casimir_lnab(casimir_t *self, const int n, const int l, double *lna, double *lnb, int *sign_a, int *sign_b)
+void casimir_lnab(casimir_t *self, const int n_mat, const int l, double *lna, double *lnb, int *sign_a, int *sign_b)
 { 
     int sign_sla, sign_slb, sign_slc, sign_sld;
-    double eps, ln_n2, ln_sla, ln_slb, ln_slc, ln_sld;
+    double ln_n, ln_sla, ln_slb, ln_slc, ln_sld;
     double lnIl, lnKl, lnIlm, lnKlm, lnIl_nchi, lnKl_nchi, lnIlm_nchi, lnKlm_nchi;
-    double xi = n*self->T;
+    double xi = n_mat*self->T;
     double chi = xi*self->RbyScriptL;
     double ln_chi = log(chi);
     double omegap = self->omegap_sphere;
     double gamma_ = self->gamma_sphere;
+    double n2;
+    double n;
     int sign_a_num, sign_a_denom, sign_b_num, sign_b_denom;
 
     if(isinf(omegap))
     {
-        *lna = casimir_lna_perf(self, l, n, sign_a);
-        *lnb = casimir_lnb_perf(self, l, n, sign_b);
+        *lna = casimir_lna_perf(self, l, n_mat, sign_a);
+        *lnb = casimir_lnb_perf(self, l, n_mat, sign_b);
         return;
     }
 
-    ln_n2 = casimir_lnepsilon(xi, omegap, gamma_);
-    eps = exp(ln_n2/2.0);
+    n2 = casimir_epsilon(xi, omegap, gamma_);
+    n = sqrt(n2);
+    ln_n = log(n);
 
     bessel_lnInuKnu(l,   chi, &lnIl, &lnKl);
     bessel_lnInuKnu(l-1, chi, &lnIlm, &lnKlm);
@@ -603,13 +678,38 @@ void casimir_lnab(casimir_t *self, const int n, const int l, double *lna, double
     bessel_lnInuKnu(l,   n*chi, &lnIl_nchi,  &lnKl_nchi);
     bessel_lnInuKnu(l-1, n*chi, &lnIlm_nchi, &lnKlm_nchi);
 
-    ln_sla = lnIl_nchi + logadd_s(lnIl,      +1, ln_chi+lnIlm,             -1, &sign_sla);
-    ln_slb = lnIl      + logadd_s(lnIl_nchi, +1, ln_n2/2.0+chi+lnIlm_nchi, -1, &sign_slb);
-    ln_slc = lnIl_nchi + logadd_s(lnKl,      +1, ln_chi+lnKlm,             +1, &sign_slc);
-    ln_sld = lnKl      + logadd_s(lnIl_nchi, +1, ln_n2/2.0+chi+lnIlm_nchi, -1, &sign_sld);
+    assert(!isnan(lnIl));
+    assert(!isnan(lnKl));
+    assert(!isnan(lnIlm));
+    assert(!isnan(lnKlm));
+    assert(!isnan(lnIl_nchi));
+    assert(!isnan(lnKl_nchi));
+    assert(!isnan(lnIlm_nchi));
+    assert(!isnan(lnKlm_nchi));
 
-    *lna = M_LOGPI - M_LN2 + logadd_s(ln_n2+ln_sla, +1, ln_slb, -1, &sign_a_num) - logadd_s(ln_n2+ln_slc, +1, ln_sld, -1, &sign_a_denom);
-    *lnb = M_LOGPI - M_LN2 + logadd_s(      ln_sla, +1, ln_slb, -1, &sign_b_num) - logadd_s(      ln_slc, +1, ln_sld, -1, &sign_b_denom);
+    ln_sla = lnIl_nchi + logadd_s(lnIl,      +1, ln_chi+lnIlm,           -1, &sign_sla);
+    ln_slb = lnIl      + logadd_s(lnIl_nchi, +1, ln_n+ln_chi+lnIlm_nchi, -1, &sign_slb);
+    ln_slc = lnIl_nchi + logadd_s(lnKl,      +1, ln_chi+lnKlm,           +1, &sign_slc);
+    ln_sld = lnKl      + logadd_s(lnIl_nchi, +1, ln_n+ln_chi+lnIlm_nchi, -1, &sign_sld);
+
+    /*
+    printf("n2=%.14g\n", n2);
+    printf("lnIl = %.14g\n", exp(lnIl));
+    printf("\n");
+    printf("chi=%.14g\n", chi);
+    printf("sla=%.14g\n", sign_sla*exp(ln_sla));
+    printf("slb=%.14g\n", sign_slb*exp(ln_slb));
+    printf("slc=%.14g\n", sign_slc*exp(ln_slc));
+    printf("sld=%.14g\n", sign_sld*exp(ln_sld));
+    */
+
+    assert(!isnan(ln_sla));
+    assert(!isnan(ln_slb));
+    assert(!isnan(ln_slc));
+    assert(!isnan(ln_sld));
+
+    *lna = M_LOGPI - M_LN2 + logadd_s(2*ln_n+ln_sla, +sign_sla, ln_slb, -sign_slb, &sign_a_num) - logadd_s(2*ln_n+ln_slc, +sign_slc, ln_sld, -sign_sld, &sign_a_denom);
+    *lnb = M_LOGPI - M_LN2 + logadd_s(       ln_sla, +sign_sla, ln_slb, -sign_slb, &sign_b_num) - logadd_s(       ln_slc, +sign_slc, ln_sld, -sign_sld, &sign_b_denom);
 
     *sign_a = sign_a_num*sign_a_denom;
     *sign_b = sign_b_num*sign_b_denom;
