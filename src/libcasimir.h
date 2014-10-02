@@ -87,7 +87,7 @@ typedef struct
 
 
 /* prototypes */
-double casimir_lnepsilon(double xi, double omegap, double gamma_);
+double casimir_epsilon(double xi, double omegap, double gamma_);
 
 double casimir_lnLambda(int l1, int l2, int m, int *sign);
 double casimir_lnXi(int l1, int l2, int m, int *sign);
@@ -101,6 +101,12 @@ void casimir_lnab0(int l, double *a0, int *sign_a0, double *b0, int *sign_b0);
 
 int casimir_init(casimir_t *self, double RbyScriptL, double T);
 void casimir_free(casimir_t *self);
+
+int casimir_set_omegap_sphere(casimir_t *self, double omegap);
+double casimir_get_omegap_sphere(casimir_t *self);
+int casimir_set_gamma_sphere(casimir_t *self, double gamma_);
+double casimir_get_gamma_sphere(casimir_t *self);
+
 
 int casimir_get_lmax(casimir_t *self);
 int casimir_set_lmax(casimir_t *self, int lmax);
