@@ -541,21 +541,17 @@ int test_integration(void)
 
 int main(int argc, char *argv[])
 {
-    /*
     test_Lambda();
     test_Xi();
     test_integration();
-    */
     test_mie();
     test_mie_drude();
-    /*
     test_besselI();
     test_besselK();
     test_givens();
     test_logadd();
     test_logdet();
     test_casimirF();
-    */
     
     return 0;
 }
