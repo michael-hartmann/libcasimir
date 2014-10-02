@@ -89,6 +89,25 @@ double casimir_epsilon(double xi, double omegap, double gamma_)
 
 
 /**
+ * @brief Calculate \f$\log \epsilon(i\xi)\f$ for Drude model
+ *
+ * This function returns the logarithm of the dielectric function
+ * \f[
+ *      \epsilon(i\xi) = 1 + \frac{\omega_\mathrm{P}^2}{\xi(\xi+\gamma)}
+ * \f]
+ *
+ * @param [in]  xi     imaginary frequency (in scaled units: \f$\xi=nT\f$)
+ * @param [in]  omegap Plasma frequency
+ * @param [in]  gamma_ relaxation frequency
+ * @retval log(epsilon(xi, omegap, gamma_))
+ */
+double casimir_lnepsilon(double xi, double omegap, double gamma_)
+{
+    return log1p(omegap*omegap/(xi*(xi+gamma_)));
+}
+
+
+/**
 * @name converting
 */
 /*@{*/
@@ -654,11 +673,9 @@ void casimir_lnab(casimir_t *self, const int n_mat, const int l, double *lna, do
     double lnIl, lnKl, lnIlm, lnKlm, lnIl_nchi, lnKl_nchi, lnIlm_nchi, lnKlm_nchi;
     double xi = n_mat*self->T;
     double chi = xi*self->RbyScriptL;
-    double ln_chi = log(chi);
+    double ln_chi = log(xi)+log(self->RbyScriptL);
     double omegap = self->omegap_sphere;
     double gamma_ = self->gamma_sphere;
-    double n2;
-    double n;
     int sign_a_num, sign_a_denom, sign_b_num, sign_b_denom;
 
     if(isinf(omegap))
@@ -668,24 +685,13 @@ void casimir_lnab(casimir_t *self, const int n_mat, const int l, double *lna, do
         return;
     }
 
-    n2 = casimir_epsilon(xi, omegap, gamma_);
-    n = sqrt(n2);
-    ln_n = log(n);
+    ln_n = casimir_lnepsilon(xi, omegap, gamma_)/2;
 
-    bessel_lnInuKnu(l,   chi, &lnIl, &lnKl);
+    bessel_lnInuKnu(l,   chi, &lnIl,  &lnKl);
     bessel_lnInuKnu(l-1, chi, &lnIlm, &lnKlm);
 
-    bessel_lnInuKnu(l,   n*chi, &lnIl_nchi,  &lnKl_nchi);
-    bessel_lnInuKnu(l-1, n*chi, &lnIlm_nchi, &lnKlm_nchi);
-
-    assert(!isnan(lnIl));
-    assert(!isnan(lnKl));
-    assert(!isnan(lnIlm));
-    assert(!isnan(lnKlm));
-    assert(!isnan(lnIl_nchi));
-    assert(!isnan(lnKl_nchi));
-    assert(!isnan(lnIlm_nchi));
-    assert(!isnan(lnKlm_nchi));
+    bessel_lnInuKnu(l,   exp(ln_n)*chi, &lnIl_nchi,  &lnKl_nchi);
+    bessel_lnInuKnu(l-1, exp(ln_n)*chi, &lnIlm_nchi, &lnKlm_nchi);
 
     ln_sla = lnIl_nchi + logadd_s(lnIl,      +1, ln_chi+lnIlm,           -1, &sign_sla);
     ln_slb = lnIl      + logadd_s(lnIl_nchi, +1, ln_n+ln_chi+lnIlm_nchi, -1, &sign_slb);
@@ -697,22 +703,26 @@ void casimir_lnab(casimir_t *self, const int n_mat, const int l, double *lna, do
     printf("lnIl = %.14g\n", exp(lnIl));
     printf("\n");
     printf("chi=%.14g\n", chi);
+    */
+
+    /*
     printf("sla=%.14g\n", sign_sla*exp(ln_sla));
     printf("slb=%.14g\n", sign_slb*exp(ln_slb));
     printf("slc=%.14g\n", sign_slc*exp(ln_slc));
     printf("sld=%.14g\n", sign_sld*exp(ln_sld));
     */
 
-    assert(!isnan(ln_sla));
-    assert(!isnan(ln_slb));
-    assert(!isnan(ln_slc));
-    assert(!isnan(ln_sld));
-
+    /* XXX calculate this somehow in a smarter way */
     *lna = M_LOGPI - M_LN2 + logadd_s(2*ln_n+ln_sla, +sign_sla, ln_slb, -sign_slb, &sign_a_num) - logadd_s(2*ln_n+ln_slc, +sign_slc, ln_sld, -sign_sld, &sign_a_denom);
     *lnb = M_LOGPI - M_LN2 + logadd_s(       ln_sla, +sign_sla, ln_slb, -sign_slb, &sign_b_num) - logadd_s(       ln_slc, +sign_slc, ln_sld, -sign_sld, &sign_b_denom);
 
     *sign_a = sign_a_num*sign_a_denom;
     *sign_b = sign_b_num*sign_b_denom;
+
+    assert(!isnan(*lna));
+    assert(!isinf(*lna));
+    assert(!isnan(*lnb));
+    assert(!isinf(*lnb));
 }
 
 
@@ -747,9 +757,8 @@ void casimir_mie_cache_init(casimir_mie_cache_t *cache, int n)
  */
 int casimir_mie_cache_alloc(casimir_t *self, casimir_mie_cache_t *cache)
 {
-    int l;
-    double n = cache->n;
-    int lmax = self->lmax;
+    int n = cache->n;
+    int l, lmax = self->lmax;
 
     if(n == 0)
     {

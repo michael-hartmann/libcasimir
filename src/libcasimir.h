@@ -88,6 +88,7 @@ typedef struct
 
 /* prototypes */
 double casimir_epsilon(double xi, double omegap, double gamma_);
+double casimir_lnepsilon(double xi, double omegap, double gamma_);
 
 double casimir_lnLambda(int l1, int l2, int m, int *sign);
 double casimir_lnXi(int l1, int l2, int m, int *sign);
