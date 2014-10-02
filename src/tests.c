@@ -424,13 +424,70 @@ int test_mie_drude(void)
     casimir_init(&casimir, 0.85, 2.7);
     casimir_set_omegap_sphere(&casimir, 1);
     casimir_set_gamma_sphere(&casimir, 1);
-    casimir_lnab(&casimir, 1, 3, &lna, &lnb, &sign_a, &sign_b);
 
-    /* XXX FIXME XXX MORE TESTS */
-    //AssertAlmostEqual(&test, lna, -3.4553);
+    // void casimir_lnab(casimir_t *self, const int n, const int l, double *lna, double *lnb, int *sign_a, int *sign_b);
+
+    casimir_lnab(&casimir, 1, 3, &lna, &lnb, &sign_a, &sign_b);
+    AssertAlmostEqual(&test, lna, -3.4553021173541371702);
+    AssertEqual(&test, sign_a, -1);
     AssertAlmostEqual(&test, lnb, -5.8688410248499200961);
+    AssertEqual(&test, sign_b, +1);
+
+    casimir_lnab(&casimir, 2, 3, &lna, &lnb, &sign_a, &sign_b);
+    AssertAlmostEqual(&test, lna, 1.7793937447527983231);
+    AssertEqual(&test, sign_a, -1);
+    AssertAlmostEqual(&test, lnb, 0.47334767009093381418);
+    AssertEqual(&test, sign_b, +1);
+
+    casimir_lnab(&casimir, 2, 7, &lna, &lnb, &sign_a, &sign_b);
+    AssertAlmostEqual(&test, lna, -5.8888749734115481971);
+    AssertEqual(&test, sign_a, -1);
+    AssertAlmostEqual(&test, lnb, -8.4332679619305466190);
+    AssertEqual(&test, sign_b, +1);
 
     casimir_free(&casimir);
+
+
+    casimir_init(&casimir, 0.95, 0.1);
+    casimir_set_omegap_sphere(&casimir, 0.1);
+    casimir_set_gamma_sphere(&casimir, 1.4);
+
+    casimir_lnab(&casimir, 1, 1, &lna, &lnb, &sign_a, &sign_b);
+    AssertAlmostEqual(&test, lna, -11.294081746210160588);
+    AssertEqual(&test, sign_a, -1);
+    AssertAlmostEqual(&test, lnb, -18.282872530968926839);
+    AssertEqual(&test, sign_b, +1);
+
+    casimir_lnab(&casimir, 1, 150, &lna, &lnb, &sign_a, &sign_b);
+    AssertAlmostEqual(&test, lna, -2128.7634085682857047);
+    AssertEqual(&test, sign_a, -1);
+    AssertAlmostEqual(&test, lnb, -2144.8884593165140032);
+    AssertEqual(&test, sign_b, +1);
+
+    casimir_lnab(&casimir, 100, 15, &lna, &lnb, &sign_a, &sign_b);
+    AssertAlmostEqual(&test, lna, -13.098866648025603965);
+    AssertEqual(&test, sign_a, -1);
+    AssertAlmostEqual(&test, lnb, -15.636661776735083507);
+    AssertEqual(&test, sign_b, +1);
+
+    casimir_lnab(&casimir, 200, 20, &lna, &lnb, &sign_a, &sign_b);
+    AssertAlmostEqual(&test, lna, 5.8518266664014060296);
+    AssertEqual(&test, sign_a, -1);
+    AssertAlmostEqual(&test, lnb, 3.9865380993256289699);
+    AssertEqual(&test, sign_b, +1);
+
+    casimir_free(&casimir);
+
+
+    casimir_init(&casimir, 0.5, 1);
+    casimir_set_omegap_sphere(&casimir, 1e-4);
+    casimir_set_gamma_sphere(&casimir,  1e-4);
+
+    casimir_lnab(&casimir, 1, 7, &lna, &lnb, &sign_a, &sign_b);
+    AssertAlmostEqual(&test, lna, -55.208389583053445904);
+    AssertEqual(&test, sign_a, -1);
+    AssertAlmostEqual(&test, lnb, -62.068548807408056689);
+    AssertEqual(&test, sign_b, +1);
 
     return test_results(&test, stderr);
 }
@@ -484,17 +541,21 @@ int test_integration(void)
 
 int main(int argc, char *argv[])
 {
+    /*
     test_Lambda();
     test_Xi();
     test_integration();
+    */
     test_mie();
     test_mie_drude();
+    /*
     test_besselI();
     test_besselK();
     test_givens();
     test_logadd();
     test_logdet();
     test_casimirF();
+    */
     
     return 0;
 }
