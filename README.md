@@ -8,9 +8,6 @@ There is also a website available: http://speicherleck.de/michael/casimir.html.
 You may cite this software, see: http://dx.doi.org/10.5281/zenodo.12476
 
 
-.. image:: https://zenodo.org/badge/doi/10.5281/zenodo.12476.png   :target: http://dx.doi.org/10.5281/zenodo.12476
-
-
 Description
 ===========
 
