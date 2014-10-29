@@ -3,8 +3,9 @@ Casimir
 
 Casimir Effect in the plane-sphere geometry with perfect reflectors.
 
-There is also a website available: http://speicherleck.de/michael/casimir.html
-You can cite this software, see: https://zenodo.org/record/12476
+There is also a website available: http://speicherleck.de/michael/casimir.html.
+
+You may cite this software, see: https://zenodo.org/record/12476
 
 
 Description
