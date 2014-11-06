@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <link href='https://fonts.googleapis.com/css?family=Chivo:900' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <title>Casimir by michael-hartmann</title>
+  </head>
+
+  <body>
+    <div id="container">
+      <div class="inner">
+
+        <header>
+          <h1>Casimir</h1>
+          <h2>The Casimir Effect in the plane-sphere geometry </h2>
+        </header>
+
+        <section id="downloads" class="clearfix">
+          <a href="https://github.com/michael-hartmann/Casimir/zipball/master" id="download-zip" class="button"><span>Download .zip</span></a>
+          <a href="https://github.com/michael-hartmann/Casimir/tarball/master" id="download-tar-gz" class="button"><span>Download .tar.gz</span></a>
+          <a href="https://github.com/michael-hartmann/Casimir" id="view-on-github" class="button"><span>View on GitHub</span></a>
+        </section>
+
+        <hr>
+
+        <section id="main_content">
+          <p>Casimir</p>
+
+<h1></h1>
+
+<p>Casimir Effect in the plane-sphere geometry with perfect reflectors.</p>
+
+<p>There is also a website available: <a href="http://speicherleck.de/michael/casimir.html">http://speicherleck.de/michael/casimir.html</a>.</p>
+
+<p>You may cite this software, see: <a href="http://dx.doi.org/10.5281/zenodo.12476">http://dx.doi.org/10.5281/zenodo.12476</a></p>
+
+<h1>
+<a id="description" class="anchor" href="#description" aria-hidden="true"><span class="octicon octicon-link"></span></a>Description</h1>
+
+<p>The progams in src/ implement the numerics for the Casimir effect in the
+plane-sphere geometry with perfect spheres using a scattering approach [1,2].
+We use the same approach, but derive slightly different formulas for the matrix
+element of the round-trip operator that don't need Wigned-d-symbols.</p>
+
+<p>A sphere of radius R is separated by a distance of L from a plane. The plane is
+infinite in the xy-direction and both plane and sphere are assumed to be
+perfect reflectors. The programs calculate the free energy F(T,R/L) in scaled
+quantities.</p>
+
+<p>This code is part of my master thesis. It costed much time and much work to
+write a working and a fast implementation. So, if you find this piece of code
+useful and you use it for plots, please consider to cite my work.</p>
+
+<p>The directory talk/ contains a presentation about the Casimir effect in the
+plane-sphere geometry in Germand language. The directory report/ contains a
+report about the derivation of the matrix elements of the round-trip matrix,
+also in German language.</p>
+
+<h1>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h1>
+
+<p>If you use Linux or Unix, you need the gcc and development libraries and header
+files for the standard C library. On a Debian-like Linux the command</p>
+
+<pre><code>$ apt-get install gcc libc6-dev
+</code></pre>
+
+<p>should install all dependencies. After that, change to the directory src/
+and run</p>
+
+<pre><code>$ make
+</code></pre>
+
+<p>to compile the sources. Every program prints out a short usage message when
+called with the switch -h.</p>
+
+<h1>
+<a id="programs" class="anchor" href="#programs" aria-hidden="true"><span class="octicon octicon-link"></span></a>Programs</h1>
+
+<ul>
+<li>
+<p>casimir</p>
+
+<p>Calculate the free energy F(T, L/R) in scaled quantities.</p>
+</li>
+<li>
+<p>casimir_hiT</p>
+
+<p>Calculate the free energy F(T-&gt;oo, L/R) for very high temperaturs.</p>
+</li>
+<li>
+<p>casimir_logdetD</p>
+
+<p>Calculate log(det(D)) for given T, L/R, n and m</p>
+</li>
+<li>
+<p>casimir_tests</p>
+
+<p>Run a unit test.</p>
+</li>
+<li>
+<p>pfa.py</p>
+
+<p>Implementation of the PFA (proximity force approximation)</p>
+</li>
+<li>
+<p>Casimir.py</p>
+
+<p>Python wrapper for casimir</p>
+</li>
+</ul>
+
+<h1>
+<a id="license" class="anchor" href="#license" aria-hidden="true"><span class="octicon octicon-link"></span></a>License</h1>
+
+<p>The software is licensed as GPLv2, see the file LICENSE. However, if you use
+this program for publications, please consider to cite my work.</p>
+
+<h1>
+<a id="bibliography" class="anchor" href="#bibliography" aria-hidden="true"><span class="octicon octicon-link"></span></a>Bibliography</h1>
+
+<p>[1] Michael Hartmann, "Negative Casimir entropies in the plane-sphere geometry", see thesis.pdf</p>
+
+<p>[2] Antoine Canaguier-Durand et al., "Thermal Casimir Effect in the plane-sphere geometry", Phys. Rev. A 82 (1 2010)</p>
+        </section>
+
+        <footer>
+          Casimir is maintained by <a href="https://github.com/michael-hartmann">michael-hartmann</a><br>
+          This page was generated by <a href="http://pages.github.com">GitHub Pages</a>. Tactile theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.
+        </footer>
+
+        
+      </div>
+    </div>
+  </body>
+</html>
