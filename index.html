@@ -10,7 +10,7 @@
     <!--[if lt IE 9]>
     <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
-    <title>The Casimir effect in the plane-sphere geometry</title>
+    <title>libcasimir</title>
   </head>
 
   <body>
@@ -19,7 +19,7 @@
 
         <header>
           <h1>libcasimir</h1>
-          <h2>The Casimir Effect in the plane-sphere geometry </h2>
+          <h2>The Casimir Effect in the plane-sphere geometry</h2>
         </header>
 
         <section id="downloads" class="clearfix">
@@ -31,117 +31,297 @@
         <hr>
 
         <section id="main_content">
-          <p>Casimir</p>
 
-<h1>Overview</h1>
+
+<h1>Summary</h1>
+
+<p>We first want to give a brief summary of the Casimir effect and libcasimir.</p>
+
+<h2>The Casimir effect</h2>
+
+<p>In 1984 Hendrik Casimir considered two parallel, perfectly conducting plates
+in vacuum at temperature
+<math xmlns='http://www.w3.org/1998/Math/MathML'>
+  <mi>T=0</mi>
+</math>
+and predicted an attracting force <a
+href="#casimir">[1]</a>. This force arises due to vacuum fluctuations and was
+experimentally verified in 1956 by Derjaguin, Abrikosova and Lifshitz <a
+href="#derjaguin">[2]</a>, as well as in 1958 by Sparnaay <a
+href="#spaarnay">[3]</a>.</p>
+
+<p>Since the Casimir effect is a manifestation of vacuum fluctuations in the
+mesoscopic world, it has relations to many open physical questions. As the
+Casimir force is the dominant force between electically neutral bodies at
+micron or sub-micron distances, the Casimir effect plays an important role in
+the search for new hypothetical forces predicted by unified theories <a
+href="#uni">[4]</a>. The Casimir effect is also linked to the theory geometry
+and the puzzle of the cosmological constant. All energy gravitates and thus
+zero point fluctuations are expected to contribute to the stress&ndash;energy
+tensor in Einstein's field equations <a href="#cosm">[5]</a>. In fact, several
+cosmological observations like the discovery that the universe expands in an
+increasing rate <a href="#acc">[6]</a> suggest a non-zero energy density of
+vacuum. However, estimations of the cosmological constant and meassurements
+disagree by about 120 orders of magnitude.</p>
+
+<p>Moreover, negative entropies are found for some geometries and parameters in
+the Casimir effect. Negative entropies, for example, occur in the
+plane&ndash;plane geometry for metals described by the Drude model. In
+addition, this effect also occurs in the plane–sphere geometry even for perfect
+reflectors, thus suggesting a geometrical origin of negative entropies [<a
+href="neg1">7</a>,<a href="neg2">8</a>]. This is in general not a problem,
+since the Casimir free energy is an interaction energy and does not describe
+the entire physical system. However, the origin of negative entropies is not
+understood very well.</p>
+
+
+<h2>What is libcasimir?</h2>
+
+<p><img src="images/geometry.png" alt="geometry" align="right" border="0" hspace="5" vspace="5">
+libcasimir implements the numerics for the Casimir effect in the plane-sphere
+geometry with perfect spheres using a scattering approach [<a
+href="#thermal">8</a>, <a href="#master">9</a>]. We use the same approach, but
+derive slightly different formulas for the matrix element of the round-trip
+operator that don't need Wigned-d-symbols.</p>
+
+<p>A sphere of radius
+<math xmlns='http://www.w3.org/1998/Math/MathML'>
+  <mi>R</mi>
+</math>
+is separated by a distance of
+<math xmlns='http://www.w3.org/1998/Math/MathML'>
+  <mi>L</mi>
+</math>
+from a plane. The plane is
+infinite in the
+<math xmlns='http://www.w3.org/1998/Math/MathML'>
+  <mi>xy</mi>
+</math>
+-direction and both plane and sphere are assumed to be
+perfect reflectors. The programs calculate the free energy
+<math xmlns='http://www.w3.org/1998/Math/MathML'>
+  <mi>F(T,R/L)</mi>
+</math>
+in scaled quantities:
+<math xmlns='http://www.w3.org/1998/Math/MathML' display='block'>
+  <mtable>
+    <mtr>
+      <mtd>
+        <msup>
+          <mi>F</mi>
+          <mn>scaled</mn>
+        </msup>
+        <mo>=</mo>
+        <mfrac>
+          <mn>L+R</mn>
+          <mi>&planck;c</mi>
+        </mfrac>
+        <mi>F</mi>
+      </mtd>
+    </mtr>
+
+    <mtr>
+      <mtd>
+        <msup>
+          <mi>T</mi>
+          <mn>scaled</mn>
+        </msup>
+        <mo>=</mo>
+        <mfrac>
+          <mn>2&pi; k (L+R)</mn>
+          <mi>&planck;c</mi>
+        </mfrac>
+        <mi>T</mi>
+      </mtd>
+    </mtr>
+  </mtable>
+</math>
+Using this scaling the free energy only depends on the temperature
+<math xmlns='http://www.w3.org/1998/Math/MathML'>
+  <mi>T</mi>
+</math>
+and the geometric ratio
+<math xmlns='http://www.w3.org/1998/Math/MathML'>
+  <mi>L/R</mi>
+</math>.</p>
+
+<p>This code is part of my <a href="#master">master thesis</a>. This thesis is
+also a good reference for libcasimir. It costed much time and much work to
+write a stable and a fast implementation. So, if you find this piece of code
+useful and you use it for plots, please consider to <a href="#cite">cite</a>
+libcasimir.</p>
+
+
+<hr>
+
+<h1>libcasimir</h1>
+
+<h2>Features</h2>
 
 <ul>
-  <li>Overview</li>
-  <li>Description</li>
-  <li>Installation</li>
-  <li>Library</li>
-  <li>Programs</li>
-  <li>Citing</li>
-  <li>License</li>
-  <li>Bibliography</li>
+  <li>Calculate the free energy
+        <math xmlns='http://www.w3.org/1998/Math/MathML'>
+          <mi>F(T,L/R)</mi>
+        </math>
+   for different separations and temperatures</li>
+
+  <li>Calculate the free energy
+        <math xmlns='http://www.w3.org/1998/Math/MathML'>
+          <mi>F(T&rarr;&infin;,L/R)</mi>
+        </math>
+  in the high temperature limit</li>
+  <li>Support for 80-bit extended floating point precision and quadrupole precision</li>
+  <li>libcasimir is fast and reliable</li>
+  <li>ready to use programs: you don't have to modify the code</li>
+  <li>libcasimir is free software &ndash; you may use it or even modify it</li>
 </ul>
-  
-<p>Casimir Effect in the plane-sphere geometry with perfect reflectors.</p>
 
-<p>You may cite this software, see: <a href="http://dx.doi.org/10.5281/zenodo.12476">http://dx.doi.org/10.5281/zenodo.12476</a></p>
 
-<h1>
-<a id="description" class="anchor" href="#description" aria-hidden="true"><span class="octicon octicon-link"></span></a>Description</h1>
+<h2>Installation</h2>
 
-<p>The progams in src/ implement the numerics for the Casimir effect in the
-plane-sphere geometry with perfect spheres using a scattering approach [1,2].
-We use the same approach, but derive slightly different formulas for the matrix
-element of the round-trip operator that don't need Wigned-d-symbols.</p>
+<p>If you use Linux or Unix, you need the gcc and development libraries and
+header files for the standard C library. On a Debian-like Linux the commands</p>
 
-<p>A sphere of radius R is separated by a distance of L from a plane. The plane is
-infinite in the xy-direction and both plane and sphere are assumed to be
-perfect reflectors. The programs calculate the free energy F(T,R/L) in scaled
-quantities.</p>
-
-<p>This code is part of my master thesis. It costed much time and much work to
-write a working and a fast implementation. So, if you find this piece of code
-useful and you use it for plots, please consider to cite my work.</p>
-
-<p>The directory talk/ contains a presentation about the Casimir effect in the
-plane-sphere geometry in Germand language. The directory report/ contains a
-report about the derivation of the matrix elements of the round-trip matrix,
-also in German language.</p>
-
-<h1>
-<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h1>
-
-<p>If you use Linux or Unix, you need the gcc and development libraries and header
-files for the standard C library. On a Debian-like Linux the command</p>
-
-<pre><code>$ apt-get install gcc libc6-dev
+<pre><code>$ sudo apt-get install gcc libc6-dev make
+$ cd src/
+$ make
 </code></pre>
+<p>should install all dependencies and compile the code. If you want to change
+the floating point precision (80-bit extended precision or quadrupole
+precision) or the compiling option, have a look at the Makefile.</p>
 
-<p>should install all dependencies. After that, change to the directory src/
-and run</p>
 
-<pre><code>$ make
+<h2>Usage</h2>
+
+<p>If you want to calculate the free energy
+<math xmlns='http://www.w3.org/1998/Math/MathML'>
+  <mi>F(T,L/R)</mi>
+</math>,
+you can use the program casimir. Mandatory options are -T for temperature and
+-x for the aspect ratio
+<math xmlns='http://www.w3.org/1998/Math/MathML'>
+  <mi>L/R</mi>
+</math>.</p>
+
+<p>Example: Calculate
+<math xmlns='http://www.w3.org/1998/Math/MathML'>
+  <mi>F(T=1,L/R=1/2)</mi>
+</math>
+<pre><code>$ ./casimir -T 1 -x 0.5
+# ./casimir, -T, 1, -x, 0.5
+# precision=1e-10
+# lfac=5
+# cores=1
+# LbyR=0.5
+# T=1
+# extrapolate=no
+#
+# LbyR, T, F, lmax, nmax, time
+0.5, 1, -0.160753879276811, 10, 35, 0.149511
+# 100.00%, L/R=0.5, T=1
 </code></pre>
+Lines beginning with a number sign # are additional comments. The output is comma separated:
+<ol>
+    <li>
+    <math xmlns='http://www.w3.org/1998/Math/MathML'>
+      <mi>L/R</mi>
+    </math>
+    &ndash; aspect ratio</li>
 
-<p>to compile the sources. Every program prints out a short usage message when
-called with the switch -h.</p>
+    <li>
+    <math xmlns='http://www.w3.org/1998/Math/MathML'>
+      <mi>T</mi>
+    </math>
+    &ndash; temperature</li>
 
-<h1>
-<a id="programs" class="anchor" href="#programs" aria-hidden="true"><span class="octicon octicon-link"></span></a>Programs</h1>
+    <li>
+    <math xmlns='http://www.w3.org/1998/Math/MathML'>
+      <mi>F(T,L/R)</mi>
+    </math>
+    &ndash; free energy</li>
+
+    <li>lmax &ndash; number of multipole moments used to calculate the free energy</li>
+    <li>nmax &ndash; last term calculated of Matsubara sum</li>
+    <li>time &ndash; time needed to calculate free energy</li>
+</ol>
+</p>
+
+<p>There are more programs available. Every program outputs a description and a
+usage text when called with the flag -h.</p>
+
+
+<h2>Developing</h2>
+
+<p>Feel free to modify and expand libcasimir! A <a href="">documentation</a> generated by Doxygen is available.</p>
+
+<hr>
+
+<h1>Citing</h1>
+
+<p>You may cite this software, see: <a
+href="http://dx.doi.org/10.5281/zenodo.12476">http://dx.doi.org/10.5281/zenodo.12476</a></p>
+
+<p>Bibtex:
+<pre>
+@article{Hartmann:12476,
+      author        = "Michael Hartmann and Ingold, Gert-Ludwig",
+      title         = "{Casimir: libcasimir 0.1}",
+      month         = "Oct",
+      year          = "2014",
+      doi           = "{10.5281/zenodo.12476}",
+      url           = "{http://dx.doi.org/10.5281/zenodo.12476}",
+}
+</pre>
+</p>
+
+
+<hr>
+
+<h1 id="license">Authors and License</h1>
+
+<p>libcasimir is developed by <a href="mailto:michael.hartmann@physik.uni-augsburg.de">Michael Hartmann</a>.
+It is <a href="http://en.wikipedia.org/wiki/Free_software">free software</a> and
+licensed under <a href="http://www.gnu.org/licenses/gpl-2.0.html">GPLv2</a>. This means that you may study, modify and distribute the original software and the adapted versions.</p>
+
+
+<hr>
+
+<h1>Thanks</h1>
+
+<p>I want to thank Gert-Ludwig Ingold for the excellent supervision during the
+time of my master thesis.</p>
+
+<hr>
+
+<h1>Publications related to libcasimir</h1>
 
 <ul>
-<li>
-<p>casimir</p>
-
-<p>Calculate the free energy F(T, L/R) in scaled quantities.</p>
-</li>
-<li>
-<p>casimir_hiT</p>
-
-<p>Calculate the free energy F(T-&gt;oo, L/R) for very high temperaturs.</p>
-</li>
-<li>
-<p>casimir_logdetD</p>
-
-<p>Calculate log(det(D)) for given T, L/R, n and m</p>
-</li>
-<li>
-<p>casimir_tests</p>
-
-<p>Run a unit test.</p>
-</li>
-<li>
-<p>pfa.py</p>
-
-<p>Implementation of the PFA (proximity force approximation)</p>
-</li>
-<li>
-<p>Casimir.py</p>
-
-<p>Python wrapper for casimir</p>
+<li><a href="https://github.com/michael-hartmann/libcasimir/raw/master/thesis.pdf">Hartmann, "Negative Casimir entropies in the plane&ndash;sphere geometry"</a>, master thesis, 2014
+<p>libcasimir was orignally developed for this master thesis.</p></li>
+<li><a href="http://arxiv.org/abs/1411.1866">Ingold et al, Geometric origin of negative Casimir entropies: A scattering-channel analysis, arxiv-preprint, 2014</a>
+<p>Fig. 2 and Fig. 3 were created using libcasimir.</p>
 </li>
 </ul>
 
-<h1>
-<a id="license" class="anchor" href="#license" aria-hidden="true"><span class="octicon octicon-link"></span></a>License</h1>
+<hr>
 
-<p>The software is licensed as GPLv2, see the file LICENSE. However, if you use
-this program for publications, please consider to cite my work.</p>
+<h1>Bibliography</h1>
 
-<h1>
-<a id="bibliography" class="anchor" href="#bibliography" aria-hidden="true"><span class="octicon octicon-link"></span></a>Bibliography</h1>
-
-<p>[1] Michael Hartmann, "Negative Casimir entropies in the plane-sphere geometry", see thesis.pdf</p>
-
-<p>[2] Antoine Canaguier-Durand et al., "Thermal Casimir Effect in the plane-sphere geometry", Phys. Rev. A 82 (1 2010)</p>
+<ol>
+<li id="casimir"><a href="http://www.dwc.knaw.nl/DL/publications/PU00018547.pdf">Casimir, "On the attraction between two perfectly conducting plates", Indag.Math. 10, 1984</a></li>
+<li id="derjaguin">Derjaguin, Abrikosova, Lifshits, "Direct meassurement of molecular attraction between solids separated by a narrow gap", Q. Rev. Chem. Soc. 10, 1956</li>
+<li id="spaarnay"><a href="http://www.sciencedirect.com/science/article/pii/S0031891458800907">Sparnaay, "Meassurements of attractive forces between flat plates", Physica 24, 1958</a></li>
+<li id="uni"><a href="http://iopscience.iop.org/1367-2630/8/10/237">Onofrio, "Casimir forces and non-Newtonian gravitation", New Journal of Physics 8, 2006</a></li>
+<li id="cosm"><a href="http://journals.aps.org/prd/abstract/10.1103/PhysRevD.72.021301">Jaffe, "The Casimir Effect and the Quantum Vacuum", Phys. Rev. D 72, 2005</a></li>
+<li id="acc"><a href="http://iopscience.iop.org/1538-3881/116/3/1009">Riess et al., "Observational Evidence from Supernovae for an Accelerating Universe and a Cosmological Constant", The Astronomical Journal, Volume 116, Issue 3, 1998</a></li>
+<li id="neg"><a href="http://arxiv.org/abs/1405.0311">Milton et al., "Negative Casimir Entropies in Nanoparticle Interactions", arxiv preprint</a></li>
+<li id="thermal"><a href="http://journals.aps.org/pra/abstract/10.1103/PhysRevA.82.012511">Canaguier-Durand et al., "Thermal Casimir effect for Drude metals in the plane-sphere geometry", Phys Rev A 82, 2010</a></li>
+<li id="master"><a href="https://github.com/michael-hartmann/libcasimir/raw/master/thesis.pdf">Hartmann, "Negative Casimir entropies in the plane&ndash;sphere geometry"</a>, master thesis, 2014</li>
+</ol>
         </section>
 
         <footer>
-          Casimir is maintained by <a href="https://github.com/michael-hartmann">michael-hartmann</a><br>
+          libcasimir is maintained by <a href="https://github.com/michael-hartmann">michael-hartmann</a><br>
           This page was generated by <a href="http://pages.github.com">GitHub Pages</a>. Tactile theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.
         </footer>
       </div>

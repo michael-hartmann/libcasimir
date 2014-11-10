@@ -90,7 +90,7 @@ header h2 {
 }
 
 .inner {
-  width: 620px;
+  width: 72%;
   margin: 0 auto;
 }
 
@@ -275,6 +275,7 @@ h6 {
 } 
 
 p {
+  text-align: justify;
   font-weight: 300;
   margin-bottom: 20px;
 }
