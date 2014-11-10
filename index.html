@@ -197,8 +197,8 @@ precision) or the compiling option, have a look at the Makefile.</p>
 <math xmlns='http://www.w3.org/1998/Math/MathML'>
   <mi>F(T,L/R)</mi>
 </math>,
-you can use the program casimir. Mandatory options are -T for temperature and
--x for the aspect ratio
+you can use the program casimir. Mandatory options are <tt>-T</tt> for temperature and
+<tt>-x</tt> for the aspect ratio
 <math xmlns='http://www.w3.org/1998/Math/MathML'>
   <mi>L/R</mi>
 </math>.</p>
@@ -222,32 +222,20 @@ you can use the program casimir. Mandatory options are -T for temperature and
 </code></pre>
 Lines beginning with a number sign # are additional comments. The output is comma separated:
 <ol>
-    <li>
-    <math xmlns='http://www.w3.org/1998/Math/MathML'>
-      <mi>L/R</mi>
-    </math>
-    &ndash; aspect ratio</li>
+    <li><tt>LbyR</tt>&ndash; aspect ratio</li>
 
-    <li>
-    <math xmlns='http://www.w3.org/1998/Math/MathML'>
-      <mi>T</mi>
-    </math>
-    &ndash; temperature</li>
+    <li><tt>T</tt> &ndash; temperature</li>
 
-    <li>
-    <math xmlns='http://www.w3.org/1998/Math/MathML'>
-      <mi>F(T,L/R)</mi>
-    </math>
-    &ndash; free energy</li>
+    <li><tt>F</tt> &ndash; free energy</li>
 
-    <li>lmax &ndash; number of multipole moments used to calculate the free energy</li>
-    <li>nmax &ndash; last term calculated of Matsubara sum</li>
-    <li>time &ndash; time needed to calculate free energy</li>
+    <li><tt>lmax</tt> &ndash; number of multipole moments used to calculate the free energy</li>
+    <li><tt>nmax</tt> &ndash; last term calculated of Matsubara sum</li>
+    <li><tt>time</tt> &ndash; time needed to calculate free energy</li>
 </ol>
 </p>
 
 <p>There are more programs available. Every program outputs a description and a
-usage text when called with the flag -h.</p>
+usage text when called with the flag <tt>-h</tt>.</p>
 
 
 <h2>Developing</h2>
