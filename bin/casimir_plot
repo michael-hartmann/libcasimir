@@ -117,10 +117,9 @@ mapping = {
     "Q":    1,
     "T":    2,
     "F":    3,
-    "nmax": 4,
-    "lmax": 5,
-    "f":    6,
-    "S":    7
+    "lmax": 4,
+    "nmax": 5,
+    "t":    6
 }
 
 indexx = mapping[options.x]-1
