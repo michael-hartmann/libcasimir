@@ -110,7 +110,7 @@ def F(q,T,lmax):
             return T*sum/pi
 
 q = 0.5
-lmax = 3
+lmax = 5
 T = 1e-3
 
 print T, F(q,T,lmax)
