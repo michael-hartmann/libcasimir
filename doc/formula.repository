@@ -1,0 +1,43 @@
+\form#0:$\Lambda_{\ell_1 \ell_2}^{(m)}$
+\form#1:$\ell_1,\ell_2,m$
+\form#2:\[ \Lambda_{\ell_1,\ell_2}^{(m)} = -\frac{2 N_{\ell_1,m} N_{\ell_2,m}}{\sqrt{\ell_1 (\ell_1+1) \ell_2 (\ell_2+1)}} \]
+\form#3:$\ell_1,\ell_2 \ge 1$
+\form#4:$\ell_1,\ell_2 \ge m$
+\form#5:$\Lambda_{\ell_1,\ell_2}^{(m)} = \Lambda_{\ell_2,\ell_1}^{(m)}$
+\form#6:$\epsilon(i\xi)$
+\form#7:\[ \epsilon(i\xi) = 1 + \frac{\omega_\mathrm{P}^2}{\xi(\xi+\gamma)} \]
+\form#8:$\xi=nT$
+\form#9:$\log \epsilon(i\xi)$
+\form#10:$\mathcal{L}/(\hbar c)$
+\form#11:\[ \mathcal{F}_\mathrm{scaled} = \mathcal{F}_\mathrm{SI} \frac{\mathcal{L}}{\hbar c} \]
+\form#12:$\mathcal{L} = R+L$
+\form#13:\[ \mathcal{F}_\mathrm{SI} = \mathcal{F}_\mathrm{scaled} \frac{\hbar c}{\mathcal{L}} \]
+\form#14:$2\pi k_B \mathcal{L}/(\hbar c)$
+\form#15:\[ T_\mathrm{scaled} = \frac{2\pi k_b \mathcal{L}}{\hbar c} T_\mathrm{SI} \]
+\form#16:$\Xi_{\ell_1 \ell_2}^{(m)}$
+\form#17:$T > 0$
+\form#18:$0 < \mathcal{L} < 1$
+\form#19:$\frac{R}{\mathcal{L}} = \frac{R}{R+L}$
+\form#20:$\omega_\mathrm{P}$
+\form#21:$\gamma$
+\form#22:$a_{\ell,0}^\mathrm{perf}$
+\form#23:$b_{\ell,0}^\mathrm{perf}$
+\form#24:$\chi = \frac{\xi R}{c} \ll 1$
+\form#25:\[ a_{\ell}^\mathrm{perf} = a_{\ell,0}^\mathrm{perf} \left(\frac{\chi}{2}\right)^{2\ell+1} \\ \]
+\form#26:\[ b_{\ell}^\mathrm{perf} = b_{\ell,0}^\mathrm{perf} \left(\frac{\chi}{2}\right)^{2\ell+1} \]
+\form#27:$\chi = nT \frac{R}{\mathcal{L}}$
+\form#28:$a_\ell$
+\form#29:$\xi = nT$
+\form#30:$\ell \ge 1$
+\form#31:$\ell \ge 0$
+\form#32:$xi = nT$
+\form#33:$b_\ell$
+\form#34:$\omega_\mathrm{P} = \infty$
+\form#35:$\log\det \mathcal{D}(\xi=0)$
+\form#36:$n=0$
+\form#37:$\log\det \mathcal{D}(\xi=nT)$
+\form#38:$n$
+\form#39:$R/\mathcal{L}$
+\form#40:$R$
+\form#41:$L$
+\form#42:$\ell_\mathrm{max}$
