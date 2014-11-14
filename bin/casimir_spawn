@@ -14,14 +14,7 @@ INFO = True                                      # send a mail when tasks have f
 MAIL = "michael.hartmann@physik.uni-augsburg.de" # mail address
 BODY = "T for small values"                      # body of mail
 SUBJECT = "job list finished"                    # subject of mail
-
-Q_start = 0.9 # start value for Q
-Q_stop  = 0.9 # stop value for Q
-Q_N     = 1   # number
-
-T_start = 0.0005 # start value for T
-T_stop  = 1.5    # stop value for T
-T_N     = 200    # number
+filename = "list"
 
 # get running jobs and job ids
 def get_running_jobs(user):
@@ -37,17 +30,24 @@ def get_running_jobs(user):
 
 # run command and return job id
 def run(cmd):
-    cmd = ["/bin/bash", "-c", "sbatch /alcc/gpfs1/home/theo1/hartmmic/run %s" % cmd]
+    cmd = ["/bin/bash", "-c", cmd]
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE)
     line = proc.stdout.readline()
     jobid = int(line.split()[-1])
     return jobid
 
+cmdlist = []
+fh = open(filename, "r")
+for line in fh:
+    line = line.strip()
+    if len(line) == 0 or line[0] == "#"
+        continue
+    cmdlist.append(line)
+fh.close()
+
 # launch jobs
 jobids_started = []
-for i,Q in enumerate(linspace(Q_start, Q_stop, Q_N)):
-    for j,T in enumerate(linspace(T_start, T_stop, T_N)):
-
+for i,cmd in enumerate(cmdlist):
     while True:
         jobs_running,jobids_running = get_running_jobs(USER)
         if jobs_running < MAX_PROCESSES:
@@ -55,10 +55,9 @@ for i,Q in enumerate(linspace(Q_start, Q_stop, Q_N)):
         else:
             sleep(IDLE)
 
-    cmd = "casimir -Q %g -T %g " % (Q, T)
     jobid = run(cmd)
     jobids_started.append(jobid)
-    print "%d/%d, %s" % ((i*T_N)+j+1, T_N*Q_N, cmd)
+    print "%d/%d, %s" % (i+1, len(cmdlist), cmd)
 
 
 # wait till all jobs have ended
