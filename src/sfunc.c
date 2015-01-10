@@ -110,7 +110,7 @@ void bessel_lnInuKnu(int nu, const double x, double *lnInu_p, double *lnKnu_p)
 
     // calculate Knu, Knup
     {
-        double prefactor = -x+0.5*(M_LOGPI-M_LN2-log(x));
+        double prefactor = -x+0.5*(M_LNPI-M_LN2-log(x));
 
         if(nu == 0)
         {
@@ -222,4 +222,24 @@ double logspace(double start, double stop, int N, int i)
         return start;
 
     return start*pow(pow(stop/start, 1./(N-1)), i);
+}
+
+double ln_doublefact(int n)
+{
+    if(n < 0)
+        return NAN;
+
+    if(n == 0 || n == 1) /* 0!! = 1!! = 0 */
+        return 0;
+
+    if(n % 2 == 0) /* even */
+    {
+        int k = n/2;
+        return k*M_LN2 + lnfac(k);
+    }
+    else /* odd */
+    {
+        int k = (n+1)/2;
+        return lnfac(2*k) - k*M_LN2 - lnfac(k);
+    }
 }

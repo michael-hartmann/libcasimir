@@ -1,8 +1,8 @@
 #ifndef __SFUNC_H
 #define __SFUNC_H
 
-#define M_LOGPI 1.1447298858494002
-#define M_LOG4  1.3862943611198906
+#define M_LNPI 1.1447298858494002
+#define M_LN4  1.3862943611198906
 
 // abbrevations for functions
 #define lngamma(x) (lgamma(x))
@@ -32,5 +32,7 @@ int round2up(int x);
 
 double linspace(double start, double stop, int N, int i);
 double logspace(double start, double stop, int N, int i);
+
+double ln_doublefact(int n);
 
 #endif

@@ -12,5 +12,6 @@ int test_besselK(void);
 int test_givens(void);
 int test_logadd(void);
 int test_mie_drude(void);
+int test_doublefact(void);
 
 #endif
