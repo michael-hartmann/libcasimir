@@ -118,6 +118,8 @@ void polydplm(edouble pl1[], edouble pl2[], int l1, int l2, int m, edouble xi)
 */
 void casimir_integrate(casimir_integrals_t *cint, int l1, int l2, int m, double nT)
 {
+    double lnA, lnB, lnC, lnD;
+    int signA, signB, signC, signD;
     double xi = 2*nT;
     edouble pdpl1m[l1-m+2];
     edouble pdpl2m[l2-m+2];
@@ -130,16 +132,16 @@ void casimir_integrate(casimir_integrals_t *cint, int l1, int l2, int m, double 
         edouble interim[l1+2];
         edouble result[l1+l2+1];
 
-        cint->logA = cint->logC = cint->logD = -INFINITY;
-        cint->signA = cint->signC = cint->signD = 0;
+        lnA = lnC = lnD = -INFINITY;
+        signA = signC = signD = 0;
 
         polym(pm, 2, xi);
 
         polymult(pm, 3, pdpl1m, l1, interim);
         polymult(interim, l1+2, pdpl2m, l2, result);
 
-        cint->logB = -xi-3*logq(xi)+log_polyintegrate(result, l1+l2+1, l1,l2,m,&cint->signB);
-        cint->signB *= pow(-1, l2+1);
+        lnB = -xi-3*logq(xi)+log_polyintegrate(result, l1+l2+1, l1,l2,m, &signB);
+        signB *= pow(-1, l2+1);
     }
     else
     {
@@ -167,16 +169,40 @@ void casimir_integrate(casimir_integrals_t *cint, int l1, int l2, int m, double 
         polymult(pmpdpl1m, sizeof(pmpdpl1m)/sizeof(edouble), ppl2m, sizeof(ppl2m)/sizeof(edouble), pmpdpl1mppl2m);
         polymult(pmpdpl1m, sizeof(pmpdpl1m)/sizeof(edouble), pdpl2m, sizeof(pdpl2m)/sizeof(edouble), pmpdpl1mpdpl2m);
 
-        cint->logA = 2*logq(m)+logprefactor+log_polyintegrate(pmppl1mppl2m, sizeof(pmppl1mppl2m)/sizeof(edouble), l1,l2,m,&cint->signA);
-        cint->signA *= pow(-1,l2);
+        lnA = 2*logq(m)+logprefactor+log_polyintegrate(pmppl1mppl2m, sizeof(pmppl1mppl2m)/sizeof(edouble), l1,l2,m,&signA);
+        signA *= pow(-1,l2);
 
-        cint->logB = logprefactor+log_polyintegrate(pmpdpl1mpdpl2m, sizeof(pmpdpl1mpdpl2m)/sizeof(edouble), l1,l2,m,&cint->signB);
-        cint->signB *= pow(-1,l2+1);
+        lnB = logprefactor+log_polyintegrate(pmpdpl1mpdpl2m, sizeof(pmpdpl1mpdpl2m)/sizeof(edouble), l1,l2,m,&signB);
+        signB *= pow(-1,l2+1);
         
-        cint->logC = logq(m)+logprefactor+log_polyintegrate(pmppl1mpdpl2m, sizeof(pmppl1mpdpl2m)/sizeof(edouble), l1,l2,m,&cint->signC);
-        cint->signC *= pow(-1,l2+1);
+        lnC = logq(m)+logprefactor+log_polyintegrate(pmppl1mpdpl2m, sizeof(pmppl1mpdpl2m)/sizeof(edouble), l1,l2,m,&signC);
+        signC *= pow(-1,l2+1);
         
-        cint->logD = logq(m)+logprefactor+log_polyintegrate(pmpdpl1mppl2m, sizeof(pmpdpl1mppl2m)/sizeof(edouble), l1,l2,m,&cint->signD);
-        cint->signD *= pow(-1,l2);
+        lnD = logq(m)+logprefactor+log_polyintegrate(pmpdpl1mppl2m, sizeof(pmpdpl1mppl2m)/sizeof(edouble), l1,l2,m,&signD);
+        signD *= pow(-1,l2);
     }
+
+    cint->lnA_TM   = lnA;
+    cint->signA_TM = signA;
+
+    cint->lnA_TE   = lnA;
+    cint->signA_TE = -signA;
+
+    cint->lnB_TM   = lnB;
+    cint->signB_TM = signB;
+
+    cint->lnB_TE   = lnB;
+    cint->signB_TE = -signB;
+
+    cint->lnC_TM   = lnC;
+    cint->signC_TM = signC;
+
+    cint->lnC_TE   = lnC;
+    cint->signC_TE = -signC;
+
+    cint->lnD_TM   = lnD;
+    cint->signD_TM = signD;
+
+    cint->lnD_TE   = lnD;
+    cint->signD_TE = -signD;
 }

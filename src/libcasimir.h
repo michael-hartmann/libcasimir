@@ -79,10 +79,24 @@ typedef struct
 } casimir_mie_cache_t;
 
 
+/*
 typedef struct
 {
     double logA,logB,logC,logD;
     int signA, signB, signC, signD;
+} casimir_integrals_t;
+*/
+
+typedef struct
+{
+    double lnA_TE, lnA_TM;
+    double lnB_TE, lnB_TM;
+    double lnC_TE, lnC_TM;
+    double lnD_TE, lnD_TM;
+    int signA_TE, signA_TM;
+    int signB_TE, signB_TM;
+    int signC_TE, signC_TM;
+    int signD_TE, signD_TM;
 } casimir_integrals_t;
 
 
@@ -137,5 +151,7 @@ void casimir_mie_cache_free(casimir_mie_cache_t *cache);
 
 double casimir_logdetD0(casimir_t *self, int m, double *EE, double *MM);
 double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache);
+
+void casimir_rp(casimir_t *self, double nT, double k, double *r_TE, double *r_TM);
 
 #endif

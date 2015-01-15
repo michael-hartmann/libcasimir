@@ -108,6 +108,26 @@ double casimir_lnepsilon(double xi, double omegap, double gamma_)
 
 
 /**
+ * @brief Calculate Fresnel coefficients \f$r_{TE}\f$ and \f$r_{TM}\f$ for Drude model
+ *
+ * This function calculates the Fresnel coefficients for TE and TM mode
+ *
+ * @param [in]      self    imaginary frequency (in scaled units: \f$\xi=nT\f$)
+ * @param [in]      nT      n*T
+ * @param [in]      k       xy projection of wavevector
+ * @param [in,out]  r_TE    Fresnel coefficient for TE mode
+ * @param [in,out]  r_TM    Fresnel coefficient for TM mode
+ */
+void casimir_rp(casimir_t *self, double nT, double k, double *r_TE, double *r_TM)
+{
+    double epsilon = casimir_epsilon(nT, self->omegap_plane, self->gamma_plane);
+    double beta = sqrt(1 + (epsilon-1)/(1 + pow_2(k/nT)));
+
+    *r_TE = (1-beta)/(1+beta);
+    *r_TM = (epsilon-beta)/(epsilon+beta);
+}
+
+/**
 * @name converting
 */
 /*@{*/
@@ -1137,6 +1157,7 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
     {
         for(l2 = min; l2 <= l1; l2++)
         {
+            int Delta_ij = (l1 == l2 ? 1 : 0);
             const int i = l1-min, j = l2-min;
             casimir_integrals_t cint;
             double lnal1 = cache->al[l1];
@@ -1162,23 +1183,24 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
             casimir_integrate(&cint, l1, l2, m, n*self->T);
 
             /* EE */
-            matrix_set(M, i,j, (l1 == l2 ? 1 : 0) - al1_sign*( cint.signB*expq(lnal1+cint.logB) - cint.signA*expq(lnal1+cint.logA) ));
-            matrix_set(M, j,i, (l1 == l2 ? 1 : 0) - pow(-1, l1+l2)*al2_sign*( cint.signB*expq(lnal2+cint.logB) - cint.signA*expq(lnal2+cint.logA) ));
+            matrix_set(M, i,j, Delta_ij - al1_sign*( cint.signB_TM*expq(lnal1+cint.lnB_TM) - cint.signA_TM*expq(lnal1+cint.lnA_TM) ));
+            matrix_set(M, j,i, Delta_ij - pow(-1, l1+l2)*al2_sign*( cint.signB_TM*expq(lnal2+cint.lnB_TM) - cint.signA_TM*expq(lnal2+cint.lnA_TM) ));
 
             /* MM */
-            matrix_set(M, i+dim,j+dim, (l1 == l2 ? 1 : 0) - bl1_sign*( cint.signA*expq(lnbl1+cint.logA) - cint.signB*expq(lnbl1+cint.logB) ));
-            matrix_set(M, j+dim,i+dim, (l1 == l2 ? 1 : 0) - pow(-1, l1+l2)*bl2_sign*( cint.signA*expq(lnbl2+cint.logA) - cint.signB*expq(lnbl2+cint.logB) ));
+            matrix_set(M, i+dim,j+dim, Delta_ij - bl1_sign*( cint.signA_TM*expq(lnbl1+cint.lnA_TM) - cint.signB_TM*expq(lnbl1+cint.lnB_TM) ));
+            matrix_set(M, j+dim,i+dim, Delta_ij - pow(-1, l1+l2)*bl2_sign*( cint.signA_TM*expq(lnbl2+cint.lnA_TM) - cint.signB_TM*expq(lnbl2+cint.lnB_TM) ));
+
 
             if(m != 0)
             {
                 /* M_EM */
-                matrix_set(M, dim+i,j, -al1_sign*( cint.signD*expq(lnal1+cint.logD) - cint.signC*expq(lnal1+cint.logC) ));
-                matrix_set(M, dim+j,i, -al2_sign*pow(-1, l1+l2+1)*( cint.signC*expq(lnal2+cint.logC) - cint.signD*expq(lnal2+cint.logD) ));
+                matrix_set(M, dim+i,j, -al1_sign*( cint.signD_TM*expq(lnal1+cint.lnD_TM) - cint.signC_TM*expq(lnal1+cint.lnC_TM) ));
+                matrix_set(M, dim+j,i, -al2_sign*pow(-1, l1+l2+1)*( cint.signC_TM*expq(lnal2+cint.lnC_TM) - cint.signD_TM*expq(lnal2+cint.lnD_TM) ));
 
 
                 /* M_ME */
-                matrix_set(M, i,dim+j, -bl1_sign*( cint.signC*expq(lnbl1+cint.logC) - cint.signD*expq(lnbl1+cint.logD) ));
-                matrix_set(M, j,dim+i, -bl2_sign*pow(-1, l1+l2+1)*( cint.signD*expq(lnbl2+cint.logD) - cint.signC*expq(lnbl2+cint.logC) ));
+                matrix_set(M, i,dim+j, -bl1_sign*( cint.signC_TM*expq(lnbl1+cint.lnC_TM) - cint.signD_TM*expq(lnbl1+cint.lnD_TM) ));
+                matrix_set(M, j,dim+i, -bl2_sign*pow(-1, l1+l2+1)*( cint.signD_TM*expq(lnbl2+cint.lnD_TM) - cint.signC_TM*expq(lnbl2+cint.lnC_TM) ));
             }
         }
     }
