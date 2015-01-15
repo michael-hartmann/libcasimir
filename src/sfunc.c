@@ -244,7 +244,6 @@ double ln_doublefact(int n)
     }
 }
 
-/* HERE BE DRAGONS */
 
 /* This module implements associated legendre functions and its derivatives
  * for m >= 0 and x >= 1.
@@ -254,18 +253,7 @@ double ln_doublefact(int n)
  * where Pl(x) denotes a Legendre polynomial.
  *
  * As Pl(x) are ordinary polynomials, the only problem is the term (1-x²) when
- * extending the domain to values of x > 1. The continuation is ambiguous.
- * We will implement 
- *     Plm(x) = (-1)^m (x²-1)^(m/2) * d^m/dx^m Pl(x)
- * here.
- *
- * Spherical harmonics at phi=0 are just associated Legendre functions
- * multiplied by a constant:
- *     Ylm(x,0) = Nlm * Plm(cos(theta))
- * where
- *     Nlm = sqrt( (2*l+1) * (l-m)!/(l+m)! ).
- * The functions assume x=cos(x) and calculate
- *     Ylm(x,0) = Nlm * Plm(x).
+ * extending the domain to values of x > 1.
  *
  * (*) Note:
  * Products of associated legendre polynomials with common m are unambiguous, because
@@ -285,7 +273,7 @@ static inline void _lnplm_array(int lmax, int m, double x, double lnplm[], int s
     }
     else
     {
-        sign[0] = pow(-1,m);
+        sign[0] = pow(-1,(int)(m/2) + m%2);
         lnplm[0] = ln_doublefact(2*m-1) + m*0.5*log(pow_2(x)-1); // l=m,m=m
     }
 
@@ -342,6 +330,39 @@ double plm_dPlm(int l, int m, double x)
     return sign*exp(value);
 }
 
-/*
-double plm_PlmPlm(int l1, int l2, int m, double x)
-*/
+void plm_PlmPlm(int l1, int l2, int m, double x, plm_combination_t *res)
+{
+    const int lmax = MAX(l1,l2)+1;
+    double lnPlm[lmax-m+1];
+    int signs[lmax-m+1];
+    double logx = log(x);
+    double logx2m1 = log(pow_2(x)-1);
+    double lnPl1m, lnPl2m, lndPl1m, lndPl2m;
+    int sign_Pl1m, sign_Pl2m, sign_dPl1m, sign_dPl2m;
+
+    _lnplm_array(lmax, m, x, lnPlm, signs);
+
+    lnPl1m    = lnPlm[l1-m];
+    sign_Pl1m = signs[l1-m];
+    lnPl2m    = lnPlm[l2-m];
+    sign_Pl2m = signs[l2-m];
+
+    lndPl1m = logadd_s(log(l1-m+1)+lnPlm[l1+1-m], signs[l1+1-m], log(l1+1)+logx+lnPlm[l1-m], -signs[l1+1-m], &sign_dPl1m) - logx2m1;
+    lndPl2m = logadd_s(log(l2-m+1)+lnPlm[l2+1-m], signs[l2+1-m], log(l2+1)+logx+lnPlm[l2-m], -signs[l2+1-m], &sign_dPl2m) - logx2m1;
+
+    /* Pl1m*Pl2m */
+    res->lnPl1mPl2m    = lnPl1m + lnPl2m;
+    res->sign_Pl1mPl2m = pow(-1, m%2)*sign_Pl1m * sign_Pl2m;
+
+    /* Pl1m*dPl2m */
+    res->lnPl1mdPl2m    = lnPl1m + lndPl2m;
+    res->sign_Pl1mdPl2m = pow(-1, m%2)*sign_Pl1m * sign_dPl2m;
+
+    /* dPl1m*dPl2m */
+    res->lndPl1mPl2m    = lndPl1m + lnPl2m;
+    res->sign_dPl1mPl2m = pow(-1, m%2)*sign_dPl1m * sign_Pl2m;
+
+    /* dPl1m*dPl2m */
+    res->lndPl1mdPl2m    = lndPl1m + lndPl2m;
+    res->sign_dPl1mdPl2m = pow(-1, m%2)*sign_dPl1m * sign_dPl2m;
+}

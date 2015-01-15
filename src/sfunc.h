@@ -16,6 +16,20 @@
 #define MAX(a,b) ((((a))>((b)))?((a)):((b)))
 #endif
 
+typedef struct {
+    double lnPl1mPl2m;
+    int sign_Pl1mPl2m;
+
+    double lndPl1mPl2m;
+    int sign_dPl1mPl2m;
+
+    double lnPl1mdPl2m;
+    int sign_Pl1mdPl2m;
+
+    double lndPl1mdPl2m;
+    int sign_dPl1mdPl2m;
+} plm_combination_t;
+
 double inline logadd(const double a, const double b);
 double inline logadd_m(const double list[], size_t len);
 double inline logadd_s(const double a, const int sign_a, const double b, const int sign_b, int *sign);
@@ -35,10 +49,11 @@ double logspace(double start, double stop, int N, int i);
 
 double ln_doublefact(int n);
 
-// #define Nlm(l,m) ( sqrt((2.0*l+1)/2. * exp(lgamma(1+l-m)-lgamma(1+l+m))) )
 double plm_lnPlm(int l, int m, double x, int *sign);
 double plm_Plm(int l, int m, double x);
 double plm_lndPlm(int l, int m, double x, int *sign);
 double plm_dPlm(int l, int m, double x);
+
+void plm_PlmPlm(int l1, int l2, int m, double x, plm_combination_t *res);
 
 #endif
