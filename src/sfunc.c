@@ -243,3 +243,105 @@ double ln_doublefact(int n)
         return lnfac(2*k) - k*M_LN2 - lnfac(k);
     }
 }
+
+/* HERE BE DRAGONS */
+
+/* This module implements associated legendre functions and its derivatives
+ * for m >= 0 and x >= 1.
+ * 
+ * Associated Legendre polynomials are defined as follows:
+ *     Plm(x) = (-1)^m (1-x²)^(m/2) * d^m/dx^m Pl(x)
+ * where Pl(x) denotes a Legendre polynomial.
+ *
+ * As Pl(x) are ordinary polynomials, the only problem is the term (1-x²) when
+ * extending the domain to values of x > 1. The continuation is ambiguous.
+ * We will implement 
+ *     Plm(x) = (-1)^m (x²-1)^(m/2) * d^m/dx^m Pl(x)
+ * here.
+ *
+ * Spherical harmonics at phi=0 are just associated Legendre functions
+ * multiplied by a constant:
+ *     Ylm(x,0) = Nlm * Plm(cos(theta))
+ * where
+ *     Nlm = sqrt( (2*l+1) * (l-m)!/(l+m)! ).
+ * The functions assume x=cos(x) and calculate
+ *     Ylm(x,0) = Nlm * Plm(x).
+ *
+ * (*) Note:
+ * Products of associated legendre polynomials with common m are unambiguous, because
+ *     (i)² = (-i)² = -1.
+ */
+
+/* calculate Plm for l=m...l=lmax */
+static inline void _lnplm_array(int lmax, int m, double x, double lnplm[], int sign[])
+{
+    int l;
+    double logx;
+
+    if(m == 0)
+    {
+        sign[0] = +1;
+        lnplm[0] = 0; // log(1)
+    }
+    else
+    {
+        sign[0] = pow(-1,m);
+        lnplm[0] = ln_doublefact(2*m-1) + m*0.5*log(pow_2(x)-1); // l=m,m=m
+    }
+
+    if(lmax == m)
+        return;
+
+    sign[1] = sign[0];
+    lnplm[1] = lnplm[0]+log(x)+log(2*m+1); // l=m+1, m=m
+
+    logx = log(x);
+    for(l = m+2; l <= lmax; l++)
+    {
+        lnplm[l-m] = logadd_s(log(2*l-1)+logx+lnplm[l-m-1], sign[l-m-1], log(l+m-1)+lnplm[l-m-2], -sign[l-m-2], &sign[l-m]);
+        lnplm[l-m] -= log(l-m);
+    }
+}
+
+/* calculate Plm(x) */
+double plm_lnPlm(int l, int m, double x, int *sign)
+{
+    double plm[l-m+1];
+    int  signs[l-m+1];
+
+    _lnplm_array(l, m, x, plm, signs);
+    *sign = signs[l-m];
+
+    return plm[l-m];
+}
+
+double plm_Plm(int l, int m, double x)
+{
+    int sign;
+    double value = plm_lnPlm(l, m, x, &sign);
+    return sign*exp(value);
+}
+
+/* calculate dPlm(x) */
+double plm_lndPlm(int l, int m, double x, int *sign)
+{
+    const int lmax = l+1;
+    double plm[lmax-m+1];
+    int signs[lmax-m+1];
+
+    _lnplm_array(lmax, m, x, plm, signs);
+
+    return logadd_s(log(l-m+1)+plm[l+1-m], signs[l+1-m], log(l+1)+log(x)+plm[l-m], -signs[l+1-m], sign) - log(pow_2(x)-1);
+}
+
+
+double plm_dPlm(int l, int m, double x)
+{
+    int sign;
+    double value = plm_lndPlm(l, m, x, &sign);
+    return sign*exp(value);
+}
+
+/*
+double plm_PlmPlm(int l1, int l2, int m, double x)
+*/
