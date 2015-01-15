@@ -673,7 +673,6 @@ int test_plm()
 
 int main(int argc, char *argv[])
 {
-    /*
     test_plm();
     test_doublefact();
     test_Lambda();
@@ -685,9 +684,8 @@ int main(int argc, char *argv[])
     test_besselK();
     test_givens();
     test_logadd();
-    */
     test_logdet();
-    //test_casimirF();
+    test_casimirF();
     
     return 0;
 }
