@@ -13,5 +13,6 @@ int test_givens(void);
 int test_logadd(void);
 int test_mie_drude(void);
 int test_doublefact(void);
+int test_plm(void);
 
 #endif

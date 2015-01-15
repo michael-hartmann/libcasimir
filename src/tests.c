@@ -568,8 +568,43 @@ int test_doublefact()
     return test_results(&test, stderr);
 }
 
+int test_plm()
+{
+    int sign;
+    unittest_t test;
+
+    unittest_init(&test, "Plm", "Test associated Legendre polynomials");
+
+    /* Plm */
+    AssertAlmostEqual(&test, plm_Plm(3,2,2), +90);
+    AssertAlmostEqual(&test, plm_Plm(3,1,2), -49.36344801571300286553222073);
+    AssertAlmostEqual(&test, plm_Plm(3,2,200), +119997000);
+
+    AssertAlmostEqual(&test, plm_Plm(30,30,10), 2.512712634569675964e70);
+    AssertAlmostEqual(&test, plm_Plm(30,0,10), 1.022858298005579512e38);
+
+    AssertAlmostEqual(&test, plm_lnPlm(300,0,100, &sign),    1586.0630493580697);
+    AssertAlmostEqual(&test, plm_lnPlm(300,200,100, &sign),  2637.2261846173691);
+
+    AssertAlmostEqual(&test, plm_lnPlm(300,1,100, &sign),    1591.7668317492472);
+    AssertAlmostEqual(&test, plm_lnPlm(300,201,100, &sign),  2641.8313213287660);
+    AssertAlmostEqual(&test, plm_lnPlm(300,201,1000, &sign), 3332.6176009928417);
+    AssertAlmostEqual(&test, plm_lnPlm(300,201,5000, &sign), 3815.4490789776808);
+
+    /* dPlm */
+    AssertAlmostEqual(&test, plm_dPlm(3,0,3), 66);
+    AssertAlmostEqual(&test, plm_dPlm(3,1,3), 197.282791951046759307835);
+    AssertAlmostEqual(&test, plm_dPlm(3,2,3), -390);
+
+    AssertAlmostEqual(&test, plm_dPlm(5,2,3), -58170);
+    AssertAlmostEqual(&test, plm_dPlm(5,4,3), 332640);
+
+    return test_results(&test, stderr);
+}
+
 int main(int argc, char *argv[])
 {
+    test_plm();
     test_doublefact();
     test_Lambda();
     test_Xi();
