@@ -1183,24 +1183,22 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
             casimir_integrate(&cint, l1, l2, m, n*self->T);
 
             /* EE */
-            matrix_set(M, i,j, Delta_ij - al1_sign*( cint.signB_TM*expq(lnal1+cint.lnB_TM) - cint.signA_TM*expq(lnal1+cint.lnA_TM) ));
-            matrix_set(M, j,i, Delta_ij - pow(-1, l1+l2)*al2_sign*( cint.signB_TM*expq(lnal2+cint.lnB_TM) - cint.signA_TM*expq(lnal2+cint.lnA_TM) ));
+            matrix_set(M, i,j, Delta_ij -                al1_sign*( cint.signA_TE*expq(lnal1+cint.lnA_TE) + cint.signB_TM*expq(lnal1+cint.lnB_TM) ));
+            matrix_set(M, j,i, Delta_ij - pow(-1, l1+l2)*al2_sign*( cint.signA_TE*expq(lnal2+cint.lnA_TE) + cint.signB_TM*expq(lnal2+cint.lnB_TM) ));
 
             /* MM */
-            matrix_set(M, i+dim,j+dim, Delta_ij - bl1_sign*( cint.signA_TM*expq(lnbl1+cint.lnA_TM) - cint.signB_TM*expq(lnbl1+cint.lnB_TM) ));
-            matrix_set(M, j+dim,i+dim, Delta_ij - pow(-1, l1+l2)*bl2_sign*( cint.signA_TM*expq(lnbl2+cint.lnA_TM) - cint.signB_TM*expq(lnbl2+cint.lnB_TM) ));
-
+            matrix_set(M, i+dim,j+dim, Delta_ij -                bl1_sign*( cint.signA_TM*expq(lnbl1+cint.lnA_TM) + cint.signB_TE*expq(lnbl1+cint.lnB_TE) ));
+            matrix_set(M, j+dim,i+dim, Delta_ij - pow(-1, l1+l2)*bl2_sign*( cint.signA_TM*expq(lnbl2+cint.lnA_TM) + cint.signB_TE*expq(lnbl2+cint.lnB_TE) ));
 
             if(m != 0)
             {
                 /* M_EM */
-                matrix_set(M, dim+i,j, -al1_sign*( cint.signD_TM*expq(lnal1+cint.lnD_TM) - cint.signC_TM*expq(lnal1+cint.lnC_TM) ));
-                matrix_set(M, dim+j,i, -al2_sign*pow(-1, l1+l2+1)*( cint.signC_TM*expq(lnal2+cint.lnC_TM) - cint.signD_TM*expq(lnal2+cint.lnD_TM) ));
-
+                matrix_set(M, dim+i,j, -                  al1_sign*( cint.signC_TE*expq(lnal1+cint.lnC_TE) + cint.signD_TM*expq(lnal1+cint.lnD_TM) ));
+                matrix_set(M, dim+j,i, - pow(-1, l1+l2+1)*al2_sign*( cint.signD_TE*expq(lnal2+cint.lnD_TE) + cint.signC_TM*expq(lnal2+cint.lnC_TM) ));
 
                 /* M_ME */
-                matrix_set(M, i,dim+j, -bl1_sign*( cint.signC_TM*expq(lnbl1+cint.lnC_TM) - cint.signD_TM*expq(lnbl1+cint.lnD_TM) ));
-                matrix_set(M, j,dim+i, -bl2_sign*pow(-1, l1+l2+1)*( cint.signD_TM*expq(lnbl2+cint.lnD_TM) - cint.signC_TM*expq(lnbl2+cint.lnC_TM) ));
+                matrix_set(M, i,dim+j, -                  bl1_sign*( cint.signC_TM*expq(lnbl1+cint.lnC_TM) + cint.signD_TE*expq(lnbl1+cint.lnD_TE) ));
+                matrix_set(M, j,dim+i, - pow(-1, l1+l2+1)*bl2_sign*( cint.signD_TM*expq(lnbl2+cint.lnD_TM) + cint.signC_TE*expq(lnbl2+cint.lnC_TE) ));
             }
         }
     }
