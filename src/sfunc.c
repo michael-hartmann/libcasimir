@@ -72,7 +72,7 @@ double inline logadd_m(const double list[], size_t len)
 }
 
 
-double inline logadd_ms(const double list[], const char signs[], const size_t len, int *sign)
+double inline logadd_ms(const double list[], const int signs[], const size_t len, int *sign)
 {
     size_t i;
     double sum;
@@ -339,6 +339,7 @@ void plm_PlmPlm(int l1, int l2, int m, double x, plm_combination_t *res)
     double logx2m1 = log(pow_2(x)-1);
     double lnPl1m, lnPl2m, lndPl1m, lndPl2m;
     int sign_Pl1m, sign_Pl2m, sign_dPl1m, sign_dPl2m;
+    int common_sign = pow(-1, m%2);
 
     _lnplm_array(lmax, m, x, lnPlm, signs);
 
@@ -352,17 +353,17 @@ void plm_PlmPlm(int l1, int l2, int m, double x, plm_combination_t *res)
 
     /* Pl1m*Pl2m */
     res->lnPl1mPl2m    = lnPl1m + lnPl2m;
-    res->sign_Pl1mPl2m = pow(-1, m%2)*sign_Pl1m * sign_Pl2m;
+    res->sign_Pl1mPl2m = common_sign * sign_Pl1m * sign_Pl2m;
 
     /* Pl1m*dPl2m */
     res->lnPl1mdPl2m    = lnPl1m + lndPl2m;
-    res->sign_Pl1mdPl2m = pow(-1, m%2)*sign_Pl1m * sign_dPl2m;
+    res->sign_Pl1mdPl2m = common_sign * sign_Pl1m * sign_dPl2m;
 
     /* dPl1m*dPl2m */
     res->lndPl1mPl2m    = lndPl1m + lnPl2m;
-    res->sign_dPl1mPl2m = pow(-1, m%2)*sign_dPl1m * sign_Pl2m;
+    res->sign_dPl1mPl2m = common_sign * sign_dPl1m * sign_Pl2m;
 
     /* dPl1m*dPl2m */
     res->lndPl1mdPl2m    = lndPl1m + lndPl2m;
-    res->sign_dPl1mdPl2m = pow(-1, m%2)*sign_dPl1m * sign_dPl2m;
+    res->sign_dPl1mdPl2m = common_sign * sign_dPl1m * sign_dPl2m;
 }
