@@ -571,16 +571,43 @@ int test_doublefact()
 int test_plm()
 {
     int sign;
+    plm_combination_t comb;
     unittest_t test;
 
     unittest_init(&test, "Plm", "Test associated Legendre polynomials");
 
     /* Plm */
-    AssertAlmostEqual(&test, plm_Plm(3,2,2), +90);
-    AssertAlmostEqual(&test, plm_Plm(3,1,2), -49.36344801571300286553222073);
-    AssertAlmostEqual(&test, plm_Plm(3,2,200), +119997000);
+    AssertAlmostEqual(&test, plm_Plm(2,0,3), 13);
+    AssertAlmostEqual(&test, plm_Plm(2,1,3), -25.45584412271572);
+    AssertAlmostEqual(&test, plm_Plm(2,2,3), -24);
 
-    AssertAlmostEqual(&test, plm_Plm(30,30,10), 2.512712634569675964e70);
+    AssertAlmostEqual(&test, plm_Plm(3,0,2), 17);
+    AssertAlmostEqual(&test, plm_Plm(3,1,2), -49.36344801571300286553222073);
+    AssertAlmostEqual(&test, plm_Plm(3,2,2), -90);
+    AssertAlmostEqual(&test, plm_Plm(3,3,2), 77.94228634059947);
+
+    AssertAlmostEqual(&test, plm_Plm(3,2,200), -119997000);
+
+    AssertAlmostEqual(&test, plm_Plm(7,0,2), 2199.125);
+    AssertAlmostEqual(&test, plm_Plm(7,1,2), -15209.24639443778);
+    AssertAlmostEqual(&test, plm_Plm(7,2,2), -88026.75);
+    AssertAlmostEqual(&test, plm_Plm(7,3,2), 414721.1628325371);
+    AssertAlmostEqual(&test, plm_Plm(7,4,2), 1528065.0);
+    AssertAlmostEqual(&test, plm_Plm(7,5,2), -4132071.339203708);
+    AssertAlmostEqual(&test, plm_Plm(7,6,2), -7297290.0);
+    AssertAlmostEqual(&test, plm_Plm(7,7,2), 6319638.518782143);
+
+    AssertAlmostEqual(&test, plm_Plm(8,0,2), 7691.1484375);
+    AssertAlmostEqual(&test, plm_Plm(8,1,2), -60890.46264643482);
+    AssertAlmostEqual(&test, plm_Plm(8,2,2), -413142.1875);
+    AssertAlmostEqual(&test, plm_Plm(8,3,2), 2354110.359916711);
+    AssertAlmostEqual(&test, plm_Plm(8,4,2), 1.0957629375e7);
+    AssertAlmostEqual(&test, plm_Plm(8,5,2), -4.0024377285620242e7);
+    AssertAlmostEqual(&test, plm_Plm(8,6,2), -1.076350275e8);
+    AssertAlmostEqual(&test, plm_Plm(8,7,2), 1.8958915556346425e8);
+    AssertAlmostEqual(&test, plm_Plm(8,8,2), 1.64189025e8);
+
+    AssertAlmostEqual(&test, plm_Plm(30,30,10), -2.512712634569675964e70);
     AssertAlmostEqual(&test, plm_Plm(30,0,10), 1.022858298005579512e38);
 
     AssertAlmostEqual(&test, plm_lnPlm(300,0,100, &sign),    1586.0630493580697);
@@ -593,11 +620,51 @@ int test_plm()
 
     /* dPlm */
     AssertAlmostEqual(&test, plm_dPlm(3,0,3), 66);
-    AssertAlmostEqual(&test, plm_dPlm(3,1,3), 197.282791951046759307835);
+    AssertAlmostEqual(&test, plm_dPlm(3,1,3), -197.2827919510467);
     AssertAlmostEqual(&test, plm_dPlm(3,2,3), -390);
+    AssertAlmostEqual(&test, plm_dPlm(3,3,3), 381.8376618407357);
 
-    AssertAlmostEqual(&test, plm_dPlm(5,2,3), -58170);
-    AssertAlmostEqual(&test, plm_dPlm(5,4,3), 332640);
+
+    plm_PlmPlm(4, 3, 2, 2, &comb);
+    AssertAlmostEqual(&test, comb.lnPl1mPl2m, log(54675));
+    AssertEqual(&test, comb.sign_Pl1mPl2m, +1);
+
+    AssertAlmostEqual(&test, comb.lnPl1mdPl2m, log(100237.5));
+    AssertEqual(&test, comb.sign_Pl1mdPl2m, +1);
+
+    AssertAlmostEqual(&test, comb.lndPl1mPl2m, log(129600.0));
+    AssertEqual(&test, comb.sign_dPl1mPl2m, +1);
+
+    AssertAlmostEqual(&test, comb.lndPl1mdPl2m, log(237600.0));
+    AssertEqual(&test, comb.sign_dPl1mdPl2m, +1);
+
+
+    plm_PlmPlm(4, 3, 1, 2, &comb);
+    AssertAlmostEqual(&test, comb.lnPl1mPl2m, log(10687.5));
+    AssertEqual(&test, comb.sign_Pl1mPl2m, -1);
+
+    AssertAlmostEqual(&test, comb.lnPl1mdPl2m, log(18375.0));
+    AssertEqual(&test, comb.sign_Pl1mdPl2m, -1);
+
+    AssertAlmostEqual(&test, comb.lndPl1mPl2m, log(24438.75));
+    AssertEqual(&test, comb.sign_dPl1mPl2m, -1);
+
+    AssertAlmostEqual(&test, comb.lndPl1mdPl2m, log(42017.5));
+    AssertEqual(&test, comb.sign_dPl1mdPl2m, -1);
+
+
+    plm_PlmPlm(7, 5, 3, 2, &comb);
+    AssertAlmostEqual(&test, comb.lnPl1mPl2m, 22.09944134068912);
+    AssertEqual(&test, comb.sign_Pl1mPl2m, -1);
+
+    AssertAlmostEqual(&test, comb.lnPl1mdPl2m, 23.20753237331177);
+    AssertEqual(&test, comb.sign_Pl1mdPl2m, -1);
+
+    AssertAlmostEqual(&test, comb.lndPl1mPl2m, 23.51706034623926);
+    AssertEqual(&test, comb.sign_dPl1mPl2m, -1);
+
+    AssertAlmostEqual(&test, comb.lndPl1mdPl2m, 24.62515137886192);
+    AssertEqual(&test, comb.sign_dPl1mdPl2m, -1);
 
     return test_results(&test, stderr);
 }
@@ -605,6 +672,7 @@ int test_plm()
 int main(int argc, char *argv[])
 {
     test_plm();
+    /*
     test_doublefact();
     test_Lambda();
     test_Xi();
@@ -617,6 +685,7 @@ int main(int argc, char *argv[])
     test_logadd();
     test_logdet();
     test_casimirF();
+    */
     
     return 0;
 }
