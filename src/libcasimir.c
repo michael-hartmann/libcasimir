@@ -1180,7 +1180,7 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
                 lnbl2 -= (l2-l1)*lognTRbyScriptL;
             }
 
-            casimir_integrate(&cint, l1, l2, m, n*self->T);
+            casimir_integrate_perf(&cint, l1, l2, m, n*self->T);
 
             /* EE */
             matrix_set(M, i,j, Delta_ij -                al1_sign*( cint.signA_TE*expq(lnal1+cint.lnA_TE) + cint.signB_TM*expq(lnal1+cint.lnB_TM) ));

@@ -3,9 +3,162 @@
 #include <string.h>
 #include <assert.h>
 
+#include "utils.h"
 #include "sfunc.h"
 #include "libcasimir.h"
 #include "integration.h"
+
+double wk[] = {
+    0.168746801851113862149,
+    0.291254362006068281717,
+    0.266686102867001288550,
+    0.166002453269506840031,
+    0.748260646687923705401e-1,
+    0.249644173092832210728e-1,
+    0.620255084457223684745e-2,
+    0.114496238647690824204e-2,
+    0.155741773027811974780e-3,
+    0.154014408652249156894e-4,
+    0.108648636651798235148e-5,
+    0.533012090955671475093e-7,
+    0.175798117905058200358e-8,
+    0.372550240251232087263e-10,
+    0.476752925157819052449e-12,
+    0.337284424336243841237e-14,
+    0.115501433950039883096e-16,
+    0.153952214058234355346e-19,
+    0.528644272556915782880e-23,
+    0.165645661249902329591e-27
+};
+
+
+double xk[] = {
+    0.705398896919887533667e-1,
+    0.372126818001611443794,
+    0.916582102483273564668,
+    0.170730653102834388069e1,
+    0.274919925530943212965e1,
+    0.404892531385088692237e1,
+    0.561517497086161651410e1,
+    0.745901745367106330977e1,
+    0.959439286958109677247e1,
+    0.120388025469643163096e2,
+    0.148142934426307399785e2,
+    0.179488955205193760174e2,
+    0.214787882402850109757e2,
+    0.254517027931869055035e2,
+    0.299325546317006120067e2,
+    0.350134342404790000063e2,
+    0.408330570567285710620e2,
+    0.476199940473465021399e2,
+    0.558107957500638988908e2,
+    0.665244165256157538186e2
+};
+
+void integrands_drude(double x, integrands_drude_t *integrands, casimir_t *self, double nT, int l1, int l2, int m)
+{
+    plm_combination_t comb;
+    const double tau = 2*nT;
+    const double k = sqrt(pow_2(x)/4 + nT*x);
+    const double log_factor = log(pow_2(x)+2*tau*x);
+    double r_TE, r_TM, lnr_TE, lnr_TM;
+    double A,B,C,D;
+
+    casimir_rp(self, nT, k, &r_TE, &r_TM);
+    lnr_TE = log(r_TE);
+    lnr_TM = log(r_TM);
+
+    plm_PlmPlm(l1, l2, m, 1+x/tau, &comb);
+
+    A = comb.lnPl1mPl2m - log_factor;
+    integrands->lnA_TE = lnr_TE + A;
+    integrands->lnA_TM = lnr_TM + A;
+    integrands->sign_A = comb.sign_Pl1mPl2m;
+
+    B = comb.lndPl1mdPl2m + log_factor;
+    integrands->lnB_TE = lnr_TE + B;
+    integrands->lnB_TM = lnr_TM + B;
+    integrands->sign_B = comb.sign_dPl1mdPl2m;
+
+    C = comb.lnPl1mdPl2m;
+    integrands->lnC_TE = lnr_TE + C;
+    integrands->lnC_TM = lnr_TM + C;
+    integrands->sign_C = comb.sign_Pl1mdPl2m;
+
+    D = comb.lndPl1mPl2m;
+    integrands->lnD_TE = lnr_TE + D;
+    integrands->lnD_TM = lnr_TM + D;
+    integrands->sign_D = comb.sign_dPl1mPl2m;
+}
+
+
+void casimir_integrate_drude(casimir_t *self, casimir_integrals_t *cint, int l1, int l2, int m, double nT)
+{
+    int i;
+    const int N = sizeof(wk)/sizeof(double);
+    integrands_drude_t integrand;
+
+    double *lnA_TE = xmalloc(N*sizeof(integrands_drude_t));
+    double *lnA_TM = xmalloc(N*sizeof(integrands_drude_t));
+    int *signs_A    = xmalloc(N*sizeof(int));
+
+    double *lnB_TE = xmalloc(N*sizeof(integrands_drude_t));
+    double *lnB_TM = xmalloc(N*sizeof(integrands_drude_t));
+    int *signs_B   = xmalloc(N*sizeof(int));
+
+    double *lnC_TE = xmalloc(N*sizeof(integrands_drude_t));
+    double *lnC_TM = xmalloc(N*sizeof(integrands_drude_t));
+    int *signs_C   = xmalloc(N*sizeof(int));
+
+    double *lnD_TE = xmalloc(N*sizeof(integrands_drude_t));
+    double *lnD_TM = xmalloc(N*sizeof(integrands_drude_t));
+    int *signs_D   = xmalloc(N*sizeof(int));
+
+    for(i = 0; i < N; i++)
+    {
+        integrands_drude(xk[i], &integrand, self, nT, l1, l2, m);
+
+        lnA_TE[i]  = integrand.lnA_TE;
+        lnA_TM[i]  = integrand.lnA_TM;
+        signs_A[i] = integrand.sign_A;
+
+        lnB_TE[i]  = integrand.lnB_TE;
+        lnB_TM[i]  = integrand.lnB_TM;
+        signs_B[i] = integrand.sign_B;
+
+        lnB_TE[i]  = integrand.lnC_TE;
+        lnB_TM[i]  = integrand.lnC_TM;
+        signs_B[i] = integrand.sign_C;
+    }
+
+    cint->lnA_TE = logadd_ms(lnA_TE, signs_A, N, &cint->signA_TE);
+    cint->lnA_TM = logadd_ms(lnA_TM, signs_A, N, &cint->signA_TM);
+
+    cint->lnB_TE = logadd_ms(lnB_TE, signs_B, N, &cint->signB_TE);
+    cint->lnB_TM = logadd_ms(lnB_TM, signs_B, N, &cint->signB_TM);
+
+    cint->lnC_TE = logadd_ms(lnC_TE, signs_C, N, &cint->signC_TE);
+    cint->lnC_TM = logadd_ms(lnC_TM, signs_C, N, &cint->signC_TM);
+
+    cint->lnD_TE = logadd_ms(lnD_TE, signs_C, N, &cint->signD_TE);
+    cint->lnD_TM = logadd_ms(lnD_TM, signs_C, N, &cint->signD_TM);
+    
+    xfree(lnA_TE);
+    xfree(lnA_TM);
+    xfree(signs_A);
+
+    xfree(lnB_TE);
+    xfree(lnB_TM);
+    xfree(signs_B);
+
+    xfree(lnC_TE);
+    xfree(lnC_TM);
+    xfree(signs_C);
+
+    xfree(lnD_TE);
+    xfree(lnD_TM);
+    xfree(signs_D);
+}
 
 /*
 * Multiply the polynomials p1 and p2. The result is stored in pdest, which
@@ -116,7 +269,7 @@ void polydplm(edouble pl1[], edouble pl2[], int l1, int l2, int m, edouble xi)
 /*
 * Returns the integrals A,B,C,D for l1,l2,m,xi and p=TE,TM
 */
-void casimir_integrate(casimir_integrals_t *cint, int l1, int l2, int m, double nT)
+void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, double nT)
 {
     double lnA, lnB, lnC, lnD;
     int signA, signB, signC, signD;
