@@ -35,4 +35,10 @@ double logspace(double start, double stop, int N, int i);
 
 double ln_doublefact(int n);
 
+// #define Nlm(l,m) ( sqrt((2.0*l+1)/2. * exp(lgamma(1+l-m)-lgamma(1+l+m))) )
+double plm_lnPlm(int l, int m, double x, int *sign);
+double plm_Plm(int l, int m, double x);
+double plm_lndPlm(int l, int m, double x, int *sign);
+double plm_dPlm(int l, int m, double x);
+
 #endif
