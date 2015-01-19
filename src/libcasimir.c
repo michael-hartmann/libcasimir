@@ -10,6 +10,7 @@
 
 #include <assert.h>
 #include <math.h>
+#include <stdio.h>
 #include <pthread.h>
 #include <unistd.h>
 
@@ -35,6 +36,26 @@ const char *casimir_compile_info(void)
 {
     snprintf(CASIMIR_COMPILE_INFO, sizeof(CASIMIR_COMPILE_INFO)/sizeof(char), "Compiler %s, using %s", COMPILER, CASIMIR_ARITHMETICS);
     return CASIMIR_COMPILE_INFO;
+}
+
+void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
+{
+    if(prefix == NULL)
+        prefix = "";
+
+    fprintf(stream, "%sRbyScriptL = %g\n", prefix, self->RbyScriptL);
+    fprintf(stream, "%sT = %g\n", prefix, self->T);
+
+    fprintf(stream, "%somegap_sphere = %g\n", prefix, self->omegap_sphere);
+    fprintf(stream, "%somegap_plane  = %g\n", prefix, self->omegap_plane);
+    fprintf(stream, "%sgamma_sphere  = %g\n", prefix, self->gamma_sphere);
+    fprintf(stream, "%sgamma_plane   = %g\n", prefix, self->gamma_plane);
+
+    fprintf(stream, "%slmax = %d\n",        prefix,  self->lmax);
+    fprintf(stream, "%sverbose = %d\n",     prefix,  self->verbose);
+    fprintf(stream, "%sextrapolate = %d\n", prefix, self->extrapolate);
+    fprintf(stream, "%scores = %d\n",       prefix, self->cores);
+    fprintf(stream, "%sprecision = %g\n",   prefix, self->precision);
 }
 
 
