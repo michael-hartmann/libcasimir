@@ -292,6 +292,26 @@ int casimir_set_omegap_sphere(casimir_t *self, double omegap)
     return 0;
 }
 
+/**
+ * @brief Set \f$\omega_\mathrm{P}\f$ for the plane
+ *
+ * Set the plasma frequency for the plane.
+ *
+ * @param [in,out] self Casimir object
+ * @param [in] omegap plasma frequency
+ * @retval 1 if successful
+ * @retval 0 if omegap < 0
+ */
+int casimir_set_omegap_plane(casimir_t *self, double omegap)
+{
+    if(omegap > 0)
+    {
+        self->omegap_plane = omegap;
+        return 1;
+    }
+    return 0;
+}
+
 
 /**
  * @brief Get \f$\omega_\mathrm{P}\f$ for the sphere
@@ -304,6 +324,19 @@ int casimir_set_omegap_sphere(casimir_t *self, double omegap)
 double casimir_get_omegap_sphere(casimir_t *self)
 {
     return self->omegap_sphere;
+}
+
+/**
+ * @brief Get \f$\omega_\mathrm{P}\f$ for the plane
+ *
+ * Get the plasma frequency for the plane.
+ *
+ * @param [in,out] self Casimir object
+ * @retval plasma frequency
+ */
+double casimir_get_omegap_plane(casimir_t *self)
+{
+    return self->omegap_plane;
 }
 
 
@@ -327,6 +360,26 @@ int casimir_set_gamma_sphere(casimir_t *self, double gamma_)
     return 0;
 }
 
+/**
+ * @brief Set \f$\gamma\f$ for the plane
+ *
+ * Set the relaxation frequency for the plane.
+ *
+ * @param [in,out] self Casimir object
+ * @param [in] gamma_ relaxation frequency
+ * @retval 1 if successful
+ * @retval 0 if gamma_ < 0
+ */
+int casimir_set_gamma_plane(casimir_t *self, double gamma_)
+{
+    if(gamma_ > 0)
+    {
+        self->gamma_plane = gamma_;
+        return 1;
+    }
+    return 0;
+}
+
 
 /**
  * @brief Get \f$\gamma\f$ for the sphere
@@ -339,6 +392,19 @@ int casimir_set_gamma_sphere(casimir_t *self, double gamma_)
 double casimir_get_gamma_sphere(casimir_t *self)
 {
     return self->gamma_sphere;
+}
+
+/**
+ * @brief Get \f$\gamma\f$ for the plane
+ *
+ * Get the relaxation frequency for the plane.
+ *
+ * @param [in,out] self Casimir object
+ * @retval relaxation frequency
+ */
+double casimir_get_gamma_plane(casimir_t *self)
+{
+    return self->gamma_plane;
 }
 
 
