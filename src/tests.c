@@ -7,7 +7,21 @@
 #include "matrix.h"
 #include "unittest.h"
 
-#include "tests.h"
+
+/* prototypes */
+int test_casimirF(void);
+int test_logdet(void);
+int test_Lambda(void);
+int test_Xi(void);
+int test_integration(void);
+int test_mie(void);
+int test_besselI(void);
+int test_besselK(void);
+int test_givens(void);
+int test_logadd(void);
+int test_mie_drude(void);
+int test_doublefact(void);
+int test_plm(void);
 
 int test_casimirF()
 {
