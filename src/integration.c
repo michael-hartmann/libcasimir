@@ -8,27 +8,27 @@
 #include "libcasimir.h"
 #include "integration.h"
 
-double wk[] = {
-    0.168746801851113862149,
-    0.291254362006068281717,
-    0.266686102867001288550,
-    0.166002453269506840031,
-    0.748260646687923705401e-1,
-    0.249644173092832210728e-1,
-    0.620255084457223684745e-2,
-    0.114496238647690824204e-2,
-    0.155741773027811974780e-3,
-    0.154014408652249156894e-4,
-    0.108648636651798235148e-5,
-    0.533012090955671475093e-7,
-    0.175798117905058200358e-8,
-    0.372550240251232087263e-10,
-    0.476752925157819052449e-12,
-    0.337284424336243841237e-14,
-    0.115501433950039883096e-16,
-    0.153952214058234355346e-19,
-    0.528644272556915782880e-23,
-    0.165645661249902329591e-27
+double ln_wk[] = {
+    -1.779355901402488,                                                                                                                                                          
+    -1.233558297369509,                                                                                                                                                          
+    -1.321682956887102,                                                                                                                                                          
+    -1.795752712002829,                                                                                                                                                          
+    -2.592588996560207,                                                                                                                                                          
+    -3.690303775607052,                                                                                                                                                          
+    -5.082794644999876,                                                                                                                                                          
+    -6.772383492754023,                                                                                                                                                          
+    -8.767311223343112,
+    -11.08104949024446,
+    -13.7325615854023,
+    -16.74730682131207,
+    -20.15909974362777,
+    -24.01323430703988,
+    -28.37177801482692,
+    -33.32302001737665,
+    -38.99983382185022,
+    -45.62022978993102,
+    -53.596896664818,
+    -63.96770185369194
 };
 
 
@@ -96,7 +96,7 @@ void integrands_drude(double x, integrands_drude_t *integrands, casimir_t *self,
 void casimir_integrate_drude(casimir_t *self, casimir_integrals_t *cint, int l1, int l2, int m, double nT)
 {
     int i;
-    const int N = sizeof(wk)/sizeof(double);
+    const int N = sizeof(ln_wk)/sizeof(double);
     integrands_drude_t integrand;
     double tau = 2*nT;
     double ln_tau = log(2*nT);
@@ -122,7 +122,7 @@ void casimir_integrate_drude(casimir_t *self, casimir_integrals_t *cint, int l1,
     {
         integrands_drude(xk[i], &integrand, self, nT, l1, l2, m);
 
-        lnA_TE[i]  = log(wk[i]) + integrand.lnA_TE;
+        lnA_TE[i]  = ln_wk[i] + integrand.lnA_TE;
         lnA_TM[i]  = integrand.lnA_TM;
         signs_A[i] = integrand.sign_A;
 
