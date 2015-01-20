@@ -65,7 +65,7 @@ void integrands_drude(double x, integrands_drude_t *integrands, casimir_t *self,
     double A,B,C,D;
 
     casimir_rp(self, nT, k, &r_TE, &r_TM);
-    lnr_TE = log(r_TE);
+    lnr_TE  = log(-r_TE);
     lnr_TM = log(r_TM);
 
     plm_PlmPlm(l1, l2, m, 1+x/tau, &comb);
@@ -92,11 +92,15 @@ void integrands_drude(double x, integrands_drude_t *integrands, casimir_t *self,
 }
 
 
+/* TODO: vorfaktoren fuer B,C,D, vorzeichen */
 void casimir_integrate_drude(casimir_t *self, casimir_integrals_t *cint, int l1, int l2, int m, double nT)
 {
     int i;
     const int N = sizeof(wk)/sizeof(double);
     integrands_drude_t integrand;
+    double tau = 2*nT;
+    double ln_tau = log(2*nT);
+    double ln_Lambda = casimir_lnLambda(l1, l2, m, NULL);
 
     double *lnA_TE = xmalloc(N*sizeof(integrands_drude_t));
     double *lnA_TM = xmalloc(N*sizeof(integrands_drude_t));
@@ -118,7 +122,7 @@ void casimir_integrate_drude(casimir_t *self, casimir_integrals_t *cint, int l1,
     {
         integrands_drude(xk[i], &integrand, self, nT, l1, l2, m);
 
-        lnA_TE[i]  = integrand.lnA_TE;
+        lnA_TE[i]  = log(wk[i]) + integrand.lnA_TE;
         lnA_TM[i]  = integrand.lnA_TM;
         signs_A[i] = integrand.sign_A;
 
@@ -131,7 +135,7 @@ void casimir_integrate_drude(casimir_t *self, casimir_integrals_t *cint, int l1,
         signs_B[i] = integrand.sign_C;
     }
 
-    cint->lnA_TE = logadd_ms(lnA_TE, signs_A, N, &cint->signA_TE);
+    cint->lnA_TE = 2*log(m)+ln_tau-tau+ln_Lambda + logadd_ms(lnA_TE, signs_A, N, &cint->signA_TE);
     cint->lnA_TM = logadd_ms(lnA_TM, signs_A, N, &cint->signA_TM);
 
     cint->lnB_TE = logadd_ms(lnB_TE, signs_B, N, &cint->signB_TE);
@@ -142,6 +146,11 @@ void casimir_integrate_drude(casimir_t *self, casimir_integrals_t *cint, int l1,
 
     cint->lnD_TE = logadd_ms(lnD_TE, signs_C, N, &cint->signD_TE);
     cint->lnD_TM = logadd_ms(lnD_TM, signs_C, N, &cint->signD_TM);
+
+    cint->signA_TE *= -1;
+    cint->signB_TE *= -1;
+    cint->signC_TE *= -1;
+    cint->signD_TE *= -1;
     
     xfree(lnA_TE);
     xfree(lnA_TM);
