@@ -14,6 +14,7 @@ int test_logdet(void);
 int test_Lambda(void);
 int test_Xi(void);
 int test_integration(void);
+int test_integration_drude(void);
 int test_mie(void);
 int test_besselI(void);
 int test_besselK(void);
@@ -23,6 +24,7 @@ int test_mie_drude(void);
 int test_doublefact(void);
 int test_plm(void);
 int test_epsilon(void);
+int test_fresnel(void);
 
 int test_casimirF()
 {
@@ -561,6 +563,31 @@ int test_integration(void)
     return test_results(&test, stderr);
 }
 
+int test_integration_drude(void)
+{
+    casimir_integrals_t cint;
+    casimir_t casimir;
+    double omegap, gamma_;
+    unittest_t test;
+
+    unittest_init(&test, "Integration Drude", "Test integration for various parameters for Drude");
+
+    omegap = 1.32e2;
+    gamma_ = 6.9e-1;
+    casimir_init(&casimir, 0.5, 1);
+    casimir_set_omegap_plane(&casimir, omegap);
+    casimir_set_gamma_plane(&casimir, gamma_);
+
+    casimir_integrate_drude(&casimir, &cint, 3, 2, 1, 1);
+    AssertAlmostEqual(&test, cint.lnA_TE, log(0.53269222959728));
+    AssertEqual(&test, cint.signA_TE, +1);
+
+    casimir_free(&casimir);
+
+    return test_results(&test, stderr);
+}
+
+
 int test_doublefact()
 {
     unittest_t test;
@@ -698,6 +725,7 @@ int test_epsilon()
 
     unittest_init(&test, "Epsilon", "Test dielectric function");
 
+    /* parameters of gold */
     omegap = 1.32e16;
     gamma_ = 6.9e13;
 
@@ -749,8 +777,45 @@ int test_epsilon()
     return test_results(&test, stderr);
 }
 
+int test_fresnel()
+{
+    //const double c = 299792458;
+    double r_TE, r_TM, T;
+    double omegap, gamma_;
+    unittest_t test;
+    casimir_t casimir;
+
+    unittest_init(&test, "Fresnel", "Test Fresnel coefficients");
+
+    T = 1;
+    omegap = 1.32e2;
+    gamma_ = 6.9e-1;
+    casimir_init(&casimir, 0.5, T);
+
+    casimir_set_omegap_plane(&casimir, omegap);
+    casimir_set_gamma_plane(&casimir,  gamma_);
+
+    casimir_rp(&casimir, 1*T, 1, &r_TE, &r_TM);
+    AssertAlmostEqual(&test, r_TE, -0.97252954726278);
+    AssertAlmostEqual(&test, r_TM, +0.98616846109802);
+
+    casimir_rp(&casimir, 10*T, 1, &r_TE, &r_TM);
+    AssertAlmostEqual(&test, r_TE, -0.85446954163643);
+    AssertAlmostEqual(&test, r_TM, +0.85579839473205);
+
+    casimir_rp(&casimir, 100*T, 1, &r_TE, &r_TM);
+    AssertAlmostEqual(&test, r_TE, -0.24595396364878);
+    AssertAlmostEqual(&test, r_TM, +0.24598373253191);
+
+    casimir_free(&casimir);
+
+    return test_results(&test, stderr);
+}
+
 int main(int argc, char *argv[])
 {
+    test_fresnel();
+    test_integration_drude();
     test_plm();
     test_doublefact();
     test_Lambda();
@@ -758,7 +823,7 @@ int main(int argc, char *argv[])
     test_Xi();
     test_integration();
     test_mie();
-    //test_mie_drude();
+    test_mie_drude();
     test_besselI();
     test_besselK();
     test_givens();
