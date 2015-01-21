@@ -133,8 +133,8 @@ double casimir_lnepsilon(double xi, double omegap, double gamma_)
  *
  * This function calculates the Fresnel coefficients for TE and TM mode
  *
- * @param [in]      self    imaginary frequency (in scaled units: \f$\xi=nT\f$)
- * @param [in]      nT      n*T
+ * @param [in]      self    Casimir object
+ * @param [in]      nT      imaginary frequency (in scaled units: \f$\xi=nT\f$)
  * @param [in]      k       xy projection of wavevector
  * @param [in,out]  r_TE    Fresnel coefficient for TE mode
  * @param [in,out]  r_TM    Fresnel coefficient for TM mode
