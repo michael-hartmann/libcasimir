@@ -581,6 +581,32 @@ int test_integration_drude(void)
     casimir_integrate_drude(&casimir, &cint, 3, 2, 1, 1);
     AssertAlmostEqual(&test, cint.lnA_TE, log(0.53269222959728));
     AssertEqual(&test, cint.signA_TE, +1);
+    AssertAlmostEqual(&test, cint.lnA_TM, log(0.5510694979916562));
+    AssertEqual(&test, cint.signA_TM, -1);
+
+    casimir_integrate_drude(&casimir, &cint, 3, 2, 1, 2);
+    AssertAlmostEqual(&test, cint.lnA_TE, log(0.015828879756198698));
+    AssertEqual(&test, cint.signA_TE, +1);
+    AssertAlmostEqual(&test, cint.lnA_TM, log(0.016247851847136206));
+    AssertEqual(&test, cint.signA_TM, -1);
+
+    casimir_integrate_drude(&casimir, &cint, 4, 2, 1, 2);
+    AssertAlmostEqual(&test, cint.lnA_TE, log(0.032030896511425815));
+    AssertEqual(&test, cint.signA_TE, +1);
+    AssertAlmostEqual(&test, cint.lnA_TM, log(0.03311076868627375));
+    AssertEqual(&test, cint.signA_TM, -1);
+
+    casimir_integrate_drude(&casimir, &cint, 4, 3, 1, 2);
+    AssertAlmostEqual(&test, cint.lnA_TE, log(0.0697643219363607));
+    AssertEqual(&test, cint.signA_TE, -1);
+    AssertAlmostEqual(&test, cint.lnA_TM, log(0.07267733559731207));
+    AssertEqual(&test, cint.signA_TM, +1);
+
+    casimir_integrate_drude(&casimir, &cint, 5, 5, 5, 2);
+    AssertAlmostEqual(&test, cint.lnA_TE, log(0.1179367492954723));
+    AssertEqual(&test, cint.signA_TE, -1);
+    AssertAlmostEqual(&test, cint.lnA_TM, log(0.12778521151644803));
+    AssertEqual(&test, cint.signA_TM, +1);
 
     casimir_free(&casimir);
 
