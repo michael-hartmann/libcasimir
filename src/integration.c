@@ -164,7 +164,7 @@ void casimir_integrate_drude(casimir_t *self, casimir_integrals_t *cint, int l1,
 
 
     /* B */
-    prefactor = -tau-3*ln_tau; /* exp(-tau)/tau³ */
+    prefactor = ln_Lambda -tau-3*ln_tau; /* exp(-tau)/tau³ */
     cint->lnB_TE = prefactor + logadd_ms(lnB_TE, signs_B, N, &cint->signB_TE);
     cint->lnB_TM = prefactor + logadd_ms(lnB_TM, signs_B, N, &cint->signB_TM);
 
@@ -177,7 +177,7 @@ void casimir_integrate_drude(casimir_t *self, casimir_integrals_t *cint, int l1,
         const double log_m = log(m);
 
         /* A */
-        prefactor = 2*log_m+ln_tau-tau+ln_Lambda; /* m²*tau*exp(-tau) */
+        prefactor = ln_Lambda + 2*log_m+ln_tau-tau; /* m²*tau*exp(-tau) */
         cint->lnA_TE = prefactor + logadd_ms(lnA_TE, signs_A, N, &cint->signA_TE);
         cint->lnA_TM = prefactor + logadd_ms(lnA_TM, signs_A, N, &cint->signA_TM);
 
@@ -188,12 +188,12 @@ void casimir_integrate_drude(casimir_t *self, casimir_integrals_t *cint, int l1,
 
 
         /* C */
-        prefactor = log_m-tau-ln_tau; /* m*exp(-tau)/tau */
+        prefactor = ln_Lambda + log_m-tau-ln_tau; /* m*exp(-tau)/tau */
         cint->lnC_TE = prefactor + logadd_ms(lnC_TE, signs_C, N, &cint->signC_TE);
         cint->lnC_TM = prefactor + logadd_ms(lnC_TM, signs_C, N, &cint->signC_TM);
 
-        cint->signC_TM = -pow(-1, l2+m+1) * cint->signC_TM;
-        cint->signC_TE = +pow(-1, l2+m+1) * cint->signC_TE;
+        cint->signC_TM = -pow(-1, l2+m) * cint->signC_TM;
+        cint->signC_TE = +pow(-1, l2+m) * cint->signC_TE;
 
 
         /* D */
@@ -201,8 +201,9 @@ void casimir_integrate_drude(casimir_t *self, casimir_integrals_t *cint, int l1,
         cint->lnD_TE = prefactor + logadd_ms(lnD_TE, signs_D, N, &cint->signD_TE);
         cint->lnD_TM = prefactor + logadd_ms(lnD_TM, signs_D, N, &cint->signD_TM);
 
-        cint->signD_TM = -pow(-1, l2+m) * cint->signD_TM;
-        cint->signD_TE = +pow(-1, l2+m) * cint->signD_TE;
+        /* TODO: check if sign is correckt. */
+        cint->signD_TM = -pow(-1, l2+m+1) * cint->signD_TM;
+        cint->signD_TE = +pow(-1, l2+m+1) * cint->signD_TE;
     }
     else
     {
