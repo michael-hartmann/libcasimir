@@ -43,6 +43,14 @@ Mandatory options:\n\
         Temperature in scaled units. You may use the same syntax as for -Q.\n\
 \n\
 Further options:\n\
+    -g, --gamma\n\
+        Set value of relaxation frequency gamma of Drude metals. If omitted,\n\
+        gamma = 0.\n\
+\n\
+    -w, --omegap\n\
+        Set value of Plasma frequency omega_p of Drude metals. If ommited,\n\
+        omegap = INFINITY.\n\
+\n\
     -l, --lscale\n\
         Specify parameter lscale. The vector space has to be truncated for\n\
         some value lmax. This program will use lmax=(R/L*lscale) (default: %d)\n\
@@ -132,6 +140,7 @@ void parse_range(const char param, const char *_optarg, double list[])
 
 int main(int argc, char *argv[])
 {
+    double gamma_ = -1, omegap = -1;
     double precision = DEFAULT_PRECISION;
     double lfac      = DEFAULT_LFAC;
     double lT[4]     = { 0,0,0,SCALE_LIN }; /* start, stop, N, lin/log */
@@ -156,13 +165,15 @@ int main(int argc, char *argv[])
           { "lscale",      required_argument, 0, 'l' },
           { "cores",       required_argument, 0, 'c' },
           { "precision",   required_argument, 0, 'p' },
+          { "gamma",       required_argument, 0, 'g' },
+          { "omegap",      required_argument, 0, 'w' },
           { 0, 0, 0, 0 }
         };
 
         /* getopt_long stores the option index here. */
         int option_index = 0;
       
-        c = getopt_long (argc, argv, "x:T:c:s:a:l:L:p:Xvqh", long_options, &option_index);
+        c = getopt_long (argc, argv, "x:T:c:s:a:l:L:p:g:w:Xvqh", long_options, &option_index);
       
         /* Detect the end of the options. */
         if (c == -1)
@@ -171,7 +182,7 @@ int main(int argc, char *argv[])
         switch (c)
         {
             case 0:
-                /* If this option set a flag, do nothing else now. */
+                /* If this option sets a flag, do nothing else now. */
                 if (long_options[option_index].flag != 0)
                     break;
             case 'x':
@@ -194,9 +205,35 @@ int main(int argc, char *argv[])
                 break;
             case 'l':
                 lfac = atof(optarg);
+                if(lfac <= 0)
+                {
+                    fprintf(stderr, "-l must be positive\n");
+                    exit(1);
+                }
                 break;
             case 'p':
                 precision = atof(optarg);
+                if(precision <= 0)
+                {
+                    fprintf(stderr, "--precision must be positive\n");
+                    exit(1);
+                }
+                break;
+            case 'g':
+                gamma_ = atof(optarg);
+                if(gamma_ <= 0)
+                {
+                    fprintf(stderr, "--gamma must be positive\n");
+                    exit(1);
+                }
+                break;
+            case 'w':
+                omegap = atof(optarg);
+                if(omegap <= 0)
+                {
+                    fprintf(stderr, "--omegap must be positive\n");
+                    exit(1);
+                }
                 break;
             case 'h':
                 usage(stdout);
@@ -256,6 +293,11 @@ int main(int argc, char *argv[])
             printf(", %s", argv[i]);
         printf("\n");
 
+        if(gamma_ > 0)
+            printf("# gamma =%g\n", gamma_);
+        if(omegap > 0)
+            printf("# omegap=%g\n", omegap);
+
         printf("# precision=%g\n", precision);
         if(lmax > 0)
             printf("# lmax=%d\n", lmax);
@@ -274,6 +316,8 @@ int main(int argc, char *argv[])
 
         printf("#\n");
         printf("# LbyR, T, F, lmax, nmax, time\n");
+        printf("#\n");
+        printf("#\n");
     }
 
     i = 0;
@@ -302,10 +346,23 @@ int main(int argc, char *argv[])
             casimir_set_verbose(&casimir, verbose_flag);
             casimir_set_extrapolate(&casimir, extrapolate_flag);
 
+            if(gamma_ > 0)
+            {
+                casimir_set_gamma_sphere(&casimir, gamma_);
+                casimir_set_gamma_plane (&casimir, gamma_);
+            }
+            if(omegap > 0)
+            {
+                casimir_set_omegap_sphere(&casimir, omegap);
+                casimir_set_omegap_plane (&casimir, omegap);
+            }
+
             if(lmax > 0)
                 casimir_set_lmax(&casimir, lmax);
             else
                 casimir_set_lmax(&casimir, MAX((int)ceil(lfac/LbyR), DEFAULT_LFAC));
+
+            casimir_info(&casimir, stdout, "# ");
 
             F = casimir_F(&casimir, &nmax);
             casimir_free(&casimir);
