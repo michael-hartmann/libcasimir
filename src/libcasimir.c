@@ -46,10 +46,11 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
     fprintf(stream, "%sRbyScriptL = %g\n", prefix, self->RbyScriptL);
     fprintf(stream, "%sT = %g\n", prefix, self->T);
 
-    fprintf(stream, "%somegap_sphere = %g\n", prefix, self->omegap_sphere);
-    fprintf(stream, "%somegap_plane  = %g\n", prefix, self->omegap_plane);
-    fprintf(stream, "%sgamma_sphere  = %g\n", prefix, self->gamma_sphere);
-    fprintf(stream, "%sgamma_plane   = %g\n", prefix, self->gamma_plane);
+    fprintf(stream, "%somegap_sphere   = %g\n", prefix, self->omegap_sphere);
+    fprintf(stream, "%somegap_plane    = %g\n", prefix, self->omegap_plane);
+    fprintf(stream, "%sgamma_sphere    = %g\n", prefix, self->gamma_sphere);
+    fprintf(stream, "%sgamma_plane     = %g\n", prefix, self->gamma_plane);
+    fprintf(stream, "%sperfect_mirrors = %s\n", prefix, self->int_perf ? "true" : "false");
 
     fprintf(stream, "%slmax = %d\n",        prefix,  self->lmax);
     fprintf(stream, "%sverbose = %d\n",     prefix,  self->verbose);
@@ -284,6 +285,7 @@ int casimir_init(casimir_t *self, double RbyScriptL, double T)
     self->threads     = NULL;
     
     /* perfect reflectors */
+    self->int_perf      = 1;
     self->omegap_sphere = INFINITY;
     self->gamma_sphere  = 0;
     self->omegap_plane  = INFINITY;
@@ -308,6 +310,7 @@ int casimir_set_omegap_sphere(casimir_t *self, double omegap)
     if(omegap > 0)
     {
         self->omegap_sphere = omegap;
+        self->int_perf = 0;
         return 1;
     }
     return 0;
@@ -328,6 +331,7 @@ int casimir_set_omegap_plane(casimir_t *self, double omegap)
     if(omegap > 0)
     {
         self->omegap_plane = omegap;
+        self->int_perf = 0;
         return 1;
     }
     return 0;
@@ -376,6 +380,7 @@ int casimir_set_gamma_sphere(casimir_t *self, double gamma_)
     if(gamma_ > 0)
     {
         self->gamma_sphere = gamma_;
+        self->int_perf = 0;
         return 1;
     }
     return 0;
@@ -396,6 +401,7 @@ int casimir_set_gamma_plane(casimir_t *self, double gamma_)
     if(gamma_ > 0)
     {
         self->gamma_plane = gamma_;
+        self->int_perf = 0;
         return 1;
     }
     return 0;
@@ -1267,7 +1273,10 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
                 lnbl2 -= (l2-l1)*lognTRbyScriptL;
             }
 
-            casimir_integrate_perf(&cint, l1, l2, m, n*self->T);
+            if(self->int_perf)
+                casimir_integrate_perf(&cint, l1, l2, m, n*self->T);
+            else
+                casimir_integrate_drude(self, &cint, l1, l2, m, n*self->T);
 
             /* EE */
             matrix_set(M, i,j, Delta_ij -                al1_sign*( cint.signA_TE*expq(lnal1+cint.lnA_TE) + cint.signB_TM*expq(lnal1+cint.lnB_TM) ));

@@ -42,6 +42,7 @@ typedef struct
      * @name accuracy and numerical parameters
      */
      /*@{*/
+    int int_perf;        /**< indicate if integration for perfect mirrors should be used */
     int lmax;            /**< truncation value for vector space \f$\ell_\mathrm{max}\f$ */
     int verbose;         /**< flag that indicates to be verbose */
     int extrapolate;     /**< flag that indicates to use extrapolation */
