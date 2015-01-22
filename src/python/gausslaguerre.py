@@ -1,25 +1,45 @@
 #!/usr/bin/python
 
 from __future__ import division
-import numpy as np
-from math import sqrt,log
-from mpmath import laguerre
+from math import sqrt
+import mpmath as mp
+#from mpmath import laguerre,log,findroot
 from scipy.optimize import brentq
 from sys import stderr
 
+mp.mp.dps = 30
+
+def bisect(f, a,b, tol=1e-18):
+    while True:
+        diff = b-a
+
+        if abs(diff) < tol:
+            return (a+b)/2
+
+        ab = (a+b)/2
+        prod = f(a)*f(ab)
+        if prod < 0:
+            a,b = a,ab
+        elif prod > 0:
+            a,b = ab,b
+        else:
+            return ab
+
+
 def nodes(n):
     left  = 0
-    right = n+(n-1)*sqrt(n)
+    right = n+(n-1)*sqrt(n)*1.01
 
     i = 2
     factor = 2
 
     while True:
-        l = [ (x,laguerre(n,0,x)) for x in np.linspace(left,right,n*factor**i)]
+        l = [ (x,mp.laguerre(n,0,x)) for x in mp.linspace(left,right,n*factor**i)]
 
         intervals = []
         for j in range(len(l)-1):
-            if l[j][1]*l[j+1][1] < 0:
+            prod = l[j][1]*l[j+1][1]
+            if prod < 0:
                 intervals.append([l[j][0], l[j+1][0]])
 
         if len(intervals) == n:
@@ -27,16 +47,21 @@ def nodes(n):
         i += 1
 
     roots = []
-    f = lambda x: laguerre(n,0,x)
+    f = lambda x: mp.laguerre(n,0,x)
     for ab in intervals:
         a,b = ab
-        roots.append( brentq(f, a, b) )
+        try:
+            z = mp.findroot(f, (a, b), tol=1e-18, solver='bisect')
+        except:
+            z = bisect(f, a, b, tol=1e-18)
+        #z = brentq(f, a, b)
+        roots.append( z )
 
     return roots
 
 
 def wk(n, x):
-    return x/((n+1)*laguerre(n+1,0,x))**2
+    return x/((n+1)*mp.laguerre(n+1,0,x))**2
 
 
 orders = (10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 125, 150)
@@ -65,8 +90,8 @@ for order in orders:
     s_wk = "double ln_wk%d[] = {\n" % order
     xk = nodes(order)
     for x in xk:
-        s_xk += "    %.17e,\n" % x
-        s_wk += "    %.17e,\n" % log(wk(order,x))
+        s_xk += "    %.18e,\n" % x
+        s_wk += "    %.18e,\n" % mp.log(wk(order,x))
 
     s_xk = s_xk[:-2] + "\n};"
     s_wk = s_wk[:-2] + "\n};"
