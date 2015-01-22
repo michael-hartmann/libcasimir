@@ -7,55 +7,7 @@
 #include "sfunc.h"
 #include "libcasimir.h"
 #include "integration.h"
-
-/* weights for Gauss-Legendre integration order 25 */
-double ln_wk[] = {
-    -1.779355901402488,
-    -1.233558297369509,
-    -1.321682956887102,
-    -1.795752712002829,
-    -2.592588996560207,
-    -3.690303775607052,
-    -5.082794644999876,
-    -6.772383492754023,
-    -8.767311223343112,
-    -11.08104949024446,
-    -13.7325615854023,
-    -16.74730682131207,
-    -20.15909974362777,
-    -24.01323430703988,
-    -28.37177801482692,
-    -33.32302001737665,
-    -38.99983382185022,
-    -45.62022978993102,
-    -53.596896664818,
-    -63.96770185369194
-};
-
-
-/* nodes for Gauss-Legendre integration order 25 */
-double xk[] = {
-    0.705398896919887533667e-1,
-    0.372126818001611443794,
-    0.916582102483273564668,
-    0.170730653102834388069e1,
-    0.274919925530943212965e1,
-    0.404892531385088692237e1,
-    0.561517497086161651410e1,
-    0.745901745367106330977e1,
-    0.959439286958109677247e1,
-    0.120388025469643163096e2,
-    0.148142934426307399785e2,
-    0.179488955205193760174e2,
-    0.214787882402850109757e2,
-    0.254517027931869055035e2,
-    0.299325546317006120067e2,
-    0.350134342404790000063e2,
-    0.408330570567285710620e2,
-    0.476199940473465021399e2,
-    0.558107957500638988908e2,
-    0.665244165256157538186e2
-};
+#include "gausslaguerre.h"
 
 void integrands_drude(double x, integrands_drude_t *integrands, casimir_t *self, double nT, int l1, int l2, int m)
 {
@@ -113,7 +65,6 @@ void integrands_drude(double x, integrands_drude_t *integrands, casimir_t *self,
 void casimir_integrate_drude(casimir_t *self, casimir_integrals_t *cint, int l1, int l2, int m, double nT)
 {
     int i;
-    const int N = sizeof(ln_wk)/sizeof(double);
     integrands_drude_t integrand;
     const double tau = 2*nT;
     const double ln_tau = log(2*nT);
@@ -121,6 +72,8 @@ void casimir_integrate_drude(casimir_t *self, casimir_integrals_t *cint, int l1,
     double prefactor;
     double *ln_ABCD, *lnA_TE, *lnA_TM, *lnB_TE, *lnB_TM, *lnC_TE, *lnC_TM, *lnD_TE, *lnD_TM;
     int *signs_ABCD, *signs_A, *signs_B, *signs_C, *signs_D;
+    double *xk, *ln_wk;
+    const int N = gausslaguerre_nodes_weights(self->integration, &xk, &ln_wk);
 
     /* allocate space for signs_A, signs_B, signs_C, signs_D */
     signs_ABCD = xmalloc(4*N*sizeof(int));
@@ -140,6 +93,7 @@ void casimir_integrate_drude(casimir_t *self, casimir_integrals_t *cint, int l1,
     lnC_TM  = ln_ABCD + 5*N;
     lnD_TE  = ln_ABCD + 6*N;
     lnD_TM  = ln_ABCD + 7*N;
+
 
     for(i = 0; i < N; i++)
     {

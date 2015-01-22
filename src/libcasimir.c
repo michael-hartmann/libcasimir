@@ -50,7 +50,11 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
     fprintf(stream, "%somegap_plane    = %g\n", prefix, self->omegap_plane);
     fprintf(stream, "%sgamma_sphere    = %g\n", prefix, self->gamma_sphere);
     fprintf(stream, "%sgamma_plane     = %g\n", prefix, self->gamma_plane);
-    fprintf(stream, "%sperfect_mirrors = %s\n", prefix, self->int_perf ? "true" : "false");
+    fprintf(stream, "%sintegration     = ", prefix);
+    if(self->integration <= 0)
+        fprintf(stream, "analytic (perfect mirrors)\n");
+    else
+        fprintf(stream, "%d\n", self->integration);
 
     fprintf(stream, "%slmax = %d\n",        prefix,  self->lmax);
     fprintf(stream, "%sverbose = %d\n",     prefix,  self->verbose);
@@ -285,13 +289,44 @@ int casimir_init(casimir_t *self, double RbyScriptL, double T)
     self->threads     = NULL;
     
     /* perfect reflectors */
-    self->int_perf      = 1;
+    self->integration = -1; /* perfect reflectors */
     self->omegap_sphere = INFINITY;
     self->gamma_sphere  = 0;
     self->omegap_plane  = INFINITY;
     self->gamma_plane   = 0;
 
     return 1;
+}
+
+
+/**
+ * @brief Set order of integration
+ *
+ * Set order/type of integration.
+ *
+ * @param [in,out] self Casimir object
+ * @param [in] integration: 0 perfect reflectors, >0: order of Gauss-Laguerre integration
+ */
+void casimir_set_integration(casimir_t *self, int integration)
+{
+    if(integration <= 0)
+        self->integration = 0;
+    else
+        self->integration = integration;
+}
+
+/**
+ * @brief Get order of integration
+ *
+ * Get order/type of integration.
+ *
+ * @param [in,out] self Casimir object
+ * @retval 0 if analytic integration for perfect reflectors
+ * @retval order of integration for Gauss-Laguerre
+ */
+int casimir_get_integration(casimir_t *self)
+{
+    return self->integration;
 }
 
 
@@ -310,7 +345,7 @@ int casimir_set_omegap_sphere(casimir_t *self, double omegap)
     if(omegap > 0)
     {
         self->omegap_sphere = omegap;
-        self->int_perf = 0;
+        self->integration   = 50;
         return 1;
     }
     return 0;
@@ -331,7 +366,7 @@ int casimir_set_omegap_plane(casimir_t *self, double omegap)
     if(omegap > 0)
     {
         self->omegap_plane = omegap;
-        self->int_perf = 0;
+        self->integration  = 50;
         return 1;
     }
     return 0;
@@ -380,7 +415,7 @@ int casimir_set_gamma_sphere(casimir_t *self, double gamma_)
     if(gamma_ > 0)
     {
         self->gamma_sphere = gamma_;
-        self->int_perf = 0;
+        self->integration = 50;
         return 1;
     }
     return 0;
@@ -401,7 +436,7 @@ int casimir_set_gamma_plane(casimir_t *self, double gamma_)
     if(gamma_ > 0)
     {
         self->gamma_plane = gamma_;
-        self->int_perf = 0;
+        self->integration = 50;
         return 1;
     }
     return 0;
@@ -1273,10 +1308,10 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
                 lnbl2 -= (l2-l1)*lognTRbyScriptL;
             }
 
-            if(self->int_perf)
-                casimir_integrate_perf(&cint, l1, l2, m, n*self->T);
-            else
+            if(self->integration > 0)
                 casimir_integrate_drude(self, &cint, l1, l2, m, n*self->T);
+            else
+                casimir_integrate_perf(&cint, l1, l2, m, n*self->T);
 
             /* EE */
             matrix_set(M, i,j, Delta_ij -                al1_sign*( cint.signA_TE*expq(lnal1+cint.lnA_TE) + cint.signB_TM*expq(lnal1+cint.lnB_TM) ));
