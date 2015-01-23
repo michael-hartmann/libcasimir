@@ -35,19 +35,17 @@ typedef struct {
 
 double inline logadd(const double a, const double b);
 double inline logadd_m(const double list[], size_t len);
-double inline logadd_s(const double a, const int sign_a, const double b, const int sign_b, int *sign);
-double inline logadd_sq(const edouble a, const int sign_a, const edouble b, const int sign_b, int *sign);
+edouble inline logadd_s(const edouble a, const int sign_a, const edouble b, const int sign_b, int *sign);
+
 double inline logadd_ms(const double list[], const int signs[], const size_t len, int *sign);
 edouble inline logadd_msq(const edouble list[], const int signs[], const size_t len, int *sign);
 
 double inline lbinom(int n, int k);
 double inline binom(int n, int k);
 
-double bessel_lnInu(const int n, const double x);
-double bessel_lnKnu(const int n, const double x);
-void bessel_lnInuKnu(const int nu, const double x, double *lnInu, double *lnKnu);
-
-int round2up(int x);
+edouble bessel_lnInu(const int n, const edouble x);
+edouble bessel_lnKnu(const int n, const edouble x);
+void bessel_lnInuKnu(int nu, const edouble x, edouble *lnInu_p, edouble *lnKnu_p);
 
 double linspace(double start, double stop, int N, int i);
 double logspace(double start, double stop, int N, int i);
