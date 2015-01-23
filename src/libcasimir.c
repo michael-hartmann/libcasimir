@@ -8,7 +8,6 @@
 
 #define _GNU_SOURCE
 
-#include <assert.h>
 #include <math.h>
 #include <stdio.h>
 #include <pthread.h>
@@ -88,7 +87,7 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
  * @param [out] sign
  * @retval log(Lambda(l1,l2,m))
  */
-double inline casimir_lnLambda(int l1, int l2, int m, int *sign)
+edouble inline casimir_lnLambda(int l1, int l2, int m, int *sign)
 {
     if(sign != NULL)
         *sign = -1;
@@ -109,7 +108,7 @@ double inline casimir_lnLambda(int l1, int l2, int m, int *sign)
  * @param [in]  gamma_ relaxation frequency
  * @retval epsilon(xi, omegap, gamma_)
  */
-double casimir_epsilon(double xi, double omegap, double gamma_)
+edouble casimir_epsilon(double xi, double omegap, double gamma_)
 {
     return 1+ omegap*omegap/(xi*(xi+gamma_));
 }
@@ -128,9 +127,9 @@ double casimir_epsilon(double xi, double omegap, double gamma_)
  * @param [in]  gamma_ relaxation frequency
  * @retval log(epsilon(xi, omegap, gamma_))
  */
-double casimir_lnepsilon(double xi, double omegap, double gamma_)
+edouble casimir_lnepsilon(double xi, double omegap, double gamma_)
 {
-    return log1p(omegap*omegap/(xi*(xi+gamma_)));
+    return log1pq(omegap*omegap/(xi*(xi+gamma_)));
 }
 
 
@@ -145,10 +144,10 @@ double casimir_lnepsilon(double xi, double omegap, double gamma_)
  * @param [in,out]  r_TE    Fresnel coefficient for TE mode
  * @param [in,out]  r_TM    Fresnel coefficient for TM mode
  */
-void casimir_rp(casimir_t *self, double nT, double k, double *r_TE, double *r_TM)
+void casimir_rp(casimir_t *self, edouble nT, edouble k, edouble *r_TE, edouble *r_TM)
 {
-    double epsilon = casimir_epsilon(nT, self->omegap_plane, self->gamma_plane);
-    double beta = sqrt(1 + (epsilon-1)/(1 + pow_2(k/nT)));
+    edouble epsilon = casimir_epsilon(nT, self->omegap_plane, self->gamma_plane);
+    edouble beta = sqrtq(1 + (epsilon-1)/(1 + pow_2(k/nT)));
 
     *r_TE = (1-beta)/(1+beta);
     *r_TM = (epsilon-beta)/(epsilon+beta);
@@ -251,11 +250,11 @@ double casimir_T_scaled_to_SI(double T, double ScriptL)
  * @param [out] sign
  * @retval log(Xi(l1,l2,m))
  */
-double casimir_lnXi(int l1, int l2, int m, int *sign)
+edouble casimir_lnXi(int l1, int l2, int m, int *sign)
 {
     if(sign != NULL)
         *sign = pow(-1, l2);
-    return (log(2*l1+1)+log(2*l2+1)-lnfac(l1-m)-lnfac(l2-m)-lnfac(l1+m)-lnfac(l2+m)-log(l1)-log(l1+1)-log(l2)-log(l2+1))/2.0 \
+    return (logq(2*l1+1)+logq(2*l2+1)-lnfac(l1-m)-lnfac(l2-m)-lnfac(l1+m)-lnfac(l2+m)-logq(l1)-logq(l1+1)-logq(l2)-logq(l2+1))/2.0L \
            +lnfac(2*l1)+lnfac(2*l2)+lnfac(l1+l2)-LOG4*(2*l1+l2+1)-lnfac(l1-1)-lnfac(l2-1);
 }
 
@@ -760,9 +759,6 @@ double casimir_lna_perf(casimir_t *self, const int l, const int n, int *sign)
 
     ret = prefactor+nominator-denominator;
 
-    assert(!isnan(ret));
-    assert(!isinf(ret));
-
     return ret;
 }
 
@@ -783,17 +779,12 @@ double casimir_lna_perf(casimir_t *self, const int l, const int n, int *sign)
 double casimir_lnb_perf(casimir_t *self, const int l, const int n, int *sign)
 {
     edouble chi = n*self->T*self->RbyScriptL;
-    edouble lnInu, lnKnu, ret;
+    edouble lnInu, lnKnu;
 
     bessel_lnInuKnu(l, chi, &lnInu, &lnKnu);
     *sign = pow(-1, l+1);
 
-    ret = LOGPI-LOG2+lnInu-lnKnu;
-
-    assert(!isnan(ret));
-    assert(!isinf(ret));
-
-    return ret;
+    return LOGPI-LOG2+lnInu-lnKnu;
 }
 
 
@@ -867,11 +858,6 @@ void casimir_lnab(casimir_t *self, const int n_mat, const int l, double *lna, do
 
     *sign_a = sign_a_num*sign_a_denom;
     *sign_b = sign_b_num*sign_b_denom;
-
-    assert(!isnan(*lna));
-    assert(!isinf(*lna));
-    assert(!isnan(*lnb));
-    assert(!isinf(*lnb));
 }
 
 
@@ -1364,7 +1350,6 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
 
     matrix_edouble_free(M);
 
-    assert(!isinf(logdet));
     return logdet;
 }
 

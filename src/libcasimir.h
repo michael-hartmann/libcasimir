@@ -106,18 +106,16 @@ typedef struct
 /* prototypes */
 void casimir_info(casimir_t *self, FILE *stream, const char *prefix);
 
-double casimir_epsilon(double xi, double omegap, double gamma_);
-double casimir_lnepsilon(double xi, double omegap, double gamma_);
+edouble casimir_epsilon(double xi, double omegap, double gamma_);
+edouble casimir_lnepsilon(double xi, double omegap, double gamma_);
 
-double casimir_lnLambda(int l1, int l2, int m, int *sign);
-double casimir_lnXi(int l1, int l2, int m, int *sign);
+edouble casimir_lnLambda(int l1, int l2, int m, int *sign);
+edouble casimir_lnXi(int l1, int l2, int m, int *sign);
 
 double casimir_F_SI_to_scaled(double F_SI, double ScriptL_SI);
 double casimir_F_scaled_to_SI(double F, double ScriptL_SI);
 double casimir_T_SI_to_scaled(double T_SI, double ScriptL_SI);
 double casimir_T_scaled_to_SI(double T, double ScriptL_SI);
-
-void casimir_lnab0(int l, double *a0, int *sign_a0, double *b0, int *sign_b0);
 
 int casimir_init(casimir_t *self, double RbyScriptL, double T);
 void casimir_free(casimir_t *self);
@@ -152,6 +150,7 @@ int casimir_set_verbose(casimir_t *self, int verbose);
 int casimir_get_extrapolate(casimir_t *self);
 int casimir_set_extrapolate(casimir_t *self, int extrapolate);
 
+void casimir_lnab0(int l, double *a0, int *sign_a0, double *b0, int *sign_b0);
 void casimir_lnab(casimir_t *self, const int n, const int l, double *lna, double *lnb, int *sign_a, int *sign_b);
 double casimir_lna_perf(casimir_t *self, const int l, const int n, int *sign);
 double casimir_lnb_perf(casimir_t *self, const int l, const int n, int *sign);
@@ -166,6 +165,6 @@ void casimir_mie_cache_free(casimir_mie_cache_t *cache);
 double casimir_logdetD0(casimir_t *self, int m, double *EE, double *MM);
 double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache);
 
-void casimir_rp(casimir_t *self, double nT, double k, double *r_TE, double *r_TM);
+void casimir_rp(casimir_t *self, edouble nT, edouble k, edouble *r_TE, edouble *r_TM);
 
 #endif

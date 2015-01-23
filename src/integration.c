@@ -16,7 +16,7 @@ void integrands_drude(edouble x, integrands_drude_t *integrands, casimir_t *self
     const edouble tau = 2*nT;
     const edouble k = sqrtq(pow_2(x)/4 + nT*x);
     const edouble log_factor = logq(pow_2(x)+2*tau*x);
-    double r_TE, r_TM;
+    edouble r_TE, r_TM;
     edouble lnr_TE, lnr_TM;
     edouble A,B,C,D;
 
@@ -27,23 +27,23 @@ void integrands_drude(edouble x, integrands_drude_t *integrands, casimir_t *self
     plm_PlmPlm(l1, l2, m, 1+x/tau, &comb);
 
     A = comb.lnPl1mPl2m - log_factor;
-    integrands->lnA_TE = (edouble)lnr_TE + A;
-    integrands->lnA_TM = (edouble)lnr_TM + A;
+    integrands->lnA_TE = lnr_TE + A;
+    integrands->lnA_TM = lnr_TM + A;
     integrands->sign_A = comb.sign_Pl1mPl2m;
 
     B = comb.lndPl1mdPl2m + log_factor;
-    integrands->lnB_TE = (edouble)lnr_TE + B;
-    integrands->lnB_TM = (edouble)lnr_TM + B;
+    integrands->lnB_TE = lnr_TE + B;
+    integrands->lnB_TM = lnr_TM + B;
     integrands->sign_B = comb.sign_dPl1mdPl2m;
 
     C = comb.lnPl1mdPl2m;
-    integrands->lnC_TE = (edouble)lnr_TE + C;
-    integrands->lnC_TM = (edouble)lnr_TM + C;
+    integrands->lnC_TE = lnr_TE + C;
+    integrands->lnC_TM = lnr_TM + C;
     integrands->sign_C = comb.sign_Pl1mdPl2m;
 
     D = comb.lndPl1mPl2m;
-    integrands->lnD_TE = (edouble)lnr_TE + D;
-    integrands->lnD_TM = (edouble)lnr_TM + D;
+    integrands->lnD_TE = lnr_TE + D;
+    integrands->lnD_TM = lnr_TM + D;
     integrands->sign_D = comb.sign_dPl1mPl2m;
 }
 

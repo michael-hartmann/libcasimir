@@ -765,7 +765,7 @@ int test_epsilon()
 int test_fresnel()
 {
     //const double c = 299792458;
-    double r_TE, r_TM, T;
+    edouble r_TE, r_TM, T;
     double omegap, gamma_;
     unittest_t test;
     casimir_t casimir;
