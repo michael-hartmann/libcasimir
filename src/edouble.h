@@ -12,6 +12,7 @@
     #define fabsq     fabsl
     #define sinq      sinl
     #define cosq      cosl
+    #define gammaq    gammal
     #define copysignq copysignl
     #define isinfq(x) (x/10 == x)
     #define isnanq(x) (x != x)
@@ -36,6 +37,9 @@
     
         _Quad __expq(_Quad);
         #define expq __expq
+    
+        _Quad __gammaq(_Quad);
+        #define gammaq __gammaq
     
         _Quad __sqrtq(_Quad);
         #define sqrtq __sqrtq
