@@ -3,6 +3,8 @@
 
 #include <pthread.h>
 
+#include "edouble.h"
+
 #define HBARC 3.161526510740123e-26
 #define KB    1.3806488e-23
 
@@ -90,10 +92,10 @@ typedef struct
 
 typedef struct
 {
-    double lnA_TE, lnA_TM;
-    double lnB_TE, lnB_TM;
-    double lnC_TE, lnC_TM;
-    double lnD_TE, lnD_TM;
+    edouble lnA_TE, lnA_TM;
+    edouble lnB_TE, lnB_TM;
+    edouble lnC_TE, lnC_TM;
+    edouble lnD_TE, lnD_TM;
     int signA_TE, signA_TM;
     int signB_TE, signB_TM;
     int signC_TE, signC_TM;

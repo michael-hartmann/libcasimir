@@ -14,6 +14,7 @@
 #include <pthread.h>
 #include <unistd.h>
 
+#include "edouble.h"
 #include "integration.h"
 #include "libcasimir.h"
 #include "matrix.h"
@@ -91,7 +92,7 @@ double inline casimir_lnLambda(int l1, int l2, int m, int *sign)
 {
     if(sign != NULL)
         *sign = -1;
-    return LOG2 + (log(2.*l1+1)+log(2*l2+1)-log(4)-log(l1)-log(l1+1)-log(l2)-log(l2+1)+lnfac(l1-m)+lnfac(l2-m)-lnfac(l1+m)-lnfac(l2+m))/2.0;
+    return LOG2 + (logq(2.*l1+1)+logq(2*l2+1)-LOG4-logq(l1)-logq(l1+1)-logq(l2)-logq(l2+1)+lnfac(l1-m)+lnfac(l2-m)-lnfac(l1+m)-lnfac(l2+m))/2.0L;
 }
 
 
