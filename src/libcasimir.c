@@ -720,11 +720,11 @@ void casimir_lnab0(int l, double *a0, int *sign_a0, double *b0, int *sign_b0)
  */
 double casimir_lna_perf(casimir_t *self, const int l, const int n, int *sign)
 {
-    double nominator, denominator, frac, ret;
-    double lnKlp,lnKlm,lnIlm,lnIlp;
-    double prefactor;
-    double chi = n*self->T*self->RbyScriptL;
-    double lnfrac = log(chi)-log(l);
+    edouble nominator, denominator, frac, ret;
+    edouble lnKlp,lnKlm,lnIlm,lnIlp;
+    edouble prefactor;
+    edouble chi = n*self->T*self->RbyScriptL;
+    edouble lnfrac = log(chi)-log(l);
 
     /* we could do both calculations together. but it doesn't cost much time -
      * so why bother? 
@@ -737,24 +737,24 @@ double casimir_lna_perf(casimir_t *self, const int l, const int n, int *sign)
 
     /* numinator */
     {
-        frac = exp(lnfrac+lnIlm-lnIlp);
+        frac = expq(lnfrac+lnIlm-lnIlp);
         if(frac < 1)
-            nominator = log1p(fabs(-frac));
+            nominator = log1pq(fabsq(-frac));
         else
         {
             if(frac > 1)
                 *sign *= -1;
 
-            nominator = log(fabs(1-frac));
+            nominator = logq(fabsq(1-frac));
         }
     }
     /* denominator */
     {
-        frac = exp(lnfrac+lnKlm-lnKlp);
+        frac = expq(lnfrac+lnKlm-lnKlp);
         if(frac < 1)
-            denominator = log1p(frac);
+            denominator = log1pq(frac);
         else
-            denominator = log(1+frac);
+            denominator = log1pq(frac);
     }
 
     ret = prefactor+nominator-denominator;
@@ -781,8 +781,8 @@ double casimir_lna_perf(casimir_t *self, const int l, const int n, int *sign)
  */
 double casimir_lnb_perf(casimir_t *self, const int l, const int n, int *sign)
 {
-    double chi = n*self->T*self->RbyScriptL;
-    double lnInu, lnKnu, ret;
+    edouble chi = n*self->T*self->RbyScriptL;
+    edouble lnInu, lnKnu, ret;
 
     bessel_lnInuKnu(l, chi, &lnInu, &lnKnu);
     *sign = pow(-1, l+1);
@@ -817,13 +817,13 @@ double casimir_lnb_perf(casimir_t *self, const int l, const int n, int *sign)
 void casimir_lnab(casimir_t *self, const int n_mat, const int l, double *lna, double *lnb, int *sign_a, int *sign_b)
 { 
     int sign_sla, sign_slb, sign_slc, sign_sld;
-    double ln_n, ln_sla, ln_slb, ln_slc, ln_sld;
-    double lnIl, lnKl, lnIlm, lnKlm, lnIl_nchi, lnKl_nchi, lnIlm_nchi, lnKlm_nchi;
-    double xi = n_mat*self->T;
-    double chi = xi*self->RbyScriptL;
-    double ln_chi = log(xi)+log(self->RbyScriptL);
-    double omegap = self->omegap_sphere;
-    double gamma_ = self->gamma_sphere;
+    edouble ln_n, ln_sla, ln_slb, ln_slc, ln_sld;
+    edouble lnIl, lnKl, lnIlm, lnKlm, lnIl_nchi, lnKl_nchi, lnIlm_nchi, lnKlm_nchi;
+    edouble xi = n_mat*self->T;
+    edouble chi = xi*self->RbyScriptL;
+    edouble ln_chi = logq(xi)+logq(self->RbyScriptL);
+    edouble omegap = self->omegap_sphere;
+    edouble gamma_ = self->gamma_sphere;
     int sign_a_num, sign_a_denom, sign_b_num, sign_b_denom;
 
     if(isinf(omegap))
@@ -838,8 +838,8 @@ void casimir_lnab(casimir_t *self, const int n_mat, const int l, double *lna, do
     bessel_lnInuKnu(l,   chi, &lnIl,  &lnKl);
     bessel_lnInuKnu(l-1, chi, &lnIlm, &lnKlm);
 
-    bessel_lnInuKnu(l,   exp(ln_n)*chi, &lnIl_nchi,  &lnKl_nchi);
-    bessel_lnInuKnu(l-1, exp(ln_n)*chi, &lnIlm_nchi, &lnKlm_nchi);
+    bessel_lnInuKnu(l,   expq(ln_n)*chi, &lnIl_nchi,  &lnKl_nchi);
+    bessel_lnInuKnu(l-1, expq(ln_n)*chi, &lnIlm_nchi, &lnKlm_nchi);
 
     ln_sla = lnIl_nchi + logadd_s(lnIl,      +1, ln_chi+lnIlm,           -1, &sign_sla);
     ln_slb = lnIl      + logadd_s(lnIl_nchi, +1, ln_n+ln_chi+lnIlm_nchi, -1, &sign_slb);
