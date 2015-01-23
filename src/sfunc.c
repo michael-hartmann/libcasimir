@@ -49,26 +49,7 @@ double inline logadd_m(const double list[], size_t len)
 }
 
 
-double inline logadd_ms(const double list[], const int signs[], const size_t len, int *sign)
-{
-    size_t i;
-    double sum;
-    double max = list[0];
-
-    for(i = 1; i < len; i++)
-        if(list[i] > max)
-            max = list[i];
-
-    sum = signs[0]*exp(list[0]-max);
-    for(i = 1; i < len; i++)
-        sum += signs[i]*exp(list[i]-max);
-
-    *sign = copysign(1, sum);
-    return max + log(fabs(sum));
-}
-
-
-edouble inline logadd_msq(const edouble list[], const int signs[], const size_t len, int *sign)
+edouble inline logadd_ms(const edouble list[], const int signs[], const size_t len, int *sign)
 {
     size_t i;
     edouble sum;

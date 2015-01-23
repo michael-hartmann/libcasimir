@@ -121,8 +121,8 @@ void casimir_integrate_drude(casimir_t *self, casimir_integrals_t *cint, int l1,
 
     /* B */
     prefactor = ln_Lambda -tau-3*ln_tau; /* exp(-tau)/tau³ */
-    cint->lnB_TE = prefactor + logadd_msq(lnB_TE, signs_B, N, &cint->signB_TE);
-    cint->lnB_TM = prefactor + logadd_msq(lnB_TM, signs_B, N, &cint->signB_TM);
+    cint->lnB_TE = prefactor + logadd_ms(lnB_TE, signs_B, N, &cint->signB_TE);
+    cint->lnB_TM = prefactor + logadd_ms(lnB_TM, signs_B, N, &cint->signB_TM);
 
     cint->signB_TM = -pow(-1, l2+m+1) * cint->signB_TM;
     cint->signB_TE = +pow(-1, l2+m+1) * cint->signB_TE;
@@ -134,8 +134,8 @@ void casimir_integrate_drude(casimir_t *self, casimir_integrals_t *cint, int l1,
 
         /* A */
         prefactor = ln_Lambda + 2*log_m+ln_tau-tau; /* m²*tau*exp(-tau) */
-        cint->lnA_TE = prefactor + logadd_msq(lnA_TE, signs_A, N, &cint->signA_TE);
-        cint->lnA_TM = prefactor + logadd_msq(lnA_TM, signs_A, N, &cint->signA_TM);
+        cint->lnA_TE = prefactor + logadd_ms(lnA_TE, signs_A, N, &cint->signA_TE);
+        cint->lnA_TM = prefactor + logadd_ms(lnA_TM, signs_A, N, &cint->signA_TM);
 
         /* r_TE is negative, r_TM is positive and Lambda(l1,l2,m) is negative.
            => TM negative sign, TE positive sign */
@@ -145,8 +145,8 @@ void casimir_integrate_drude(casimir_t *self, casimir_integrals_t *cint, int l1,
 
         /* C */
         prefactor = ln_Lambda + log_m-tau-ln_tau; /* m*exp(-tau)/tau */
-        cint->lnC_TE = prefactor + logadd_msq(lnC_TE, signs_C, N, &cint->signC_TE);
-        cint->lnC_TM = prefactor + logadd_msq(lnC_TM, signs_C, N, &cint->signC_TM);
+        cint->lnC_TE = prefactor + logadd_ms(lnC_TE, signs_C, N, &cint->signC_TE);
+        cint->lnC_TM = prefactor + logadd_ms(lnC_TM, signs_C, N, &cint->signC_TM);
 
         cint->signC_TM = -pow(-1, l2+m) * cint->signC_TM;
         cint->signC_TE = +pow(-1, l2+m) * cint->signC_TE;
@@ -154,8 +154,8 @@ void casimir_integrate_drude(casimir_t *self, casimir_integrals_t *cint, int l1,
 
         /* D */
         /* prefactor is identical to C */
-        cint->lnD_TE = prefactor + logadd_msq(lnD_TE, signs_D, N, &cint->signD_TE);
-        cint->lnD_TM = prefactor + logadd_msq(lnD_TM, signs_D, N, &cint->signD_TM);
+        cint->lnD_TE = prefactor + logadd_ms(lnD_TE, signs_D, N, &cint->signD_TE);
+        cint->lnD_TM = prefactor + logadd_ms(lnD_TM, signs_D, N, &cint->signD_TM);
 
         /* TODO: check if sign is correckt. */
         cint->signD_TM = -pow(-1, l2+m+1) * cint->signD_TM;

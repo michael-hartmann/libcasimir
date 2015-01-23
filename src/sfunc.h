@@ -35,9 +35,7 @@ typedef struct {
 
 double inline logadd_m(const double list[], size_t len);
 edouble inline logadd_s(const edouble a, const int sign_a, const edouble b, const int sign_b, int *sign);
-
-double inline logadd_ms(const double list[], const int signs[], const size_t len, int *sign);
-edouble inline logadd_msq(const edouble list[], const int signs[], const size_t len, int *sign);
+edouble inline logadd_ms(const edouble list[], const int signs[], const size_t len, int *sign);
 
 double inline lbinom(int n, int k);
 double inline binom(int n, int k);
