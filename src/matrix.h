@@ -291,107 +291,6 @@ MATRIX_TYPEDEF(matrix_edouble_t, edouble);
 
 #define MATRIX_BALANCE_HEADER(FUNCTION_PREFIX, MATRIX_TYPE) void FUNCTION_PREFIX ## _balance(MATRIX_TYPE *A)
 
-#define MATRIX_LOG_BALANCE(FUNCTION_PREFIX, MATRIX_TYPE, TYPE, LOG_FUNCTION) \
-    void FUNCTION_PREFIX ## _log_balance(MATRIX_TYPE *A) \
-    { \
-        size_t i,j; \
-        const size_t N = A->size; \
-        int not_converged = 1; \
-        TYPE *D; \
-        TYPE *list_row; \
-        TYPE *list_column; \
-\
-        D           = (TYPE *)xmalloc(N*sizeof(TYPE)); \
-        list_row    = (TYPE *)xmalloc(N*sizeof(TYPE)); \
-        list_column = (TYPE *)xmalloc(N*sizeof(TYPE)); \
- \
-        /* initialize D to the identity matrix */ \
-        for(i = 0; i < N; i++) \
-            D[i] = 0; \
- \
-        while(not_converged) \
-        { \
-            size_t len = 0; \
-            TYPE g, f, s; \
-            TYPE row_norm, col_norm; \
- \
-            not_converged = 0; \
-\
-            for (i = 0; i < N; ++i) \
-            { \
-                len = 0; \
-\
-                for (j = 0; j < N; ++j) \
-                    if (j != i) \
-                    { \
-                        list_column[len] = matrix_get(A,j,i); \
-                        list_row[len]    = matrix_get(A,i,j); \
-                        len++; \
-                    } \
-\
-                row_norm = logadd_m(list_row,    len); \
-                col_norm = logadd_m(list_column, len); \
-\
-                if ((col_norm == LOG_FUNCTION(0)) || (row_norm == LOG_FUNCTION(0))) \
-                  continue; \
-\
-                g = row_norm - LOG_FLOAT_RADIX; \
-                f = 0; \
-                s = logadd(col_norm, row_norm); \
-\
-                /* \
-                 * find the integer power of the machine radix which \
-                 * comes closest to balancing the matrix \
-                 */ \
-                while (col_norm < g) \
-                { \
-                    f += LOG_FLOAT_RADIX; \
-                    col_norm += LOG_FLOAT_RADIX_SQ; \
-                } \
-\
-                g = row_norm + LOG_FLOAT_RADIX; \
-\
-                while (col_norm > g) \
-                { \
-                    f -= LOG_FLOAT_RADIX; \
-                    col_norm -= LOG_FLOAT_RADIX_SQ; \
-                } \
-\
-                if (logadd(row_norm, col_norm) < (LOG_095+s+f)) \
-                { \
-                    int k; \
-                    not_converged = 1; \
- \
-                    g = -f; \
- \
-                    /* \
-                     * apply similarity transformation D, where \
-                     * D_{ij} = f_i * delta_{ij} \
-                     */ \
- \
-                    /* multiply by D^{-1} on the left */ \
-                    for(k = 0; k < N; k++) \
-                        matrix_set(A, i,k, g+matrix_get(A,i,k)); \
- \
- \
-                    /* multiply by D on the right */ \
-                    for(k = 0; k < N; k++) \
-                        matrix_set(A, k,i, f+matrix_get(A,k,i)); \
- \
-                    /* keep track of transformation */ \
-                    for(k = 0; k < N; k++) \
-                        D[k] += f; \
-                } \
-            } \
-        } \
-\
-        xfree(D); \
-        xfree(list_column); \
-        xfree(list_row); \
-    }
-
-#define MATRIX_LOG_BALANCE_HEADER(FUNCTION_PREFIX, MATRIX_TYPE) void FUNCTION_PREFIX ## _log_balance(MATRIX_TYPE *A)
-
 #define matrix_get(m, i, j)   (m->M[(i)*m->size+(j)])
 #define matrix_set(m, i, j,v) (m->M[(i)*m->size+(j)]=v)
 
@@ -403,7 +302,6 @@ MATRIX_LOGDET_HEADER(matrix, matrix_t, double);
 MATRIX_ABSMIN_HEADER(matrix, matrix_t, double);
 MATRIX_ABSMAX_HEADER(matrix, matrix_t, double);
 MATRIX_BALANCE_HEADER(matrix, matrix_t);
-MATRIX_LOG_BALANCE_HEADER(matrix, matrix_t);
 
 MATRIX_ALLOC_HEADER(matrix_char, matrix_char_t);
 MATRIX_FREE_HEADER (matrix_char, matrix_char_t);
