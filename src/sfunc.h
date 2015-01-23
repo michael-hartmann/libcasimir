@@ -33,7 +33,6 @@ typedef struct {
     int sign_dPl1mdPl2m;
 } plm_combination_t;
 
-double inline logadd_m(const double list[], size_t len);
 edouble inline logadd_s(const edouble a, const int sign_a, const edouble b, const int sign_b, int *sign);
 edouble inline logadd_ms(const edouble list[], const int signs[], const size_t len, int *sign);
 

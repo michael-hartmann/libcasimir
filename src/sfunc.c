@@ -31,24 +31,6 @@ edouble inline logadd_s(const edouble a, const int sign_a, const edouble b, cons
 }
 
 
-double inline logadd_m(const double list[], size_t len)
-{
-    size_t i;
-    double sum;
-    double max = list[0];
-
-    for(i = 1; i < len; i++)
-        if(list[i] > max)
-            max = list[i];
-
-    sum = exp(list[0]-max);
-    for(i = 1; i < len; i++)
-        sum += exp(list[i]-max);
-
-    return max + log(sum);
-}
-
-
 edouble inline logadd_ms(const edouble list[], const int signs[], const size_t len, int *sign)
 {
     size_t i;
