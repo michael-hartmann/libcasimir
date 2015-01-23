@@ -1,13 +1,16 @@
 #ifndef __SFUNC_H
 #define __SFUNC_H
 
+#include "edouble.h"
+
 #define M_LNPI 1.1447298858494002
 #define M_LN4  1.3862943611198906
 
 // abbrevations for functions
 #define lngamma(x) (lgamma(x))
 #define pow_2(x) (x*x)
-#define lnfac(x) (lgamma(1+x))
+#define lnfac(x)  (gamma(1+x))
+#define lnfacq(x) (gammaq(1+x))
 
 #ifndef MIN
 #define MIN(a,b) (((a)<(b))?(a):(b))
@@ -33,7 +36,9 @@ typedef struct {
 double inline logadd(const double a, const double b);
 double inline logadd_m(const double list[], size_t len);
 double inline logadd_s(const double a, const int sign_a, const double b, const int sign_b, int *sign);
+double inline logadd_sq(const edouble a, const int sign_a, const edouble b, const int sign_b, int *sign);
 double inline logadd_ms(const double list[], const int signs[], const size_t len, int *sign);
+edouble inline logadd_msq(const edouble list[], const int signs[], const size_t len, int *sign);
 
 double inline lbinom(int n, int k);
 double inline binom(int n, int k);
@@ -47,13 +52,13 @@ int round2up(int x);
 double linspace(double start, double stop, int N, int i);
 double logspace(double start, double stop, int N, int i);
 
-double ln_doublefact(int n);
+edouble ln_doublefactq(int n);
 
-double plm_lnPlm(int l, int m, double x, int *sign);
-double plm_Plm(int l, int m, double x);
-double plm_lndPlm(int l, int m, double x, int *sign);
-double plm_dPlm(int l, int m, double x);
+edouble plm_lnPlm (int l, int m, edouble x, int *sign);
+edouble plm_Plm   (int l, int m, edouble x);
+edouble plm_lndPlm(int l, int m, edouble x, int *sign);
+edouble plm_dPlm  (int l, int m, edouble x);
 
-void plm_PlmPlm(int l1, int l2, int m, double x, plm_combination_t *res);
+void plm_PlmPlm(int l1, int l2, int m, edouble x, plm_combination_t *res);
 
 #endif
