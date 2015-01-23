@@ -27,23 +27,23 @@ void integrands_drude(edouble x, integrands_drude_t *integrands, casimir_t *self
     plm_PlmPlm(l1, l2, m, 1+x/tau, &comb);
 
     A = comb.lnPl1mPl2m - log_factor;
-    integrands->lnA_TE = lnr_TE + A;
-    integrands->lnA_TM = lnr_TM + A;
+    integrands->lnA_TE = (edouble)lnr_TE + A;
+    integrands->lnA_TM = (edouble)lnr_TM + A;
     integrands->sign_A = comb.sign_Pl1mPl2m;
 
     B = comb.lndPl1mdPl2m + log_factor;
-    integrands->lnB_TE = lnr_TE + B;
-    integrands->lnB_TM = lnr_TM + B;
+    integrands->lnB_TE = (edouble)lnr_TE + B;
+    integrands->lnB_TM = (edouble)lnr_TM + B;
     integrands->sign_B = comb.sign_dPl1mdPl2m;
 
     C = comb.lnPl1mdPl2m;
-    integrands->lnC_TE = lnr_TE + C;
-    integrands->lnC_TM = lnr_TM + C;
+    integrands->lnC_TE = (edouble)lnr_TE + C;
+    integrands->lnC_TM = (edouble)lnr_TM + C;
     integrands->sign_C = comb.sign_Pl1mdPl2m;
 
     D = comb.lndPl1mPl2m;
-    integrands->lnD_TE = lnr_TE + D;
-    integrands->lnD_TM = lnr_TM + D;
+    integrands->lnD_TE = (edouble)lnr_TE + D;
+    integrands->lnD_TM = (edouble)lnr_TM + D;
     integrands->sign_D = comb.sign_dPl1mPl2m;
 }
 
@@ -230,13 +230,13 @@ void polym(edouble p[], int m, edouble xi)
         p[k] = 0;
 
     for(k = 0; k < m; k++)
-        p[2*m-2-k] = binom(m-1,k)*pow(2*xi, k);
+        p[2*m-2-k] = expq(lbinom(m-1,k))*pow(2*xi, k);
 }
 
 void polyplm(edouble pl1[], edouble pl2[], int l1, int l2, int m, edouble xi)
 {
     int k;
-    double log2xi = log(2*xi);
+    edouble log2xi = logq(2*xi);
 
     for(k = 0; k <= l1-m; k++)
         pl1[k] = expq(lngamma(1+k+m+l1)-lngamma(1+l1-k-m)-lngamma(1+k)-lngamma(1+k+m)-k*log2xi);
@@ -248,7 +248,7 @@ void polyplm(edouble pl1[], edouble pl2[], int l1, int l2, int m, edouble xi)
 void polydplm(edouble pl1[], edouble pl2[], int l1, int l2, int m, edouble xi)
 {
     int k;
-    double log2xi = log(2*xi);
+    edouble log2xi = logq(2*xi);
 
     if(m == 0)
     {
@@ -288,9 +288,9 @@ void polydplm(edouble pl1[], edouble pl2[], int l1, int l2, int m, edouble xi)
 */
 void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, double nT)
 {
-    double lnA, lnB, lnC, lnD;
+    edouble lnA, lnB, lnC, lnD;
     int signA, signB, signC, signD;
-    double xi = 2*nT;
+    edouble xi = 2*nT;
     edouble pdpl1m[l1-m+2];
     edouble pdpl2m[l2-m+2];
 

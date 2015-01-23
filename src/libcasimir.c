@@ -91,7 +91,7 @@ double inline casimir_lnLambda(int l1, int l2, int m, int *sign)
 {
     if(sign != NULL)
         *sign = -1;
-    return M_LN2 + (log(2.*l1+1)+log(2*l2+1)-log(4)-log(l1)-log(l1+1)-log(l2)-log(l2+1)+lnfac(l1-m)+lnfac(l2-m)-lnfac(l1+m)-lnfac(l2+m))/2.0;
+    return LOG2 + (log(2.*l1+1)+log(2*l2+1)-log(4)-log(l1)-log(l1+1)-log(l2)-log(l2+1)+lnfac(l1-m)+lnfac(l2-m)-lnfac(l1+m)-lnfac(l2+m))/2.0;
 }
 
 
@@ -208,7 +208,7 @@ double casimir_F_scaled_to_SI(double F, double ScriptL)
  */
 double casimir_T_SI_to_scaled(double T_SI, double ScriptL)
 {
-    return 2*M_PI*KB*ScriptL/HBARC*T_SI;
+    return 2*PI*KB*ScriptL/HBARC*T_SI;
 }
 
 
@@ -226,7 +226,7 @@ double casimir_T_SI_to_scaled(double T_SI, double ScriptL)
  */
 double casimir_T_scaled_to_SI(double T, double ScriptL)
 {
-    return HBARC/(2*M_PI*KB*ScriptL)*T;
+    return HBARC/(2*PI*KB*ScriptL)*T;
 }
 
 /*@}*/
@@ -255,7 +255,7 @@ double casimir_lnXi(int l1, int l2, int m, int *sign)
     if(sign != NULL)
         *sign = pow(-1, l2);
     return (log(2*l1+1)+log(2*l2+1)-lnfac(l1-m)-lnfac(l2-m)-lnfac(l1+m)-lnfac(l2+m)-log(l1)-log(l1+1)-log(l2)-log(l2+1))/2.0 \
-           +lnfac(2*l1)+lnfac(2*l2)+lnfac(l1+l2)-M_LN4*(2*l1+l2+1)-lnfac(l1-1)-lnfac(l2-1);
+           +lnfac(2*l1)+lnfac(2*l2)+lnfac(l1+l2)-LOG4*(2*l1+l2+1)-lnfac(l1-1)-lnfac(l2-1);
 }
 
 /**
@@ -700,7 +700,7 @@ void casimir_lnab0(int l, double *a0, int *sign_a0, double *b0, int *sign_b0)
 {
     *sign_a0 = pow(-1, l);
     *sign_b0 = pow(-1, l+1);
-    *b0 = M_LNPI-lngamma(l+0.5)-lngamma(l+1.5);
+    *b0 = LOGPI-lngamma(l+0.5)-lngamma(l+1.5);
     *a0 = *b0+log1p(1.0/l);
 }
 
@@ -732,7 +732,7 @@ double casimir_lna_perf(casimir_t *self, const int l, const int n, int *sign)
     bessel_lnInuKnu(l-1, chi, &lnIlm, &lnKlm);
     bessel_lnInuKnu(l,   chi, &lnIlp, &lnKlp);
 
-    prefactor = M_LNPI-M_LN2+lnIlp-lnKlp;
+    prefactor = LOGPI-LOG2+lnIlp-lnKlp;
     *sign = pow(-1, l+1);
 
     /* numinator */
@@ -787,7 +787,7 @@ double casimir_lnb_perf(casimir_t *self, const int l, const int n, int *sign)
     bessel_lnInuKnu(l, chi, &lnInu, &lnKnu);
     *sign = pow(-1, l+1);
 
-    ret = M_LNPI-M_LN2+lnInu-lnKnu;
+    ret = LOGPI-LOG2+lnInu-lnKnu;
 
     assert(!isnan(ret));
     assert(!isinf(ret));
@@ -861,8 +861,8 @@ void casimir_lnab(casimir_t *self, const int n_mat, const int l, double *lna, do
     */
 
     /* XXX calculate this somehow in a smarter way */
-    *lna = M_LNPI - M_LN2 + logadd_s(2*ln_n+ln_sla, +sign_sla, ln_slb, -sign_slb, &sign_a_num) - logadd_s(2*ln_n+ln_slc, +sign_slc, ln_sld, -sign_sld, &sign_a_denom);
-    *lnb = M_LNPI - M_LN2 + logadd_s(       ln_sla, +sign_sla, ln_slb, -sign_slb, &sign_b_num) - logadd_s(       ln_slc, +sign_slc, ln_sld, -sign_sld, &sign_b_denom);
+    *lna = LOGPI - LOG2 + logadd_s(2*ln_n+ln_sla, +sign_sla, ln_slb, -sign_slb, &sign_a_num) - logadd_s(2*ln_n+ln_slc, +sign_slc, ln_sld, -sign_sld, &sign_a_denom);
+    *lnb = LOGPI - LOG2 + logadd_s(       ln_sla, +sign_sla, ln_slb, -sign_slb, &sign_b_num) - logadd_s(       ln_slc, +sign_slc, ln_sld, -sign_sld, &sign_b_denom);
 
     *sign_a = sign_a_num*sign_a_denom;
     *sign_b = sign_b_num*sign_b_denom;
@@ -1183,7 +1183,7 @@ double casimir_F(casimir_t *self, int *nmax)
                 if(values != NULL)
                     xfree(values);
 
-                return self->T/M_PI*sum_n;
+                return self->T/PI*sum_n;
             }
         }
     }

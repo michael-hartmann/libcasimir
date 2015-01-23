@@ -50,15 +50,9 @@ edouble inline logadd_ms(const edouble list[], const int signs[], const size_t l
 }
 
 
-double inline lbinom(int n, int k)
+edouble inline lbinom(int n, int k)
 {
     return lngamma(1+n)-lngamma(1+k)-lngamma(1+n-k);
-}
-
-
-double inline binom(int n, int k)
-{
-    return exp(lngamma(1+n)-lngamma(1+k)-lngamma(1+n-k));
 }
 
 
@@ -70,7 +64,7 @@ void bessel_lnInuKnu(int nu, const edouble x, edouble *lnInu_p, edouble *lnKnu_p
 
     // calculate Knu, Knup
     {
-        edouble prefactor = -x+0.5*(M_LNPI-M_LN2-logx);
+        edouble prefactor = -x+0.5*(LOGPI-LOG2-logx);
 
         if(nu == 0)
         {
@@ -98,8 +92,8 @@ void bessel_lnInuKnu(int nu, const edouble x, edouble *lnInu_p, edouble *lnKnu_p
             if(x < sqrt(nu)*1e3)
             {
                 /* small arguments */
-                lnKnu  = lngamma(nu+0.5)-M_LN2+(nu+0.5)*(M_LN2-logx);
-                lnKnup = lngamma(nu+1.5)-M_LN2+(nu+1.5)*(M_LN2-logx);
+                lnKnu  = lngamma(nu+0.5)-LOG2+(nu+0.5)*(LOG2-logx);
+                lnKnup = lngamma(nu+1.5)-LOG2+(nu+1.5)*(LOG2-logx);
             }
             else
                 lnKnu = lnKnup = 0;
@@ -125,7 +119,7 @@ void bessel_lnInuKnu(int nu, const edouble x, edouble *lnInu_p, edouble *lnKnu_p
             denom = an(l,nu,x)+1/denom;
             ratio *= nom/denom;
 
-            if(ratio_last != 0 && fabs(1-ratio/ratio_last) < 1e-14)
+            if(ratio_last != 0 && fabs(1-ratio/ratio_last) < 1e-15)
                 break;
 
             ratio_last = ratio;
@@ -170,7 +164,7 @@ double logspace(double start, double stop, int N, int i)
     return start*pow(pow(stop/start, 1./(N-1)), i);
 }
 
-edouble ln_doublefactq(int n)
+edouble ln_doublefact(int n)
 {
     if(n < 0)
         return NAN;
@@ -181,12 +175,12 @@ edouble ln_doublefactq(int n)
     if(n % 2 == 0) /* even */
     {
         int k = n/2;
-        return k*M_LN2 + lnfacq(k);
+        return k*LOG2 + lnfac(k);
     }
     else /* odd */
     {
         int k = (n+1)/2;
-        return lnfacq(2*k) - k*M_LN2 - lnfacq(k);
+        return lnfac(2*k) - k*LOG2 - lnfac(k);
     }
 }
 
@@ -220,7 +214,7 @@ static inline void _lnplm_array(int lmax, int m, edouble x, edouble lnplm[], int
     else
     {
         sign[0]  = pow(-1,(int)(m/2) + m%2);
-        lnplm[0] = ln_doublefactq(2*m-1) + m*0.5*logq(pow_2(x)-1); // l=m,m=m
+        lnplm[0] = ln_doublefact(2*m-1) + m*0.5*logq(pow_2(x)-1); // l=m,m=m
     }
 
     if(lmax == m)

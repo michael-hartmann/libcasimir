@@ -3,14 +3,15 @@
 
 #include "edouble.h"
 
-#define M_LNPI 1.1447298858494002
-#define M_LN4  1.3862943611198906
+#define PI     3.141592653589793238462643383279502884197169L
+#define LOG2   0.6931471805599453094172321214581765680755007L
+#define LOGPI  1.14472988584940017414342735135305871164729L
+#define LOG4   1.386294361119890618834464242916353136151001L
 
 // abbrevations for functions
-#define lngamma(x) (lgamma(x))
+#define lngamma(x) (gammaq(x))
 #define pow_2(x) (x*x)
-#define lnfac(x)  (gamma(1+x))
-#define lnfacq(x) (gammaq(1+x))
+#define lnfac(x)  (gammaq(1+x))
 
 #ifndef MIN
 #define MIN(a,b) (((a)<(b))?(a):(b))
@@ -20,24 +21,23 @@
 #endif
 
 typedef struct {
-    double lnPl1mPl2m;
+    edouble lnPl1mPl2m;
     int sign_Pl1mPl2m;
 
-    double lndPl1mPl2m;
+    edouble lndPl1mPl2m;
     int sign_dPl1mPl2m;
 
-    double lnPl1mdPl2m;
+    edouble lnPl1mdPl2m;
     int sign_Pl1mdPl2m;
 
-    double lndPl1mdPl2m;
+    edouble lndPl1mdPl2m;
     int sign_dPl1mdPl2m;
 } plm_combination_t;
 
 edouble inline logadd_s(const edouble a, const int sign_a, const edouble b, const int sign_b, int *sign);
 edouble inline logadd_ms(const edouble list[], const int signs[], const size_t len, int *sign);
 
-double inline lbinom(int n, int k);
-double inline binom(int n, int k);
+edouble inline lbinom(int n, int k);
 
 edouble bessel_lnInu(const int n, const edouble x);
 edouble bessel_lnKnu(const int n, const edouble x);
@@ -46,7 +46,7 @@ void bessel_lnInuKnu(int nu, const edouble x, edouble *lnInu_p, edouble *lnKnu_p
 double linspace(double start, double stop, int N, int i);
 double logspace(double start, double stop, int N, int i);
 
-edouble ln_doublefactq(int n);
+edouble ln_doublefact(int n);
 
 edouble plm_lnPlm (int l, int m, edouble x, int *sign);
 edouble plm_Plm   (int l, int m, edouble x);
