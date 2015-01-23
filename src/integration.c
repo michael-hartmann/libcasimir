@@ -3,24 +3,26 @@
 #include <string.h>
 #include <assert.h>
 
+#include "edouble.h"
 #include "utils.h"
 #include "sfunc.h"
 #include "libcasimir.h"
 #include "integration.h"
 #include "gausslaguerre.h"
 
-void integrands_drude(double x, integrands_drude_t *integrands, casimir_t *self, double nT, int l1, int l2, int m)
+void integrands_drude(edouble x, integrands_drude_t *integrands, casimir_t *self, double nT, int l1, int l2, int m)
 {
     plm_combination_t comb;
-    const double tau = 2*nT;
-    const double k = sqrt(pow_2(x)/4 + nT*x);
-    const double log_factor = log(pow_2(x)+2*tau*x);
-    double r_TE, r_TM, lnr_TE, lnr_TM;
-    double A,B,C,D;
+    const edouble tau = 2*nT;
+    const edouble k = sqrtq(pow_2(x)/4 + nT*x);
+    const edouble log_factor = logq(pow_2(x)+2*tau*x);
+    double r_TE, r_TM;
+    edouble lnr_TE, lnr_TM;
+    edouble A,B,C,D;
 
     casimir_rp(self, nT, k, &r_TE, &r_TM);
-    lnr_TE  = log(-r_TE);
-    lnr_TM = log(r_TM);
+    lnr_TE = logq(-r_TE);
+    lnr_TM = logq(r_TM);
 
     plm_PlmPlm(l1, l2, m, 1+x/tau, &comb);
 
@@ -66,13 +68,13 @@ void casimir_integrate_drude(casimir_t *self, casimir_integrals_t *cint, int l1,
 {
     int i;
     integrands_drude_t integrand;
-    const double tau = 2*nT;
-    const double ln_tau = log(2*nT);
-    const double ln_Lambda = casimir_lnLambda(l1, l2, m, NULL); /* sign: -1 */
-    double prefactor;
-    double *ln_ABCD, *lnA_TE, *lnA_TM, *lnB_TE, *lnB_TM, *lnC_TE, *lnC_TM, *lnD_TE, *lnD_TM;
+    const edouble tau = 2*nT;
+    const edouble ln_tau = logq(2*nT);
+    const edouble ln_Lambda = casimir_lnLambda(l1, l2, m, NULL); /* sign: -1 */
+    edouble prefactor;
+    edouble *ln_ABCD, *lnA_TE, *lnA_TM, *lnB_TE, *lnB_TM, *lnC_TE, *lnC_TM, *lnD_TE, *lnD_TM;
     int *signs_ABCD, *signs_A, *signs_B, *signs_C, *signs_D;
-    double *xk, *ln_wk;
+    edouble *xk, *ln_wk;
     const int N = gausslaguerre_nodes_weights(self->integration, &xk, &ln_wk);
 
     /* allocate space for signs_A, signs_B, signs_C, signs_D */
@@ -119,8 +121,8 @@ void casimir_integrate_drude(casimir_t *self, casimir_integrals_t *cint, int l1,
 
     /* B */
     prefactor = ln_Lambda -tau-3*ln_tau; /* exp(-tau)/tau³ */
-    cint->lnB_TE = prefactor + logadd_ms(lnB_TE, signs_B, N, &cint->signB_TE);
-    cint->lnB_TM = prefactor + logadd_ms(lnB_TM, signs_B, N, &cint->signB_TM);
+    cint->lnB_TE = prefactor + logadd_msq(lnB_TE, signs_B, N, &cint->signB_TE);
+    cint->lnB_TM = prefactor + logadd_msq(lnB_TM, signs_B, N, &cint->signB_TM);
 
     cint->signB_TM = -pow(-1, l2+m+1) * cint->signB_TM;
     cint->signB_TE = +pow(-1, l2+m+1) * cint->signB_TE;
@@ -128,12 +130,12 @@ void casimir_integrate_drude(casimir_t *self, casimir_integrals_t *cint, int l1,
 
     if(m > 0)
     {
-        const double log_m = log(m);
+        const edouble log_m = log(m);
 
         /* A */
         prefactor = ln_Lambda + 2*log_m+ln_tau-tau; /* m²*tau*exp(-tau) */
-        cint->lnA_TE = prefactor + logadd_ms(lnA_TE, signs_A, N, &cint->signA_TE);
-        cint->lnA_TM = prefactor + logadd_ms(lnA_TM, signs_A, N, &cint->signA_TM);
+        cint->lnA_TE = prefactor + logadd_msq(lnA_TE, signs_A, N, &cint->signA_TE);
+        cint->lnA_TM = prefactor + logadd_msq(lnA_TM, signs_A, N, &cint->signA_TM);
 
         /* r_TE is negative, r_TM is positive and Lambda(l1,l2,m) is negative.
            => TM negative sign, TE positive sign */
@@ -143,8 +145,8 @@ void casimir_integrate_drude(casimir_t *self, casimir_integrals_t *cint, int l1,
 
         /* C */
         prefactor = ln_Lambda + log_m-tau-ln_tau; /* m*exp(-tau)/tau */
-        cint->lnC_TE = prefactor + logadd_ms(lnC_TE, signs_C, N, &cint->signC_TE);
-        cint->lnC_TM = prefactor + logadd_ms(lnC_TM, signs_C, N, &cint->signC_TM);
+        cint->lnC_TE = prefactor + logadd_msq(lnC_TE, signs_C, N, &cint->signC_TE);
+        cint->lnC_TM = prefactor + logadd_msq(lnC_TM, signs_C, N, &cint->signC_TM);
 
         cint->signC_TM = -pow(-1, l2+m) * cint->signC_TM;
         cint->signC_TE = +pow(-1, l2+m) * cint->signC_TE;
@@ -152,8 +154,8 @@ void casimir_integrate_drude(casimir_t *self, casimir_integrals_t *cint, int l1,
 
         /* D */
         /* prefactor is identical to C */
-        cint->lnD_TE = prefactor + logadd_ms(lnD_TE, signs_D, N, &cint->signD_TE);
-        cint->lnD_TM = prefactor + logadd_ms(lnD_TM, signs_D, N, &cint->signD_TM);
+        cint->lnD_TE = prefactor + logadd_msq(lnD_TE, signs_D, N, &cint->signD_TE);
+        cint->lnD_TM = prefactor + logadd_msq(lnD_TM, signs_D, N, &cint->signD_TM);
 
         /* TODO: check if sign is correckt. */
         cint->signD_TM = -pow(-1, l2+m+1) * cint->signD_TM;
