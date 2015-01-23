@@ -31,28 +31,6 @@ edouble inline logadd_s(const edouble a, const int sign_a, const edouble b, cons
 }
 
 
-/**
- * @brief Calculate \f$\log\left(\exp a + \exp b\right)\f$
- *
- * This function calculates \f$\log\left(\exp a + \exp b\right)\f$.
- *
- * @param a first summand
- * @param b second summand
- * @retval log(exp(a)+exp(b))
- */
-double inline logadd(const double a, const double b)
-{
-    if(a == -INFINITY)
-        return b;
-    else if(b == -INFINITY)
-        return a;
-    else if(a < b)
-        return b + log1p(exp(a-b));
-    else
-        return a + log1p(exp(b-a));
-}
-
-
 double inline logadd_m(const double list[], size_t len)
 {
     size_t i;

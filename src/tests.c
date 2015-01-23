@@ -19,7 +19,6 @@ int test_mie(void);
 int test_besselI(void);
 int test_besselK(void);
 int test_givens(void);
-int test_logadd(void);
 int test_mie_drude(void);
 int test_doublefact(void);
 int test_plm(void);
@@ -98,59 +97,6 @@ int test_logdet()
     return test_results(&test, stderr);
 }
 
-
-int test_logadd()
-{
-    int sign;
-    double ret;
-    unittest_t test;
-    unittest_init(&test, "logadd", "add log");
-    int signs[]     = {+1, -1, +1, -1, +1, -1, +1, -1, +1, -1};
-    double values[] = {log(1), log(2), log(3), log(4), log(5), log(6), log(7), log(8), log(9), log(10)};
-
-    AssertAlmostEqual(&test, log(5), logadd_ms(values, signs, 10, &sign));
-    AssertEqual(&test, sign, -1);
-
-    AssertAlmostEqual(&test, log(10+20), logadd(log(10),log(20)));
-    AssertAlmostEqual(&test, log(900), logadd(log(600),log(300)));
-    AssertAlmostEqual(&test, log(10), logadd(log(10),log(0)));
-
-    // + +
-    ret = logadd_s(log(2), 1, log(4), 1, &sign);
-    AssertAlmostEqual(&test, log(6), ret);
-    AssertEqual(&test, sign, +1);
-
-    // - -
-    ret = logadd_s(log(2), -1, log(4), -1, &sign);
-    AssertAlmostEqual(&test, log(6), ret);
-    AssertEqual(&test, sign, -1);
-
-    // + -
-    ret = logadd_s(log(2), +1, log(4), -1, &sign);
-    AssertAlmostEqual(&test, log(2), ret);
-    AssertEqual(&test, sign, -1);
-
-    // - +
-    ret = logadd_s(log(2), -1, log(4), +1, &sign);
-    AssertAlmostEqual(&test, log(2), ret);
-    AssertEqual(&test, sign, +1);
-
-    // - +
-    ret = logadd_s(log(2), -1, -INFINITY, +1, &sign);
-    AssertAlmostEqual(&test, log(2), ret);
-
-    // a == b
-    ret = logadd_s(log(4), -1, log(4), +1, &sign);
-    Assert(&test, isinf(ret));
-    Assert(&test, ret < 0);
-
-    // large values
-    ret = logadd_s(1000, +1, 1004, +1, &sign);
-    AssertAlmostEqual(&test, ret, 1004.018149927917809740354983318);
-    AssertEqual(&test, sign, +1);
-
-    return test_results(&test, stderr);
-}
 
 int test_givens()
 {
@@ -866,7 +812,6 @@ int main(int argc, char *argv[])
     test_besselI();
     test_besselK();
     test_givens();
-    test_logadd();
     test_logdet();
     test_casimirF();
     
