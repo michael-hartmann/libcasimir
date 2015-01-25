@@ -124,8 +124,8 @@ void casimir_integrate_drude(casimir_t *self, casimir_integrals_t *cint, int l1,
     cint->lnB_TE = prefactor + logadd_ms(lnB_TE, signs_B, N, &cint->signB_TE);
     cint->lnB_TM = prefactor + logadd_ms(lnB_TM, signs_B, N, &cint->signB_TM);
 
-    cint->signB_TM = -pow(-1, l2+m+1) * cint->signB_TM;
-    cint->signB_TE = +pow(-1, l2+m+1) * cint->signB_TE;
+    cint->signB_TM = -MPOW(l2+m+1) * cint->signB_TM;
+    cint->signB_TE = +MPOW(l2+m+1) * cint->signB_TE;
 
 
     if(m > 0)
@@ -139,8 +139,8 @@ void casimir_integrate_drude(casimir_t *self, casimir_integrals_t *cint, int l1,
 
         /* r_TE is negative, r_TM is positive and Lambda(l1,l2,m) is negative.
            => TM negative sign, TE positive sign */
-        cint->signA_TM = -pow(-1, l2+m) * cint->signA_TM;
-        cint->signA_TE = +pow(-1, l2+m) * cint->signA_TE;
+        cint->signA_TM = -MPOW(l2+m) * cint->signA_TM;
+        cint->signA_TE = +MPOW(l2+m) * cint->signA_TE;
 
 
         /* C */
@@ -148,8 +148,8 @@ void casimir_integrate_drude(casimir_t *self, casimir_integrals_t *cint, int l1,
         cint->lnC_TE = prefactor + logadd_ms(lnC_TE, signs_C, N, &cint->signC_TE);
         cint->lnC_TM = prefactor + logadd_ms(lnC_TM, signs_C, N, &cint->signC_TM);
 
-        cint->signC_TM = -pow(-1, l2+m) * cint->signC_TM;
-        cint->signC_TE = +pow(-1, l2+m) * cint->signC_TE;
+        cint->signC_TM = -MPOW(l2+m) * cint->signC_TM;
+        cint->signC_TE = +MPOW(l2+m) * cint->signC_TE;
 
 
         /* D */
@@ -158,8 +158,8 @@ void casimir_integrate_drude(casimir_t *self, casimir_integrals_t *cint, int l1,
         cint->lnD_TM = prefactor + logadd_ms(lnD_TM, signs_D, N, &cint->signD_TM);
 
         /* TODO: check if sign is correckt. */
-        cint->signD_TM = -pow(-1, l2+m+1) * cint->signD_TM;
-        cint->signD_TE = +pow(-1, l2+m+1) * cint->signD_TE;
+        cint->signD_TM = -MPOW(l2+m+1) * cint->signD_TM;
+        cint->signD_TE = +MPOW(l2+m+1) * cint->signD_TE;
     }
     else
     {
@@ -311,7 +311,7 @@ void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, do
         polymult(interim, l1+2, pdpl2m, l2, result);
 
         lnB = -xi-3*logq(xi)+log_polyintegrate(result, l1+l2+1, l1,l2,m, &signB);
-        signB *= pow(-1, l2+1);
+        signB *= MPOW(l2+1);
     }
     else
     {
@@ -340,16 +340,16 @@ void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, do
         polymult(pmpdpl1m, sizeof(pmpdpl1m)/sizeof(edouble), pdpl2m, sizeof(pdpl2m)/sizeof(edouble), pmpdpl1mpdpl2m);
 
         lnA = 2*logq(m)+logprefactor+log_polyintegrate(pmppl1mppl2m, sizeof(pmppl1mppl2m)/sizeof(edouble), l1,l2,m,&signA);
-        signA *= pow(-1,l2);
+        signA *= MPOW(l2);
 
         lnB = logprefactor+log_polyintegrate(pmpdpl1mpdpl2m, sizeof(pmpdpl1mpdpl2m)/sizeof(edouble), l1,l2,m,&signB);
-        signB *= pow(-1,l2+1);
+        signB *= MPOW(l2+1);
         
         lnC = logq(m)+logprefactor+log_polyintegrate(pmppl1mpdpl2m, sizeof(pmppl1mpdpl2m)/sizeof(edouble), l1,l2,m,&signC);
-        signC *= pow(-1,l2+1);
+        signC *= MPOW(l2+1);
         
         lnD = logq(m)+logprefactor+log_polyintegrate(pmpdpl1mppl2m, sizeof(pmpdpl1mppl2m)/sizeof(edouble), l1,l2,m,&signD);
-        signD *= pow(-1,l2);
+        signD *= MPOW(l2);
     }
 
     cint->lnA_TM   = lnA;

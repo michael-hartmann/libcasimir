@@ -253,7 +253,7 @@ double casimir_T_scaled_to_SI(double T, double ScriptL)
 edouble casimir_lnXi(int l1, int l2, int m, int *sign)
 {
     if(sign != NULL)
-        *sign = pow(-1, l2);
+        *sign = MPOW(l2);
     return (logq(2*l1+1)+logq(2*l2+1)-lnfac(l1-m)-lnfac(l2-m)-lnfac(l1+m)-lnfac(l2+m)-logq(l1)-logq(l1+1)-logq(l2)-logq(l2+1))/2.0L \
            +lnfac(2*l1)+lnfac(2*l2)+lnfac(l1+l2)-LOG4*(2*l1+l2+1)-lnfac(l1-1)-lnfac(l2-1);
 }
@@ -698,8 +698,8 @@ void casimir_free(casimir_t *self)
  */
 void casimir_lnab0(int l, double *a0, int *sign_a0, double *b0, int *sign_b0)
 {
-    *sign_a0 = pow(-1, l);
-    *sign_b0 = pow(-1, l+1);
+    *sign_a0 = MPOW(l);
+    *sign_b0 = MPOW(l+1);
     *b0 = LOGPI-lngamma(l+0.5)-lngamma(l+1.5);
     *a0 = *b0+log1p(1.0/l);
 }
@@ -733,7 +733,7 @@ double casimir_lna_perf(casimir_t *self, const int l, const int n, int *sign)
     bessel_lnInuKnu(l,   chi, &lnIlp, &lnKlp);
 
     prefactor = LOGPI-LOG2+lnIlp-lnKlp;
-    *sign = pow(-1, l+1);
+    *sign = MPOW(l+1);
 
     /* numinator */
     {
@@ -782,7 +782,7 @@ double casimir_lnb_perf(casimir_t *self, const int l, const int n, int *sign)
     edouble lnInu, lnKnu;
 
     bessel_lnInuKnu(l, chi, &lnInu, &lnKnu);
-    *sign = pow(-1, l+1);
+    *sign = MPOW(l+1);
 
     return LOGPI-LOG2+lnInu-lnKnu;
 }
@@ -1300,22 +1300,22 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
                 casimir_integrate_perf(&cint, l1, l2, m, n*self->T);
 
             /* EE */
-            matrix_set(M, i,j, Delta_ij -                al1_sign*( cint.signA_TE*expq(lnal1+cint.lnA_TE) + cint.signB_TM*expq(lnal1+cint.lnB_TM) ));
-            matrix_set(M, j,i, Delta_ij - pow(-1, l1+l2)*al2_sign*( cint.signA_TE*expq(lnal2+cint.lnA_TE) + cint.signB_TM*expq(lnal2+cint.lnB_TM) ));
+            matrix_set(M, i,j, Delta_ij -             al1_sign*( cint.signA_TE*expq(lnal1+cint.lnA_TE) + cint.signB_TM*expq(lnal1+cint.lnB_TM) ));
+            matrix_set(M, j,i, Delta_ij - MPOW(l1+l2)*al2_sign*( cint.signA_TE*expq(lnal2+cint.lnA_TE) + cint.signB_TM*expq(lnal2+cint.lnB_TM) ));
 
             /* MM */
-            matrix_set(M, i+dim,j+dim, Delta_ij -                bl1_sign*( cint.signA_TM*expq(lnbl1+cint.lnA_TM) + cint.signB_TE*expq(lnbl1+cint.lnB_TE) ));
-            matrix_set(M, j+dim,i+dim, Delta_ij - pow(-1, l1+l2)*bl2_sign*( cint.signA_TM*expq(lnbl2+cint.lnA_TM) + cint.signB_TE*expq(lnbl2+cint.lnB_TE) ));
+            matrix_set(M, i+dim,j+dim, Delta_ij -             bl1_sign*( cint.signA_TM*expq(lnbl1+cint.lnA_TM) + cint.signB_TE*expq(lnbl1+cint.lnB_TE) ));
+            matrix_set(M, j+dim,i+dim, Delta_ij - MPOW(l1+l2)*bl2_sign*( cint.signA_TM*expq(lnbl2+cint.lnA_TM) + cint.signB_TE*expq(lnbl2+cint.lnB_TE) ));
 
             if(m != 0)
             {
                 /* M_EM */
-                matrix_set(M, dim+i,j, -                  al1_sign*( cint.signC_TE*expq(lnal1+cint.lnC_TE) + cint.signD_TM*expq(lnal1+cint.lnD_TM) ));
-                matrix_set(M, dim+j,i, - pow(-1, l1+l2+1)*al2_sign*( cint.signD_TE*expq(lnal2+cint.lnD_TE) + cint.signC_TM*expq(lnal2+cint.lnC_TM) ));
+                matrix_set(M, dim+i,j, -               al1_sign*( cint.signC_TE*expq(lnal1+cint.lnC_TE) + cint.signD_TM*expq(lnal1+cint.lnD_TM) ));
+                matrix_set(M, dim+j,i, - MPOW(l1+l2+1)*al2_sign*( cint.signD_TE*expq(lnal2+cint.lnD_TE) + cint.signC_TM*expq(lnal2+cint.lnC_TM) ));
 
                 /* M_ME */
-                matrix_set(M, i,dim+j, -                  bl1_sign*( cint.signC_TM*expq(lnbl1+cint.lnC_TM) + cint.signD_TE*expq(lnbl1+cint.lnD_TE) ));
-                matrix_set(M, j,dim+i, - pow(-1, l1+l2+1)*bl2_sign*( cint.signD_TM*expq(lnbl2+cint.lnD_TM) + cint.signC_TE*expq(lnbl2+cint.lnC_TE) ));
+                matrix_set(M, i,dim+j, -               bl1_sign*( cint.signC_TM*expq(lnbl1+cint.lnC_TM) + cint.signD_TE*expq(lnbl1+cint.lnD_TE) ));
+                matrix_set(M, j,dim+i, - MPOW(l1+l2+1)*bl2_sign*( cint.signD_TM*expq(lnbl2+cint.lnD_TM) + cint.signC_TE*expq(lnbl2+cint.lnC_TE) ));
             }
         }
     }

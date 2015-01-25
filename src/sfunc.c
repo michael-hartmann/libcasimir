@@ -213,7 +213,7 @@ static inline void _lnplm_array(int lmax, int m, edouble x, edouble lnplm[], int
     }
     else
     {
-        sign[0]  = pow(-1,(int)(m/2) + m%2);
+        sign[0]  = MPOW((int)(m/2) + m%2);
         lnplm[0] = ln_doublefact(2*m-1) + m*0.5*logq(pow_2(x)-1); // l=m,m=m
     }
 
@@ -278,7 +278,7 @@ void plm_PlmPlm(int l1, int l2, int m, edouble x, plm_combination_t *res)
     edouble logx2m1 = logq(pow_2(x)-1);
     edouble lnPl1m, lnPl2m, lndPl1m, lndPl2m;
     int sign_Pl1m, sign_Pl2m, sign_dPl1m, sign_dPl2m;
-    int common_sign = pow(-1, m%2);
+    int common_sign = MPOW(m%2);
 
     _lnplm_array(lmax, m, x, lnPlm, signs);
 
