@@ -50,9 +50,9 @@ int _Assert(int line, unittest_t *test, int boolean)
     }
 }
 
-int _AssertAlmostEqual(int line, unittest_t *test, double x, double y)
+int _AssertAlmostEqual(int line, unittest_t *test, double x, double y, double eps)
 {
-    if(fabs(1-x/y) < EPS)
+    if(fabs(1-x/y) < eps)
     {
         test->passed++;
         return 0;
