@@ -13,6 +13,8 @@
 #define pow_2(x) (x*x)
 #define lnfac(x)  (gammaq(1+x))
 
+#define MPOW(a) (1-2*((a) & 1))
+
 #ifndef MIN
 #define MIN(a,b) (((a)<(b))?(a):(b))
 #endif
