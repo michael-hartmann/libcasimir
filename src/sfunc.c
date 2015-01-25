@@ -7,12 +7,12 @@
 
 edouble inline logadd_s(const edouble a, const int sign_a, const edouble b, const int sign_b, int *sign)
 {
-    if(isinf(a) && a < 0)
+    if(isinfq(a) && a < 0)
     {
         *sign = sign_b;
         return b;
     }
-    else if(isinf(b) && b < 0)
+    else if(isinfq(b) && b < 0)
     {
         *sign = sign_a;
         return a;
