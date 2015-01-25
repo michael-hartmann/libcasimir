@@ -21,7 +21,7 @@
 #include "utils.h"
 
 
-static char CASIMIR_COMPILE_INFO[255];
+static char CASIMIR_COMPILE_INFO[2048];
 
 /** @brief Return string with compile information
  *
