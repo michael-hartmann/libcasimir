@@ -839,20 +839,19 @@ void casimir_lnab(casimir_t *self, const int n_mat, const int l, double *lna, do
     ln_sld = lnKl      + logadd_s(lnIl_nchi, +1, ln_n+ln_chi+lnIlm_nchi, -1, &sign_sld);
 
     /*
-    printf("n2=%.14g\n", n2);
-    printf("lnIl = %.14g\n", exp(lnIl));
-    printf("\n");
-    printf("chi=%.14g\n", chi);
+    printf("n =%.15g\n", (double)expq(ln_n));
+    printf("n2=%.15g\n", (double)expq(2*ln_n));
+    printf("lnIl = %.15g\n", (double)expq(lnIl));
+    printf("chi=%.15g\n", (double)chi);
     */
 
     /*
-    printf("sla=%.14g\n", sign_sla*exp(ln_sla));
-    printf("slb=%.14g\n", sign_slb*exp(ln_slb));
-    printf("slc=%.14g\n", sign_slc*exp(ln_slc));
-    printf("sld=%.14g\n", sign_sld*exp(ln_sld));
+    printf("sla=%.15g\n", (double)(sign_sla*expq(ln_sla)));
+    printf("slb=%.15g\n", (double)(sign_slb*expq(ln_slb)));
+    printf("slc=%.15g\n", (double)(sign_slc*expq(ln_slc)));
+    printf("sld=%.15g\n", (double)(sign_sld*expq(ln_sld)));
     */
 
-    /* XXX calculate this somehow in a smarter way */
     *lna = LOGPI - LOG2 + logadd_s(2*ln_n+ln_sla, +sign_sla, ln_slb, -sign_slb, &sign_a_num) - logadd_s(2*ln_n+ln_slc, +sign_slc, ln_sld, -sign_sld, &sign_a_denom);
     *lnb = LOGPI - LOG2 + logadd_s(       ln_sla, +sign_sla, ln_slb, -sign_slb, &sign_b_num) - logadd_s(       ln_slc, +sign_slc, ln_sld, -sign_sld, &sign_b_denom);
 
