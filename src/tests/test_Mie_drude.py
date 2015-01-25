@@ -33,51 +33,52 @@ def lnab(nT,l,RbyL,omegap,gamma):
     return log(abs(al)), sign(al), log(abs(bl)), sign(bl)
 
 
-RbyScriptL = 0.85
-T = 2.7
-omegap = 1
-gamma  = 1
-print prettyprint(lnab(1*T, 3, RbyScriptL, omegap, gamma))
-print prettyprint(lnab(2*T, 3, RbyScriptL, omegap, gamma))
-print prettyprint(lnab(2*T, 7, RbyScriptL, omegap, gamma))
+if __name__ == "__main__":
+    RbyScriptL = 0.85
+    T = 2.7
+    omegap = 1
+    gamma  = 1
+    print prettyprint(lnab(1*T, 3, RbyScriptL, omegap, gamma))
+    print prettyprint(lnab(2*T, 3, RbyScriptL, omegap, gamma))
+    print prettyprint(lnab(2*T, 7, RbyScriptL, omegap, gamma))
 
-RbyScriptL = 0.95
-T = 0.1
-omegap = 0.1
-gamma  = 1.4
-print prettyprint(lnab(1*T,   150, RbyScriptL, omegap, gamma))
-print prettyprint(lnab(100*T, 15,  RbyScriptL, omegap, gamma))
-print prettyprint(lnab(200*T, 20,  RbyScriptL, omegap, gamma))
+    RbyScriptL = 0.95
+    T = 0.1
+    omegap = 0.1
+    gamma  = 1.4
+    print prettyprint(lnab(1*T,   150, RbyScriptL, omegap, gamma))
+    print prettyprint(lnab(100*T, 15,  RbyScriptL, omegap, gamma))
+    print prettyprint(lnab(200*T, 20,  RbyScriptL, omegap, gamma))
 
-RbyScriptL = 0.5
-T = 1
-omegap = 1e-4
-gamma  = 1e-4
-print prettyprint(lnab(1*T, 7, RbyScriptL, omegap, gamma))
+    RbyScriptL = 0.5
+    T = 1
+    omegap = 1e-4
+    gamma  = 1e-4
+    print prettyprint(lnab(1*T, 7, RbyScriptL, omegap, gamma))
 
-RbyScriptL = 0.5
-T = 1
-omegap = 1
-gamma  = 1e-4
-print prettyprint(lnab(1*T, 1,  RbyScriptL, omegap, gamma))
-print prettyprint(lnab(1*T, 2,  RbyScriptL, omegap, gamma))
-print prettyprint(lnab(1*T, 3,  RbyScriptL, omegap, gamma))
-print prettyprint(lnab(1*T, 4,  RbyScriptL, omegap, gamma))
-print prettyprint(lnab(1*T, 5,  RbyScriptL, omegap, gamma))
-print prettyprint(lnab(1*T, 10, RbyScriptL, omegap, gamma))
+    RbyScriptL = 0.5
+    T = 1
+    omegap = 1
+    gamma  = 1e-4
+    print prettyprint(lnab(1*T, 1,  RbyScriptL, omegap, gamma))
+    print prettyprint(lnab(1*T, 2,  RbyScriptL, omegap, gamma))
+    print prettyprint(lnab(1*T, 3,  RbyScriptL, omegap, gamma))
+    print prettyprint(lnab(1*T, 4,  RbyScriptL, omegap, gamma))
+    print prettyprint(lnab(1*T, 5,  RbyScriptL, omegap, gamma))
+    print prettyprint(lnab(1*T, 10, RbyScriptL, omegap, gamma))
 
-print prettyprint(lnab(5*T, 1,  RbyScriptL, omegap, gamma))
-print prettyprint(lnab(5*T, 2,  RbyScriptL, omegap, gamma))
-print prettyprint(lnab(5*T, 3,  RbyScriptL, omegap, gamma))
-print prettyprint(lnab(5*T, 4,  RbyScriptL, omegap, gamma))
-print prettyprint(lnab(5*T, 5,  RbyScriptL, omegap, gamma))
-print prettyprint(lnab(5*T, 10, RbyScriptL, omegap, gamma))
+    print prettyprint(lnab(5*T, 1,  RbyScriptL, omegap, gamma))
+    print prettyprint(lnab(5*T, 2,  RbyScriptL, omegap, gamma))
+    print prettyprint(lnab(5*T, 3,  RbyScriptL, omegap, gamma))
+    print prettyprint(lnab(5*T, 4,  RbyScriptL, omegap, gamma))
+    print prettyprint(lnab(5*T, 5,  RbyScriptL, omegap, gamma))
+    print prettyprint(lnab(5*T, 10, RbyScriptL, omegap, gamma))
 
-print prettyprint(lnab(15*T, 1,  RbyScriptL, omegap, gamma))
-print prettyprint(lnab(15*T, 2,  RbyScriptL, omegap, gamma))
-print prettyprint(lnab(15*T, 3,  RbyScriptL, omegap, gamma))
-print prettyprint(lnab(15*T, 4,  RbyScriptL, omegap, gamma))
-print prettyprint(lnab(15*T, 5,  RbyScriptL, omegap, gamma))
-print prettyprint(lnab(15*T, 10, RbyScriptL, omegap, gamma))
-print prettyprint(lnab(15*T, 20, RbyScriptL, omegap, gamma))
-print prettyprint(lnab(15*T, 50, RbyScriptL, omegap, gamma))
+    print prettyprint(lnab(15*T, 1,  RbyScriptL, omegap, gamma))
+    print prettyprint(lnab(15*T, 2,  RbyScriptL, omegap, gamma))
+    print prettyprint(lnab(15*T, 3,  RbyScriptL, omegap, gamma))
+    print prettyprint(lnab(15*T, 4,  RbyScriptL, omegap, gamma))
+    print prettyprint(lnab(15*T, 5,  RbyScriptL, omegap, gamma))
+    print prettyprint(lnab(15*T, 10, RbyScriptL, omegap, gamma))
+    print prettyprint(lnab(15*T, 20, RbyScriptL, omegap, gamma))
+    print prettyprint(lnab(15*T, 50, RbyScriptL, omegap, gamma))
