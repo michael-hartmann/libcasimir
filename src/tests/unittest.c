@@ -11,7 +11,7 @@ void unittest_init(unittest_t *test, const char *func, const char *desc)
 
 int test_results(unittest_t *test, FILE *stream)
 {
-    fprintf(stream, "[%d/%d]\t%-20s\t%-50s", test->passed, test->passed+test->failed, test->func, test->desc);
+    fprintf(stream, "[%3d/%3d]\t%-20s\t%-50s", test->passed, test->passed+test->failed, test->func, test->desc);
     if(test->failed == 0)
         fprintf(stream, " [PASSED]\n");
     else
