@@ -10,8 +10,8 @@
 
 // abbrevations for functions
 #define lngamma(x) (gammaq(x))
-#define pow_2(x) (x*x)
-#define lnfac(x)  (gammaq(1+x))
+#define pow_2(x) ((x)*(x))
+#define lnfac(x)  (gammaq(1+(x)))
 
 #define MPOW(a) (1-2*((a) & 1))
 
