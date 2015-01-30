@@ -38,6 +38,19 @@ const char *casimir_compile_info(void)
     return CASIMIR_COMPILE_INFO;
 }
 
+
+/** @brief Print object information to stream
+ *
+ * This function will print information about the object self to stream.
+ * Information include all parameters like RbyScriptL, x, omegap and gamma of
+ * sphere and plane, as well as maximum value of l, precision, number of
+ * cores...
+ *
+ * @param self Casimir object
+ * @param stream where to print the string
+ * @param prefix if prefix != NULL: start every lign with the string contained
+ * in prefix
+ */
 void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
 {
     if(prefix == NULL)
@@ -56,8 +69,8 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
     else
         fprintf(stream, "%d\n", self->integration);
 
-    fprintf(stream, "%slmax = %d\n",        prefix,  self->lmax);
-    fprintf(stream, "%sverbose = %d\n",     prefix,  self->verbose);
+    fprintf(stream, "%slmax = %d\n",        prefix, self->lmax);
+    fprintf(stream, "%sverbose = %d\n",     prefix, self->verbose);
     fprintf(stream, "%sextrapolate = %d\n", prefix, self->extrapolate);
     fprintf(stream, "%scores = %d\n",       prefix, self->cores);
     fprintf(stream, "%sprecision = %g\n",   prefix, self->precision);
