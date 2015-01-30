@@ -97,7 +97,7 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
  * @param [in]  l1
  * @param [in]  l2
  * @param [in]  m
- * @param [out] sign
+ * @param [out] sign is set to -1 if sign != NULL
  * @retval log(Lambda(l1,l2,m))
  */
 edouble inline casimir_lnLambda(int l1, int l2, int m, int *sign)
@@ -121,7 +121,7 @@ edouble inline casimir_lnLambda(int l1, int l2, int m, int *sign)
  * @param [in]  gamma_ relaxation frequency
  * @retval epsilon(xi, omegap, gamma_)
  */
-edouble casimir_epsilon(double xi, double omegap, double gamma_)
+double casimir_epsilon(double xi, double omegap, double gamma_)
 {
     return 1+ omegap*omegap/(xi*(xi+gamma_));
 }
@@ -140,9 +140,9 @@ edouble casimir_epsilon(double xi, double omegap, double gamma_)
  * @param [in]  gamma_ relaxation frequency
  * @retval log(epsilon(xi, omegap, gamma_))
  */
-edouble casimir_lnepsilon(double xi, double omegap, double gamma_)
+double casimir_lnepsilon(double xi, double omegap, double gamma_)
 {
-    return log1pq(omegap*omegap/(xi*(xi+gamma_)));
+    return log1p(omegap*omegap/(xi*(xi+gamma_)));
 }
 
 
