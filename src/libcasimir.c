@@ -1186,21 +1186,22 @@ double casimir_F(casimir_t *self, int *nmax)
  * @param [in] m
  * @param [out] logdet_EE
  * @param [out] logdet_MM
- * @retval log det D(xi=0)
  */
-double casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_MM)
+void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_MM)
 {
     int l1,l2,min,max,dim;
     double lnRbyScriptL = log(self->RbyScriptL);
-    double value_EE, value_MM;
+    matrix_edouble_t *EE = NULL, *MM = NULL;
 
     min = MAX(m,1);
     max = self->lmax;
 
     dim = (max-min+1);
 
-    matrix_edouble_t *EE = matrix_edouble_alloc(dim);
-    matrix_edouble_t *MM = matrix_edouble_alloc(dim);
+    if(logdet_EE != NULL)
+        EE = matrix_edouble_alloc(dim);
+    if(logdet_MM != NULL)
+        MM = matrix_edouble_alloc(dim);
 
     /* calculate the logarithm of the matrix elements of D */
     for(l1 = min; l1 <= max; l1++)
@@ -1213,27 +1214,25 @@ double casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logde
             double lnXiRL = casimir_lnXi(l1,l2,m,&sign_xi)+(2*l1+1)*lnRbyScriptL;
             casimir_lnab0(l1, &lna0, &sign_a0, &lnb0, &sign_b0);
 
-            matrix_set(EE, i,j, (l1 == l2 ? 1 : 0) - sign_xi*sign_a0*expq(lna0+lnXiRL));
-            matrix_set(MM, i,j, (l1 == l2 ? 1 : 0) + sign_xi*sign_b0*expq(lnb0+lnXiRL));
+            if(EE != NULL)
+                matrix_set(EE, i,j, (l1 == l2 ? 1 : 0) - sign_xi*sign_a0*expq(lna0+lnXiRL));
+            if(MM != NULL)
+                matrix_set(MM, i,j, (l1 == l2 ? 1 : 0) + sign_xi*sign_b0*expq(lnb0+lnXiRL));
         }
 
-    /* balance the matrix */
-    matrix_edouble_balance(EE);
-    matrix_edouble_balance(MM);
-
-    value_EE = matrix_edouble_logdet(EE);
-    value_MM = matrix_edouble_logdet(MM);
-
-    /* free space for matrices */
-    matrix_edouble_free(EE);
-    matrix_edouble_free(MM);
-
-    if(logdet_EE != NULL)
-        *logdet_EE = value_EE;
-    if(logdet_MM != NULL)
-        *logdet_MM = value_MM;
-
-    return value_EE+value_MM;
+    /* balance matrices, calculate logdet and free space */
+    if(EE != NULL)
+    {
+        matrix_edouble_balance(EE);
+        *logdet_EE = matrix_edouble_logdet(EE);
+        matrix_edouble_free(EE);
+    }
+    if(MM != NULL)
+    {
+        matrix_edouble_balance(MM);
+        *logdet_MM = matrix_edouble_logdet(MM);
+        matrix_edouble_free(MM);
+    }
 }
 
 
@@ -1261,7 +1260,19 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
     dim = (max-min+1);
 
     if(n == 0)
-        return casimir_logdetD0(self, m, NULL, NULL);
+    {
+        double logdet_EE = 0, logdet_MM = 0;
+
+        if(isinf(self->omegap_plane))
+            /* perfect reflector */
+            casimir_logdetD0(self, m, &logdet_EE, &logdet_MM);
+        else
+            /* drude mirror */
+            casimir_logdetD0(self, m, &logdet_EE, NULL);
+
+        return logdet_EE + logdet_MM;
+    }
+
 
     matrix_edouble_t *M = matrix_edouble_alloc(2*dim);
 
