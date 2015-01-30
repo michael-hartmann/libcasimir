@@ -157,7 +157,6 @@ void casimir_integrate_drude(casimir_t *self, casimir_integrals_t *cint, int l1,
         cint->lnD_TE = prefactor + logadd_ms(lnD_TE, signs_D, N, &cint->signD_TE);
         cint->lnD_TM = prefactor + logadd_ms(lnD_TM, signs_D, N, &cint->signD_TM);
 
-        /* TODO: check if sign is correckt. */
         cint->signD_TM = -MPOW(l2+m+1) * cint->signD_TM;
         cint->signD_TE = +MPOW(l2+m+1) * cint->signD_TE;
     }
