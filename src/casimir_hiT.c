@@ -61,7 +61,7 @@ void *logdetD0(void *p)
 {       
     casimir_t casimir;
     double start = now();
-    double value, logdet_EE, logdet_MM;
+    double logdet_EE, logdet_MM;
     param_t *params = p;
     double LbyR      = params->LbyR;
     double precision = params->precision;
@@ -73,22 +73,20 @@ void *logdetD0(void *p)
     casimir_set_verbose(&casimir, VERBOSE);
     casimir_set_lmax(&casimir, lmax);
     
-    value = casimir_logdetD0(&casimir, m, &logdet_EE, &logdet_MM);
+    casimir_logdetD0(&casimir, m, &logdet_EE, &logdet_MM);
     casimir_free(&casimir);
     
     // n == 0
     logdet_EE /= 2;
     logdet_MM /= 2;
-    value     /= 2;
 
     if(m == 0)
     {
         logdet_EE /= 2;
         logdet_MM /= 2;
-        value     /= 2;
     }
     
-    params->value     = value;
+    params->value     = logdet_EE+logdet_MM;
     params->logdet_EE = logdet_EE;
     params->logdet_MM = logdet_MM;
     params->time      = now()-start;
