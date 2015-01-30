@@ -1214,7 +1214,7 @@ double casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logde
             casimir_lnab0(l1, &lna0, &sign_a0, &lnb0, &sign_b0);
 
             matrix_set(EE, i,j, (l1 == l2 ? 1 : 0) - sign_xi*sign_a0*expq(lna0+lnXiRL));
-            matrix_set(MM, i,j, (l1 == l2 ? 1 : 0) - sign_xi*sign_a0*expq(lnb0+lnXiRL));
+            matrix_set(MM, i,j, (l1 == l2 ? 1 : 0) + sign_xi*sign_b0*expq(lnb0+lnXiRL));
         }
 
     /* balance the matrix */
