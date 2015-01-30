@@ -106,8 +106,8 @@ typedef struct
 /* prototypes */
 void casimir_info(casimir_t *self, FILE *stream, const char *prefix);
 
-edouble casimir_epsilon(double xi, double omegap, double gamma_);
-edouble casimir_lnepsilon(double xi, double omegap, double gamma_);
+double casimir_epsilon(double xi, double omegap, double gamma_);
+double casimir_lnepsilon(double xi, double omegap, double gamma_);
 
 edouble casimir_lnLambda(int l1, int l2, int m, int *sign);
 edouble casimir_lnXi(int l1, int l2, int m, int *sign);
