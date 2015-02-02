@@ -10,6 +10,11 @@
 #include "integration.h"
 #include "gausslaguerre.h"
 
+#ifdef FFT_POLYMULT
+#include <complex.h>
+#include <fftw3.h>
+#endif
+
 void integrands_drude(edouble x, integrands_drude_t *integrands, casimir_t *self, double nT, int l1, int l2, int m)
 {
     plm_combination_t comb;
@@ -180,7 +185,53 @@ void casimir_integrate_drude(casimir_t *self, casimir_integrals_t *cint, int l1,
 * Multiply the polynomials p1 and p2. The result is stored in pdest, which
 * must have at least size len_p1+len_p2-1
 */
-void inline polymult(edouble p1[], size_t len_p1, edouble p2[], size_t len_p2, edouble pdest[])
+#ifdef FFT_POLYMULT
+void polymult(edouble p1[], size_t len_p1, edouble p2[], size_t len_p2, edouble pdest[])
+{
+    const int N = len_p1+len_p2-1;
+    double in1[N], in2[N], out[N];
+    double complex out1[N], out2[N];
+    fftw_plan plan;
+    int i;
+    edouble max_p1 = fabsq(p1[0]);
+    edouble max_p2 = fabsq(p2[0]);
+
+    for(i = 1; i < len_p1; i++)
+        max_p1 = MAX(max_p1,fabsq(p1[i]));
+
+    for(i = 0; i < len_p2; i++)
+        max_p2 = MAX(max_p2,fabsq(p2[i]));
+
+    for(i = 0; i < len_p1; i++)
+        in1[i] = p1[i]/max_p1;
+    for(i = len_p1; i < N; i++)
+        in1[i] = 0;
+
+    for(i = 0; i < len_p2; i++)
+        in2[i] = p2[i]/max_p2;
+    for(i = len_p2; i < N; i++)
+        in2[i] = 0;
+
+    plan = fftw_plan_dft_r2c_1d(N, in1, out1, FFTW_ESTIMATE);
+    fftw_execute(plan);
+    fftw_destroy_plan(plan);
+
+    plan = fftw_plan_dft_r2c_1d(N, in2, out2, FFTW_ESTIMATE);
+    fftw_execute(plan);
+    fftw_destroy_plan(plan);
+
+    for(i = 0; i < N; i++)
+        out1[i] *= out2[i];
+
+    plan = fftw_plan_dft_c2r_1d(N, out1, out, FFTW_ESTIMATE);
+    fftw_execute(plan);
+    fftw_destroy_plan(plan);
+
+    for(i = 0; i < N; i++)
+        pdest[i] = (edouble)out[i]*max_p1*max_p2/N;
+}
+#else
+void polymult(edouble p1[], size_t len_p1, edouble p2[], size_t len_p2, edouble pdest[])
 {
     size_t power,i;
 
@@ -193,6 +244,7 @@ void inline polymult(edouble p1[], size_t len_p1, edouble p2[], size_t len_p2, e
             pdest[power] += p1[i]*p2[power-i];
     }
 }
+#endif
 
 /* Integrate the function f(x)*exp(-x) from 0 to inf
 * f(x) is the polynomial of length len stored in p

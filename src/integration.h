@@ -27,7 +27,7 @@ void casimir_integrate_drude(casimir_t *self, casimir_integrals_t *cint, int l1,
 
 void integrands_drude(edouble x, integrands_drude_t *integrands, casimir_t *self, double nT, int l1, int l2, int m);
 
-void inline polymult(edouble p1[], size_t len_p1, edouble p2[], size_t len_p2, edouble pdest[]);
+void polymult(edouble p1[], size_t len_p1, edouble p2[], size_t len_p2, edouble pdest[]);
 double log_polyintegrate(edouble p[], size_t len, int l1, int l2, int m, int *sign);
 void polym(edouble p[], int m, edouble xi);
 void polyplm(edouble pl1[], edouble pl2[], int l1, int l2, int m, edouble xi);
