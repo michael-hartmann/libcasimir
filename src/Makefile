@@ -8,6 +8,9 @@ OBJECTS=$(SOURCES:.c=.o)
 # quadrupule precision, but should be much faster.
 EXTENDED_DOUBLE = 1
 
+# use fftw3
+FFTW3 = 1
+
 # compile. You may use gcc or icc.
 CC = gcc
 #CC = icc
@@ -19,12 +22,19 @@ CFLAGS += -Werror -Wall -Wmissing-prototypes -Wstrict-prototypes -Wshadow -Wpoin
 # of errors the program won't abort.
 #CFLAGS += -DNDEBUG
 
+LDFLAGS += -lm -pthread
+
 # use optimization
 ifeq ($(CC),gcc)
     OPTIMIZATION = -O3
 endif
 ifeq ($(CC),icc)
     OPTIMIZATION = -fast
+endif
+
+ifdef FFTW3
+    CFLAGS += -DFFT_POLYMULT
+    LDFLAGS += -lfftw3
 endif
 
 # if we need quadrupole precision
@@ -39,7 +49,6 @@ else
     endif
 endif
 
-LDFLAGS += -lm -pthread
 
 
 casimir: $(OBJECTS)
