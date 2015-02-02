@@ -188,30 +188,36 @@ void casimir_integrate_drude(casimir_t *self, casimir_integrals_t *cint, int l1,
 #ifdef FFT_POLYMULT
 void polymult(edouble p1[], size_t len_p1, edouble p2[], size_t len_p2, edouble pdest[])
 {
-    const int N = len_p1+len_p2-1;
-    double in1[N], in2[N], out[N];
-    double complex out1[N], out2[N];
+    const int N = len_p1+len_p2-1;   /* order of resulting polynomial */
+    double in1[N], in2[N], out[N];   /* in1, in2: input polynomials */
+    double complex out1[N], out2[N]; /* out1, out2: FFT of in1, in2 */
     fftw_plan plan;
     int i;
-    edouble max_p1 = fabsq(p1[0]);
-    edouble max_p2 = fabsq(p2[0]);
+    edouble max_p1, max_p2;
 
+    /* determine maximum (by abs value) of p1 */
+    max_p1 = fabsq(p1[0]);
     for(i = 1; i < len_p1; i++)
         max_p1 = MAX(max_p1,fabsq(p1[i]));
 
+    /* determine maximum (by abs value) of p2 */
+    max_p2 = fabsq(p1[0]);
     for(i = 0; i < len_p2; i++)
         max_p2 = MAX(max_p2,fabsq(p2[i]));
 
+    /* copy p1 to in1, divide by max_p1 and pad with 0 */
     for(i = 0; i < len_p1; i++)
         in1[i] = p1[i]/max_p1;
     for(i = len_p1; i < N; i++)
         in1[i] = 0;
 
+    /* copy p2 to in2, divide by max_p2 and pad with 0 */
     for(i = 0; i < len_p2; i++)
         in2[i] = p2[i]/max_p2;
     for(i = len_p2; i < N; i++)
         in2[i] = 0;
 
+    /* calculate FFT of in1 and in2 */
     plan = fftw_plan_dft_r2c_1d(N, in1, out1, FFTW_ESTIMATE);
     fftw_execute(plan);
     fftw_destroy_plan(plan);
@@ -220,15 +226,18 @@ void polymult(edouble p1[], size_t len_p1, edouble p2[], size_t len_p2, edouble 
     fftw_execute(plan);
     fftw_destroy_plan(plan);
 
+    /* make convolution */
     for(i = 0; i < N; i++)
         out1[i] *= out2[i];
 
+    /* reverse FFT */
     plan = fftw_plan_dft_c2r_1d(N, out1, out, FFTW_ESTIMATE);
     fftw_execute(plan);
     fftw_destroy_plan(plan);
 
+    /* copy result to pdest, multiply by max_p1 and max_p2 and divide by N */
     for(i = 0; i < N; i++)
-        pdest[i] = (edouble)out[i]*max_p1*max_p2/N;
+        pdest[i] = out[i]/N*max_p1*max_p2;
 }
 #else
 void polymult(edouble p1[], size_t len_p1, edouble p2[], size_t len_p2, edouble pdest[])
